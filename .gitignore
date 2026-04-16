@@ -39,3 +39,30 @@
 
 # debug information files
 *.dwo
+
+# Visual Studio 캐시/임시 파일
+*.ipch
+*.aps
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.opendb
+
+# 빌드 결과물
+Debug/
+Release/
+x64/
+x86/
+*.obj
+*.pch
+*.pdb
+*.ilk
+*.exp
+*.lib
+
+# 사용자 설정 (개인 환경마다 다름)
+*.user
+*.suo
+.vs/
