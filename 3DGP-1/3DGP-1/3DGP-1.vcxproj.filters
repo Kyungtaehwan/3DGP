@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="00.MainApp">
+      <UniqueIdentifier>{bd4166d1-79f8-452e-a4b6-8ec1f886fa60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Level_Manager">
+      <UniqueIdentifier>{c4aa3311-2c75-465a-91fc-b092fdf1a03f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager">
+      <UniqueIdentifier>{ef011963-a606-4ea1-8e5e-6830f419b4a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="99.Default">
+      <UniqueIdentifier>{3c42963e-dfc2-42a0-ae52-1adbc139cb59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.Bmp_Manager">
+      <UniqueIdentifier>{67ebce8f-cd12-41fd-8255-ae1f19e8a70c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.Camera">
+      <UniqueIdentifier>{40f1ecdc-8455-4451-8ccc-100b4cec63c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="05.Input_Manager">
+      <UniqueIdentifier>{857630c8-aee2-48d2-a1ad-30040b6e329c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Level_Manager\Levels">
+      <UniqueIdentifier>{c040b6fb-b39e-439f-bd79-9667c3fae000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Level_Manager\Levels\01_01.Level_GamePlay">
+      <UniqueIdentifier>{e9ff6c86-ae4e-46a7-92bb-232a29dc01a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="06.Timer">
+      <UniqueIdentifier>{24e3358f-09f4-4b14-9f2f-852e96e96aad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager\Mesh">
+      <UniqueIdentifier>{0f48958f-0ef0-4119-825f-9139f9c587f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager\GameObject">
+      <UniqueIdentifier>{ff764a0e-0a5d-43af-965b-56d6a0e64900}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GraphicsPipeline">
+      <UniqueIdentifier>{6f3ec249-25ab-4b90-ae56-0d46a918c086}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager\GameObject\02_01.Player">
+      <UniqueIdentifier>{b10c6d4e-0533-44f3-90dd-19389620f39e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MainApp.h">
+      <Filter>00.MainApp</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>99.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>99.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>99.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>99.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGP-1.h">
+      <Filter>99.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="Level_Manager.h">
+      <Filter>01.Level_Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Level.h">
+      <Filter>01.Level_Manager\Levels</Filter>
+    </ClInclude>
+    <ClInclude Include="Level_GamePlay.h">
+      <Filter>01.Level_Manager\Levels\01_01.Level_GamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="Bmp_Manager.h">
+      <Filter>03.Bmp_Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="MyBmp.h">
+      <Filter>03.Bmp_Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Object_Manager.h">
+      <Filter>02.Object_Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="define.h" />
+    <ClInclude Include="Timer.h">
+      <Filter>06.Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>02.Object_Manager\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>04.Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>02.Object_Manager\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsPipeline.h">
+      <Filter>GraphicsPipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>02.Object_Manager\GameObject\02_01.Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Input_Manager.h">
+      <Filter>05.Input_Manager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MainApp.cpp">
+      <Filter>00.MainApp</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGP-1.cpp">
+      <Filter>99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_Manager.cpp">
+      <Filter>01.Level_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Level.cpp">
+      <Filter>01.Level_Manager\Levels</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_GamePlay.cpp">
+      <Filter>01.Level_Manager\Levels\01_01.Level_GamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="Bmp_Manager.cpp">
+      <Filter>03.Bmp_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="MyBmp.cpp">
+      <Filter>03.Bmp_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Object_Manager.cpp">
+      <Filter>02.Object_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>06.Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>02.Object_Manager\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>04.Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>02.Object_Manager\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsPipeline.cpp">
+      <Filter>GraphicsPipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>02.Object_Manager\GameObject\02_01.Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Input_Manager.cpp">
+      <Filter>05.Input_Manager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="3DGP-1.rc">
+      <Filter>리소스 파일</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="small.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="3DGP-1.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
+  </ItemGroup>
+</Project>
