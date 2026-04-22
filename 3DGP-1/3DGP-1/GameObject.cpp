@@ -26,7 +26,8 @@ void CGameObject::Render(HDC hDC, XMFLOAT4X4* pWorld, CMesh* pMesh, DWORD dwColo
 
     HPEN hPen = ::CreatePen(PS_SOLID, 0, dwColor);
     HPEN hOldPen = (HPEN)::SelectObject(hDC, hPen);
-    pMesh->Render(hDC);
+    pMesh->m_dwColor = dwColor;
+    pMesh->Render_Face(hDC);
     ::SelectObject(hDC, hOldPen);
     ::DeleteObject(hPen);
 }

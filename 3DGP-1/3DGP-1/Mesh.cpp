@@ -77,6 +77,41 @@ void CMesh::Render(HDC hDCFrameBuffer)
 	}
 }
 
+void CMesh::Render_Face(HDC hDCFrameBuffer)
+{
+	for (int j = 0; j < m_nPolygons; j++)
+	{
+		int nVerts = m_ppPolygons[j]->m_nVertices;
+		CVertex* pVerts = m_ppPolygons[j]->m_pVertices;
+
+		bool bVisible = false;
+		for (int v = 0; v < nVerts; v++)
+		{
+			XMFLOAT3 proj = CGraphicsPipeline::Project(pVerts[v].m_xmf3Position);
+			if (proj.z >= 0.f && proj.z <= 1.f) { bVisible = true; break; }
+		}
+		if (!bVisible) continue;
+
+		std::vector<POINT> pts(nVerts);
+		for (int v = 0; v < nVerts; v++)
+		{
+			XMFLOAT3 proj = CGraphicsPipeline::Project(pVerts[v].m_xmf3Position);
+			XMFLOAT3 screen = CGraphicsPipeline::ScreenTransform(proj);
+			pts[v] = { (long)screen.x, (long)screen.y };
+		}
+
+		HBRUSH hBrush = CreateSolidBrush(m_dwColor);
+		HBRUSH hOldBrush = (HBRUSH)SelectObject(hDCFrameBuffer, hBrush);
+		HPEN   hPen = CreatePen(PS_SOLID, 0, m_dwColor);
+		HPEN   hOldPen = (HPEN)SelectObject(hDCFrameBuffer, hPen);
+		::Polygon(hDCFrameBuffer, pts.data(), nVerts);
+		SelectObject(hDCFrameBuffer, hOldBrush);
+		SelectObject(hDCFrameBuffer, hOldPen);
+		DeleteObject(hBrush);
+		DeleteObject(hPen);
+	}
+}
+
 BOOL CMesh::RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDirection, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float* pfNearHitDistance)
 {
 	float fHitDistance;
@@ -472,4 +507,192 @@ void CAxisMesh::Render(HDC hDCFrameBuffer)
 	::Draw2DLine(hDCFrameBuffer, f3PreviousProject, f3CurrentProject);
 	::SelectObject(hDCFrameBuffer, hOldPen);
 	::DeleteObject(hPen);
+}
+
+
+
+CTankBodyMesh :: CTankBodyMesh(float fWidth, float fHeight, float fDepth) : CMesh(6)
+{
+	float hw = fWidth * 0.5f;
+	float hh = fHeight * 0.5f;
+	float hd = fDepth * 0.5f;
+
+	// Front  (-Z)
+	CPolygon* pFront = new CPolygon(4);
+	pFront->SetVertex(0, CVertex(-hw, +hh, -hd));
+	pFront->SetVertex(1, CVertex(+hw, +hh, -hd));
+	pFront->SetVertex(2, CVertex(+hw, -hh, -hd));
+	pFront->SetVertex(3, CVertex(-hw, -hh, -hd));
+	SetPolygon(0, pFront);
+
+	// Back   (+Z)
+	CPolygon* pBack = new CPolygon(4);
+	pBack->SetVertex(0, CVertex(+hw, +hh, +hd));
+	pBack->SetVertex(1, CVertex(-hw, +hh, +hd));
+	pBack->SetVertex(2, CVertex(-hw, -hh, +hd));
+	pBack->SetVertex(3, CVertex(+hw, -hh, +hd));
+	SetPolygon(1, pBack);
+
+	// Top    (+Y)
+	CPolygon* pTop = new CPolygon(4);
+	pTop->SetVertex(0, CVertex(-hw, +hh, -hd));
+	pTop->SetVertex(1, CVertex(+hw, +hh, -hd));
+	pTop->SetVertex(2, CVertex(+hw, +hh, +hd));
+	pTop->SetVertex(3, CVertex(-hw, +hh, +hd));
+	SetPolygon(2, pTop);
+
+	// Bottom (-Y)
+	CPolygon* pBottom = new CPolygon(4);
+	pBottom->SetVertex(0, CVertex(-hw, -hh, +hd));
+	pBottom->SetVertex(1, CVertex(+hw, -hh, +hd));
+	pBottom->SetVertex(2, CVertex(+hw, -hh, -hd));
+	pBottom->SetVertex(3, CVertex(-hw, -hh, -hd));
+	SetPolygon(3, pBottom);
+
+	// Left   (-X)
+	CPolygon* pLeft = new CPolygon(4);
+	pLeft->SetVertex(0, CVertex(-hw, +hh, +hd));
+	pLeft->SetVertex(1, CVertex(-hw, +hh, -hd));
+	pLeft->SetVertex(2, CVertex(-hw, -hh, -hd));
+	pLeft->SetVertex(3, CVertex(-hw, -hh, +hd));
+	SetPolygon(4, pLeft);
+
+	// Right  (+X)
+	CPolygon* pRight = new CPolygon(4);
+	pRight->SetVertex(0, CVertex(+hw, +hh, -hd));
+	pRight->SetVertex(1, CVertex(+hw, +hh, +hd));
+	pRight->SetVertex(2, CVertex(+hw, -hh, +hd));
+	pRight->SetVertex(3, CVertex(+hw, -hh, -hd));
+	SetPolygon(5, pRight);
+
+	m_xmOOBB = BoundingOrientedBox(
+		XMFLOAT3(0.f, 0.f, 0.f),
+		XMFLOAT3(hw, hh, hd),
+		XMFLOAT4(0.f, 0.f, 0.f, 1.f));
+}
+
+
+
+
+CTankTurretMesh::CTankTurretMesh(float fWidth, float fHeight, float fDepth) : CMesh(6)
+{
+	float hw = fWidth * 0.5f;
+	float hh = fHeight * 0.5f;
+	float hd = fDepth * 0.5f;
+
+	// Front
+	CPolygon* pFront = new CPolygon(4);
+	pFront->SetVertex(0, CVertex(-hw, +hh, -hd));
+	pFront->SetVertex(1, CVertex(+hw, +hh, -hd));
+	pFront->SetVertex(2, CVertex(+hw, -hh, -hd));
+	pFront->SetVertex(3, CVertex(-hw, -hh, -hd));
+	SetPolygon(0, pFront);
+
+	// Back
+	CPolygon* pBack = new CPolygon(4);
+	pBack->SetVertex(0, CVertex(+hw, +hh, +hd));
+	pBack->SetVertex(1, CVertex(-hw, +hh, +hd));
+	pBack->SetVertex(2, CVertex(-hw, -hh, +hd));
+	pBack->SetVertex(3, CVertex(+hw, -hh, +hd));
+	SetPolygon(1, pBack);
+
+	// Top
+	CPolygon* pTop = new CPolygon(4);
+	pTop->SetVertex(0, CVertex(-hw, +hh, -hd));
+	pTop->SetVertex(1, CVertex(+hw, +hh, -hd));
+	pTop->SetVertex(2, CVertex(+hw, +hh, +hd));
+	pTop->SetVertex(3, CVertex(-hw, +hh, +hd));
+	SetPolygon(2, pTop);
+
+	// Bottom
+	CPolygon* pBottom = new CPolygon(4);
+	pBottom->SetVertex(0, CVertex(-hw, -hh, +hd));
+	pBottom->SetVertex(1, CVertex(+hw, -hh, +hd));
+	pBottom->SetVertex(2, CVertex(+hw, -hh, -hd));
+	pBottom->SetVertex(3, CVertex(-hw, -hh, -hd));
+	SetPolygon(3, pBottom);
+
+	// Left
+	CPolygon* pLeft = new CPolygon(4);
+	pLeft->SetVertex(0, CVertex(-hw, +hh, +hd));
+	pLeft->SetVertex(1, CVertex(-hw, +hh, -hd));
+	pLeft->SetVertex(2, CVertex(-hw, -hh, -hd));
+	pLeft->SetVertex(3, CVertex(-hw, -hh, +hd));
+	SetPolygon(4, pLeft);
+
+	// Right
+	CPolygon* pRight = new CPolygon(4);
+	pRight->SetVertex(0, CVertex(+hw, +hh, -hd));
+	pRight->SetVertex(1, CVertex(+hw, +hh, +hd));
+	pRight->SetVertex(2, CVertex(+hw, -hh, +hd));
+	pRight->SetVertex(3, CVertex(+hw, -hh, -hd));
+	SetPolygon(5, pRight);
+
+	m_xmOOBB = BoundingOrientedBox(
+		XMFLOAT3(0.f, 0.f, 0.f),
+		XMFLOAT3(hw, hh, hd),
+		XMFLOAT4(0.f, 0.f, 0.f, 1.f));
+}
+
+
+
+CTankBarrelMesh::CTankBarrelMesh(float fLength, float fRadius) : CMesh(6)
+{
+	float hr = fRadius;
+	// 원점(후미)에서 -Z 방향으로 fLength 만큼 뻗음
+	float zNear = -fLength;   // 포신 끝(앞)
+	float zFar = 0.0f;      // 포신 뿌리(후미, 포탑 연결)
+
+	// Front (포신 끝 캡)
+	CPolygon* pFront = new CPolygon(4);
+	pFront->SetVertex(0, CVertex(-hr, +hr, zNear));
+	pFront->SetVertex(1, CVertex(+hr, +hr, zNear));
+	pFront->SetVertex(2, CVertex(+hr, -hr, zNear));
+	pFront->SetVertex(3, CVertex(-hr, -hr, zNear));
+	SetPolygon(0, pFront);
+
+	// Back (포신 뿌리 캡)
+	CPolygon* pBack = new CPolygon(4);
+	pBack->SetVertex(0, CVertex(+hr, +hr, zFar));
+	pBack->SetVertex(1, CVertex(-hr, +hr, zFar));
+	pBack->SetVertex(2, CVertex(-hr, -hr, zFar));
+	pBack->SetVertex(3, CVertex(+hr, -hr, zFar));
+	SetPolygon(1, pBack);
+
+	// Top
+	CPolygon* pTop = new CPolygon(4);
+	pTop->SetVertex(0, CVertex(-hr, +hr, zNear));
+	pTop->SetVertex(1, CVertex(+hr, +hr, zNear));
+	pTop->SetVertex(2, CVertex(+hr, +hr, zFar));
+	pTop->SetVertex(3, CVertex(-hr, +hr, zFar));
+	SetPolygon(2, pTop);
+
+	// Bottom
+	CPolygon* pBottom = new CPolygon(4);
+	pBottom->SetVertex(0, CVertex(-hr, -hr, zFar));
+	pBottom->SetVertex(1, CVertex(+hr, -hr, zFar));
+	pBottom->SetVertex(2, CVertex(+hr, -hr, zNear));
+	pBottom->SetVertex(3, CVertex(-hr, -hr, zNear));
+	SetPolygon(3, pBottom);
+
+	// Left
+	CPolygon* pLeft = new CPolygon(4);
+	pLeft->SetVertex(0, CVertex(-hr, +hr, zFar));
+	pLeft->SetVertex(1, CVertex(-hr, +hr, zNear));
+	pLeft->SetVertex(2, CVertex(-hr, -hr, zNear));
+	pLeft->SetVertex(3, CVertex(-hr, -hr, zFar));
+	SetPolygon(4, pLeft);
+
+	// Right
+	CPolygon* pRight = new CPolygon(4);
+	pRight->SetVertex(0, CVertex(+hr, +hr, zNear));
+	pRight->SetVertex(1, CVertex(+hr, +hr, zFar));
+	pRight->SetVertex(2, CVertex(+hr, -hr, zFar));
+	pRight->SetVertex(3, CVertex(+hr, -hr, zNear));
+	SetPolygon(5, pRight);
+
+	m_xmOOBB = BoundingOrientedBox(
+		XMFLOAT3(0.f, 0.f, zNear * 0.5f),
+		XMFLOAT3(hr, hr, fLength * 0.5f),
+		XMFLOAT4(0.f, 0.f, 0.f, 1.f));
 }

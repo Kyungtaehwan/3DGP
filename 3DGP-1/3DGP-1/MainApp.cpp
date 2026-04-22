@@ -2,6 +2,7 @@
 #include "MainApp.h"
 #include "Level_Manager.h"
 #include "Bmp_Manager.h"
+#include "Input_Manager.h"
 
 CMainApp::CMainApp()
 {
@@ -22,6 +23,7 @@ void CMainApp::Initialize(void)
 
 void CMainApp::Update(float dt)
 {
+	CInput_Manager::Get_Instance()->Update_Mouse(g_hWnd);
 	CLevel_Manager::Get_Instance()->Update(dt);
 }
 

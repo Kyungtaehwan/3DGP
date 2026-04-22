@@ -17,7 +17,7 @@ void CLevel_GamePlay::Initialize()
     CObject_Manager::Get_Instance()->Add_Object(OBJ_PLAYER, m_pPlayer);
 
     // 카메라 생성 - 플레이어 뒤 10, 위 5 위치
-    m_pCamera = new CCamera(m_pPlayer, XMFLOAT3(0.0f, 5.0f, -15.0f));
+    m_pCamera = new CCamera(m_pPlayer, XMFLOAT3(0.0f, 15.0f, -50.0f));
     m_pCamera->SetViewport(0, 0, WINCX, WINCY);
     m_pCamera->GeneratePerspectiveProjectionMatrix(1.f, 500.f, 60.f);
     m_pCamera->GenerateViewMatrix(); // 초기 뷰 행렬
@@ -32,7 +32,7 @@ int CLevel_GamePlay::Update(float dt)
 void CLevel_GamePlay::Late_Update(float dt)
 {
     CObject_Manager::Get_Instance()->Late_Update(dt);
-    m_pCamera->GenerateViewMatrix_Fixed(); // 기존 GenerateViewMatrix() 대신
+    m_pCamera->GenerateViewMatrix(); // 기존 GenerateViewMatrix() 대신
 }
 
 void CLevel_GamePlay::Render(HDC hDC)

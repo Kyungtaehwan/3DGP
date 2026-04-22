@@ -50,6 +50,8 @@ public:
 	void SetPolygon(int nIndex, CPolygon* pPolygon);
 
 	virtual void Render(HDC hDCFrameBuffer);
+	virtual void Render_Face(HDC hDCFrameBuffer);
+	DWORD m_dwColor = RGB(0, 200, 80);  // Ãß°¡
 
 	BOOL RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDirection, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float* pfNearHitDistance);
 	int CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, float* pfNearHitDistance);
@@ -83,4 +85,28 @@ public:
 	virtual ~CAxisMesh() {}
 
 	virtual void Render(HDC hDCFrameBuffer);
+};
+
+class CTankBodyMesh : public CMesh
+{
+public:
+	CTankBodyMesh(float fWidth = 8.0f, float fHeight = 3.0f, float fDepth = 12.0f);
+	virtual ~CTankBodyMesh() {}
+
+};
+
+class CTankTurretMesh : public CMesh
+{
+public:
+	CTankTurretMesh(float fWidth = 5.0f, float fHeight = 2.5f, float fDepth = 5.0f);
+	virtual ~CTankTurretMesh() {}
+
+};
+
+class CTankBarrelMesh : public CMesh
+{
+public:
+	CTankBarrelMesh(float fLength = 8.0f, float fRadius = 0.6f);
+	virtual ~CTankBarrelMesh() {}
+
 };
