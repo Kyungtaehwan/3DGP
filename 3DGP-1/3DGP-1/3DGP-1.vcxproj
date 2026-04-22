@@ -130,6 +130,7 @@
     <ClInclude Include="3DGP-1.h" />
     <ClInclude Include="Bmp_Manager.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Terrain.h" />
     <ClInclude Include="define.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GameObject.h" />
@@ -152,6 +153,7 @@
     <ClCompile Include="3DGP-1.cpp" />
     <ClCompile Include="Bmp_Manager.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GraphicsPipeline.cpp" />
     <ClCompile Include="Input_Manager.cpp" />

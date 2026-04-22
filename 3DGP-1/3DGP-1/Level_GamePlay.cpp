@@ -3,6 +3,9 @@
 #include "Object_Manager.h"
 #include "GraphicsPipeline.h"
 #include "Bmp_Manager.h"
+#include "Player.h"
+#include "Camera.h"
+#include "Terrain.h"
 
 CLevel_GamePlay::CLevel_GamePlay() {}
 CLevel_GamePlay::~CLevel_GamePlay() { Release(); }
@@ -11,15 +14,21 @@ void CLevel_GamePlay::Initialize()
 {
 
     CBmp_Manager::Get_Instance()->Insert_Bmp(L"../Resource/BackGround.bmp", L"Back");
+    
+    
+    CTerrain* m_pTerrain = new CTerrain();
+    m_pTerrain->Initialize();
+    CObject_Manager::Get_Instance()->Add_Object(OBJ_TERRAIN, m_pTerrain);
+    
     // 플레이어 생성
     m_pPlayer = new CPlayer();
     m_pPlayer->Initialize();
     CObject_Manager::Get_Instance()->Add_Object(OBJ_PLAYER, m_pPlayer);
 
     // 카메라 생성 - 플레이어 뒤 10, 위 5 위치
-    m_pCamera = new CCamera(m_pPlayer, XMFLOAT3(0.0f, 15.0f, -50.0f));
+    m_pCamera = new CCamera(m_pPlayer, XMFLOAT3(0.0f, 15.0f, -30.0f));
     m_pCamera->SetViewport(0, 0, WINCX, WINCY);
-    m_pCamera->GeneratePerspectiveProjectionMatrix(1.f, 500.f, 60.f);
+    m_pCamera->GeneratePerspectiveProjectionMatrix(0.1f, 600.f, 60.f);
     m_pCamera->GenerateViewMatrix(); // 초기 뷰 행렬
 }
 

@@ -55,28 +55,38 @@ void Draw2DLine(HDC hDCFrameBuffer, XMFLOAT3& f3PreviousProject, XMFLOAT3& f3Cur
 
 void CMesh::Render(HDC hDCFrameBuffer)
 {
-	XMFLOAT3 f3InitialProject, f3PreviousProject;
-	bool bPreviousInside = false, bInitialInside = false, bCurrentInside = false, bIntersectInside = false;
-
 	for (int j = 0; j < m_nPolygons; j++)
 	{
 		int nVertices = m_ppPolygons[j]->m_nVertices;
 		CVertex* pVertices = m_ppPolygons[j]->m_pVertices;
 
-		f3PreviousProject = f3InitialProject = CGraphicsPipeline::Project(pVertices[0].m_xmf3Position);
-		bPreviousInside = bInitialInside = (-1.0f <= f3InitialProject.x) && (f3InitialProject.x <= 1.0f) && (-1.0f <= f3InitialProject.y) && (f3InitialProject.y <= 1.0f);
+		XMFLOAT3 f3InitialProject = CGraphicsPipeline::Project(pVertices[0].m_xmf3Position);
+		XMFLOAT3 f3PreviousProject = f3InitialProject;
+		bool bInitialValid = (f3InitialProject.z >= 0.0f && f3InitialProject.z <= 1.0f);
+		bool bPreviousValid = bInitialValid;
+
 		for (int i = 1; i < nVertices; i++)
 		{
 			XMFLOAT3 f3CurrentProject = CGraphicsPipeline::Project(pVertices[i].m_xmf3Position);
-			bCurrentInside = (-1.0f <= f3CurrentProject.x) && (f3CurrentProject.x <= 1.0f) && (-1.0f <= f3CurrentProject.y) && (f3CurrentProject.y <= 1.0f);
-			if (((0.0f <= f3CurrentProject.z) && (f3CurrentProject.z <= 1.0f)) && ((bCurrentInside || bPreviousInside))) ::Draw2DLine(hDCFrameBuffer, f3PreviousProject, f3CurrentProject);
+			bool bCurrentValid = (f3CurrentProject.z >= 0.0f && f3CurrentProject.z <= 1.0f);
+
+			// z 유효한 두 점이면 무조건 그림 (x,y 범위 체크 없음)
+			if (bPreviousValid && bCurrentValid)
+			{
+				Draw2DLine(hDCFrameBuffer, f3PreviousProject, f3CurrentProject);
+			}
+
 			f3PreviousProject = f3CurrentProject;
-			bPreviousInside = bCurrentInside;
+			bPreviousValid = bCurrentValid;
 		}
-		if (((0.0f <= f3InitialProject.z) && (f3InitialProject.z <= 1.0f)) && ((bInitialInside || bPreviousInside))) ::Draw2DLine(hDCFrameBuffer, f3PreviousProject, f3InitialProject);
+
+		// 마지막 닫기 선
+		if (bPreviousValid && bInitialValid)
+		{
+			Draw2DLine(hDCFrameBuffer, f3PreviousProject, f3InitialProject);
+		}
 	}
 }
-
 void CMesh::Render_Face(HDC hDCFrameBuffer)
 {
 	for (int j = 0; j < m_nPolygons; j++)
@@ -112,6 +122,44 @@ void CMesh::Render_Face(HDC hDCFrameBuffer)
 	}
 }
 
+
+void CMesh::Render_Terrain_Face(HDC hDCFrameBuffer)
+{
+	for (int j = 0; j < m_nPolygons; j++)
+	{
+		int nVerts = m_ppPolygons[j]->m_nVertices;
+		CVertex* pVerts = m_ppPolygons[j]->m_pVertices;
+
+		std::vector<XMFLOAT3> projs(nVerts);
+		bool bSkip = false;
+		for (int v = 0; v < nVerts; v++)
+		{
+			projs[v] = CGraphicsPipeline::Project(pVerts[v].m_xmf3Position);
+			if (projs[v].z < 0.0f || projs[v].z > 1.0f)
+			{
+				bSkip = true;
+				break;
+			}
+		}
+		if (bSkip) continue;
+
+		std::vector<POINT> pts(nVerts);
+		for (int v = 0; v < nVerts; v++)
+		{
+			XMFLOAT3 screen = CGraphicsPipeline::ScreenTransform(projs[v]);
+			pts[v] = { (long)screen.x, (long)screen.y };
+		}
+
+		COLORREF color = RGB(15, 30, 15);
+		HBRUSH hBrush = CreateSolidBrush(color);
+		HBRUSH hOldBrush = (HBRUSH)SelectObject(hDCFrameBuffer, hBrush);
+		HPEN hOldPen = (HPEN)SelectObject(hDCFrameBuffer, GetStockObject(NULL_PEN));
+		::Polygon(hDCFrameBuffer, pts.data(), nVerts);
+		SelectObject(hDCFrameBuffer, hOldBrush);
+		SelectObject(hDCFrameBuffer, hOldPen);
+		DeleteObject(hBrush);
+	}
+}
 BOOL CMesh::RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDirection, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float* pfNearHitDistance)
 {
 	float fHitDistance;
@@ -695,4 +743,33 @@ CTankBarrelMesh::CTankBarrelMesh(float fLength, float fRadius) : CMesh(6)
 		XMFLOAT3(0.f, 0.f, zNear * 0.5f),
 		XMFLOAT3(hr, hr, fLength * 0.5f),
 		XMFLOAT4(0.f, 0.f, 0.f, 1.f));
+}
+
+
+CTerrainMesh::CTerrainMesh(float fWidth, float fDepth, int nSubX, int nSubZ)
+	: CMesh(nSubX* nSubZ)
+{
+	float hw = fWidth * 0.5f;
+	float hd = fDepth * 0.5f;
+	float cellW = fWidth / nSubX;
+	float cellD = fDepth / nSubZ;
+
+	int k = 0;
+	for (int i = 0; i < nSubZ; i++)
+	{
+		for (int j = 0; j < nSubX; j++)
+		{
+			float x0 = -hw + j * cellW;
+			float x1 = x0 + cellW;
+			float z0 = -hd + i * cellD;
+			float z1 = z0 + cellD;
+
+			CPolygon* pFace = new CPolygon(4);
+			pFace->SetVertex(0, CVertex(x0, 0.f, z0));
+			pFace->SetVertex(1, CVertex(x1, 0.f, z0));
+			pFace->SetVertex(2, CVertex(x1, 0.f, z1));
+			pFace->SetVertex(3, CVertex(x0, 0.f, z1));
+			SetPolygon(k++, pFace);
+		}
+	}
 }

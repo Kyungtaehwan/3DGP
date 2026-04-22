@@ -53,7 +53,7 @@ void CCamera::GenerateViewMatrix()
     // Look = 카메라 → 플레이어
     XMFLOAT3 vTarget = XMFLOAT3(
         pPos.x,
-        pPos.y + 20.f,   // 이 값을 올릴수록 탱크가 화면 아래로 내려감
+        pPos.y + 10.f, 
         pPos.z
     );
     m_xmf3Look = Vector3::Normalize(Vector3::Subtract(vTarget, m_xmf3Position));
@@ -61,6 +61,8 @@ void CCamera::GenerateViewMatrix()
     XMFLOAT3 worldUp = { 0.f, 1.f, 0.f };
     m_xmf3Right = Vector3::Normalize(Vector3::CrossProduct(worldUp, m_xmf3Look));
     m_xmf3Up = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Look, m_xmf3Right));
+
+
 
     // View 행렬 조립 (기존과 동일)
     m_xmf4x4View._11 = m_xmf3Right.x; m_xmf4x4View._12 = m_xmf3Up.x; m_xmf4x4View._13 = m_xmf3Look.x; m_xmf4x4View._14 = 0;

@@ -47,6 +47,9 @@
     <Filter Include="02.Object_Manager\GameObject\02_01.Player">
       <UniqueIdentifier>{b10c6d4e-0533-44f3-90dd-19389620f39e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.Object_Manager\Terrain">
+      <UniqueIdentifier>{e4b9f559-f1b4-459d-bd1b-48103b22bf5a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainApp.h">
@@ -107,6 +110,9 @@
     <ClInclude Include="Input_Manager.h">
       <Filter>05.Input_Manager</Filter>
     </ClInclude>
+    <ClInclude Include="Terrain.h">
+      <Filter>02.Object_Manager\Terrain</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainApp.cpp">
@@ -156,6 +162,9 @@
     </ClCompile>
     <ClCompile Include="Input_Manager.cpp">
       <Filter>05.Input_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>02.Object_Manager\Terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

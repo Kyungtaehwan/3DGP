@@ -51,6 +51,7 @@ public:
 
 	virtual void Render(HDC hDCFrameBuffer);
 	virtual void Render_Face(HDC hDCFrameBuffer);
+	void Render_Terrain_Face(HDC hDCFrameBuffer);
 	DWORD m_dwColor = RGB(0, 200, 80);  // Ãß°¡
 
 	BOOL RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDirection, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float* pfNearHitDistance);
@@ -109,4 +110,11 @@ public:
 	CTankBarrelMesh(float fLength = 8.0f, float fRadius = 0.6f);
 	virtual ~CTankBarrelMesh() {}
 
+};
+
+class CTerrainMesh : public CMesh
+{
+public:
+	CTerrainMesh(float fWidth, float fDepth, int nSubX, int nSubZ);
+	virtual ~CTerrainMesh() {}
 };

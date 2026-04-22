@@ -26,7 +26,7 @@ public:
     XMFLOAT4X4* GetViewProjectMatrix() { return &m_xmf4x4ViewProject; }
     CViewport* GetViewport() { return &m_Viewport; }
 private:
-    CPlayer* m_pPlayer = NULL;
+    CPlayer*    m_pPlayer = NULL;
     XMFLOAT3    m_xmf3Offset;
 
     XMFLOAT3    m_xmf3Position = XMFLOAT3(0, 0, 0);

@@ -60,10 +60,10 @@ private:
 
     // ── 이동 파라미터 ─────────────────────────────────────────
     XMFLOAT3 m_xmf3Velocity = { 0,0,0 };
-    float m_fMoveSpeed = 8.f;
-    float m_fMaxSpeed = 10.f;
-    float m_fFriction = 4.f;
-    float m_fRotSpeed = 60.f;
+    float m_fMoveSpeed = 0.5f;   // 가속도 0.5 m/s²
+    float m_fMaxSpeed = 15.f;   // 최대 15 m/s = 54 km/h
+    float m_fFriction = 8.f;    // 제동력 8 m/s²
+    float m_fRotSpeed = 30.f;   // 45 도/s
 
     // ── 차체 축 / 위치 ────────────────────────────────────────
     XMFLOAT3 m_xmf3Right = { 1,0,0 };
@@ -72,9 +72,20 @@ private:
     XMFLOAT3 m_xmf3Position = { 0,0,0 };
 
     // ── 메쉬 크기 상수 ────────────────────────────────────────
-    static constexpr float BODY_HH = 3.0f * 0.5f;
-    static constexpr float TURRET_HH = 2.5f * 0.5f;
-    static constexpr float TURRET_HD = 5.0f * 0.5f;
-    static constexpr float BARREL_LEN = 8.0f;
+    static constexpr float BODY_W = 4.f;
+    static constexpr float BODY_H = 2.4f;
+    static constexpr float BODY_D = 8.f;
+    static constexpr float BODY_HH = BODY_H * 0.5f;   // 1.2m
+
+    // 포탑: 3m x 1.5m x 3m
+    static constexpr float TURRET_W = 3.f;
+    static constexpr float TURRET_H = 1.5f;
+    static constexpr float TURRET_D = 3.f;
+    static constexpr float TURRET_HH = TURRET_H * 0.5f;  // 0.75m
+    static constexpr float TURRET_HD = TURRET_D * 0.5f;  // 1.5m
+
+    // 포신: 길이 5m, 반폭 0.2m
+    static constexpr float BARREL_LEN = 5.f;
+    static constexpr float BARREL_R = 0.2f;
 };
 

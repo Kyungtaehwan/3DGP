@@ -7,7 +7,7 @@
 #define OBJ_DEAD    1
 
 enum LEVEL_ID { LEVEL_MENU, LEVEL_GAMEPLAY, LEVEL_END };
-enum OBJ_ID {OBJ_PLAYER,OBJ_END};
+enum OBJ_ID {OBJ_TERRAIN,OBJ_PLAYER,OBJ_END};
 
 template<typename T>
 void Safe_Delete(T& Temp)

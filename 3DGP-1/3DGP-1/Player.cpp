@@ -8,9 +8,9 @@ CPlayer::~CPlayer() { Release(); }
 
 void CPlayer::Initialize()
 {
-    m_pBodyMesh = new CTankBodyMesh();    // 8 x 3 x 12
-    m_pTurretMesh = new CTankTurretMesh();  // 5 x 2.5 x 5
-    m_pBarrelMesh = new CTankBarrelMesh();  // 길이8, 반폭0.6
+    m_pBodyMesh   = new CTankBodyMesh(BODY_W, BODY_H, BODY_D);
+    m_pTurretMesh = new CTankTurretMesh(TURRET_W, TURRET_H, TURRET_D);
+    m_pBarrelMesh = new CTankBarrelMesh(BARREL_LEN, BARREL_R);
 
     // ── 초기 위치/방향 ─────────────────────────────────────────
     m_xmf3Position = XMFLOAT3(0.f, 0.f, 0.f);

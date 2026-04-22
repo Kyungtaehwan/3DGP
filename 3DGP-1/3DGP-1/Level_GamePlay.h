@@ -1,7 +1,8 @@
 #pragma once
 #include "Level.h"
-#include "Player.h"
-#include "Camera.h"
+
+class CPlayer;
+class CCamera;
 
 class CLevel_GamePlay : public CLevel
 {
@@ -16,6 +17,6 @@ public:
     virtual void Release() override;
 
 private:
-    CPlayer* m_pPlayer = nullptr;  // ← 추가
-    CCamera* m_pCamera = nullptr;  // ← 추가
+    CPlayer* m_pPlayer = nullptr; 
+    CCamera* m_pCamera = nullptr; 
 };

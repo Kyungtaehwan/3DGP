@@ -42,3 +42,4 @@ XMFLOAT3 CGraphicsPipeline::ScreenTransform(XMFLOAT3& xmf3Project)
 
 	return(f3Screen);
 }
+
