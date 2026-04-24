@@ -20,8 +20,11 @@ public:
     void GeneratePerspectiveProjectionMatrix(float fNear, float fFar, float fFOV);
     void GenerateViewMatrix(); // Update + View행렬계산 통합
     void GenerateViewMatrix_Fixed(); // 고정 카메라용
-
+    
     bool IsInFrustum(BoundingOrientedBox& obb);
+
+    XMFLOAT3 GetPosition() const { return m_xmf3Position; }
+    XMFLOAT3 GetLook() const { return m_xmf3Look; }
 
     XMFLOAT4X4* GetViewProjectMatrix() { return &m_xmf4x4ViewProject; }
     CViewport* GetViewport() { return &m_Viewport; }

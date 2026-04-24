@@ -1,6 +1,8 @@
 #pragma once
 #include "GameObject.h"
 
+class CCamera;
+
 class CObject_Manager
 {
 private:
@@ -33,11 +35,12 @@ public:
 		}
 
 	};
-
+	void		SetCamera(CCamera* pCamera) { m_pCamera = pCamera; }
 	void		DeleteID(OBJ_ID eID);
-
+	void		CheckCollisions();
 private:
 
+	CCamera* m_pCamera = nullptr;
 	std::list<CGameObject*>		m_ObjectList[OBJ_END];
 
 public:

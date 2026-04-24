@@ -58,12 +58,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
-            MainApp.m_Timer.Tick(60.0f);
+            MainApp.m_Timer.Tick(144.f);
             float dt = MainApp.m_Timer.GetTimeElapsed();
+
+            // FPS 타이틀 출력
+            TCHAR szFPS[32];
+            MainApp.m_Timer.GetFrameRate(szFPS, 32);
+            TCHAR szTitle[64];
+            _stprintf_s(szTitle, _T("Tank Game (FPS: %s"), szFPS);
+            SetWindowText(g_hWnd, szTitle);
+
             MainApp.Update(dt);
             MainApp.Late_Update(dt);
             MainApp.Render();
-            
         }
     }
 

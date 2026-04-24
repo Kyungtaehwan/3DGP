@@ -16,6 +16,10 @@ public:
     virtual void Render(HDC hDC) override;
     virtual void Release() override;
 
+
+private:
+    void Set_GameWorld();
+
 private:
     CPlayer* m_pPlayer = nullptr; 
     CCamera* m_pCamera = nullptr; 

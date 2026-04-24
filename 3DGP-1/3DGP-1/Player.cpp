@@ -2,6 +2,8 @@
 #include "Player.h"
 #include "GraphicsPipeline.h"
 #include "Input_Manager.h"
+#include "Object_Manager.h"
+#include "Bullet.h"
 
 CPlayer::CPlayer() {}
 CPlayer::~CPlayer() { Release(); }
@@ -13,10 +15,15 @@ void CPlayer::Initialize()
     m_pBarrelMesh = new CTankBarrelMesh(BARREL_LEN, BARREL_R);
 
     // ── 초기 위치/방향 ─────────────────────────────────────────
-    m_xmf3Position = XMFLOAT3(0.f, 0.f, 0.f);
+    m_xmf3Position = XMFLOAT3(0.f, BODY_HH, -150.f);  // y = 1.2f
     m_xmf3Right = XMFLOAT3(1.f, 0.f, 0.f);
     m_xmf3Up = XMFLOAT3(0.f, 1.f, 0.f);
     m_xmf3Look = XMFLOAT3(0.f, 0.f, 1.f);
+
+    m_xmLocalOBB = BoundingOrientedBox(
+        XMFLOAT3(0.f, 0.f, 0.f),  // 로컬 중심은 (0,0,0)
+        XMFLOAT3(BODY_W * 0.5f, BODY_HH, BODY_D * 0.5f),
+        XMFLOAT4(0.f, 0.f, 0.f, 1.f));
 
     OnUpdateTransform();
 
@@ -48,24 +55,23 @@ int CPlayer::Update(float dt)
     OnUpdateTransform();        // 차체 World 갱신
     UpdateTurretWorld();        // 포탑 World 갱신
     UpdateBarrelWorld();        // 포신 World 갱신
-    UpdateBoundingBox();
 
-    TCHAR szDebug[256];
-    _stprintf_s(szDebug, _T("Pos(%.1f,%.1f,%.1f)  TurYaw:%.1f  BarPitch:%.1f"),
-        m_xmf3Position.x, m_xmf3Position.y, m_xmf3Position.z,
-        m_fTurretYaw, m_fBarrelPitch);
-    SetWindowText(g_hWnd, szDebug);
 
     return OBJ_NOEVENT;
 }
 
-void CPlayer::Late_Update(float dt) {}
+void CPlayer::Late_Update(float dt) {
+
+    UpdateBoundingBox();
+
+}
 
 void CPlayer::Render(HDC hDC)
 {
     CGameObject::Render(hDC, &m_xmf4x4World, m_pBodyMesh, RGB(255, 0, 0));
     CGameObject::Render(hDC, &m_xmf4x4BarrelWorld, m_pBarrelMesh, RGB(0, 0, 255));
     CGameObject::Render(hDC, &m_xmf4x4TurretWorld, m_pTurretMesh, RGB(0, 255, 0));
+    RenderOBB(hDC);
 }
 
 void CPlayer::Release()
@@ -102,19 +108,27 @@ void CPlayer::Key_Input(float dt)
     int dx = pInput->GetMouseDX();
     int dy = pInput->GetMouseDY();
 
+    if (pInput->Key_Down(VK_LBUTTON))
+    {
+        CBullet* pBullet = new CBullet();
+        pBullet->Initialize();
+        pBullet->Fire(m_xmf3BarrelTip, m_xmf3BarrelDir, 80.f, true);
+        CObject_Manager::Get_Instance()->Add_Object(OBJ_PLAYER_BULLET, pBullet);
+    }
+
     if (dx != 0)
         m_fTurretYaw += dx * 0.15f;       // 좌우 → 포탑 Yaw
-
     if (dy != 0)
     {
-        m_fBarrelPitch += dy * 0.10f;     // 상하 → 포신 Pitch
-        // 각도 클램프 (-5 ~ 20도)
+        m_fBarrelPitch -= dy * 0.15f;  // ← + 를 - 로
         m_fBarrelPitch = max(m_fBarrelPitchMin, min(m_fBarrelPitchMax, m_fBarrelPitch));
     }
 }
 
 void CPlayer::Move(XMFLOAT3& vVel, float dt)
 {
+    m_xmf3PrevPosition = m_xmf3Position;
+
     m_xmf3Position.x += vVel.x * dt;
     m_xmf3Position.y += vVel.y * dt;
     m_xmf3Position.z += vVel.z * dt;
@@ -188,22 +202,20 @@ void CPlayer::UpdateBarrelWorld()
 {
     XMMATRIX mBarrelLocal =
         XMMatrixRotationX(XMConvertToRadians(-m_fBarrelPitch)) *
-        XMMatrixTranslation(0.f, 0.f, -TURRET_HD);
+        XMMatrixTranslation(0.f, 0.f, +TURRET_HD);  // 포탑 앞면(+Z)에 배치
 
     XMMATRIX mTurretWorld = XMLoadFloat4x4(&m_xmf4x4TurretWorld);
     XMMATRIX mBarrelWorld = mBarrelLocal * mTurretWorld;
 
     XMStoreFloat4x4(&m_xmf4x4BarrelWorld, mBarrelWorld);
 
-    // ── 포신 끝 월드 위치 계산 (총알 발사 기준) ──────────────
-    // 포신 메쉬의 끝은 로컬 (0, 0, -BARREL_LEN)
+    // 포신 끝 = +Z 방향으로 BARREL_LEN 만큼
     XMVECTOR vTip = XMVector3TransformCoord(
-        XMVectorSet(0.f, 0.f, -BARREL_LEN, 1.f), mBarrelWorld);
+        XMVectorSet(0.f, 0.f, +BARREL_LEN, 1.f), mBarrelWorld);
     XMStoreFloat3(&m_xmf3BarrelTip, vTip);
 
-    // 포신이 바라보는 방향 = 포신 World의 -Z 열
     XMVECTOR vDir = XMVector3TransformNormal(
-        XMVectorSet(0.f, 0.f, -1.f, 0.f), mBarrelWorld);
+        XMVectorSet(0.f, 0.f, +1.f, 0.f), mBarrelWorld);
     vDir = XMVector3Normalize(vDir);
     XMStoreFloat3(&m_xmf3BarrelDir, vDir);
 }

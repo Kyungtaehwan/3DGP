@@ -51,12 +51,15 @@ public:
 
 	virtual void Render(HDC hDCFrameBuffer);
 	virtual void Render_Face(HDC hDCFrameBuffer);
-	void Render_Terrain_Face(HDC hDCFrameBuffer);
+	void		Render_Outline(HDC hDCFrameBuffer);
+	void		Render_Terrain_Face(HDC hDCFrameBuffer);
 	DWORD m_dwColor = RGB(0, 200, 80);  // Ãß°¡
 
 	BOOL RayIntersectionByTriangle(XMVECTOR& xmRayOrigin, XMVECTOR& xmRayDirection, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float* pfNearHitDistance);
 	int CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, float* pfNearHitDistance);
 };
+
+void Draw2DLine(HDC hDCFrameBuffer, XMFLOAT3& f3PreviousProject, XMFLOAT3& f3CurrentProject);
 
 class CCubeMesh : public CMesh
 {

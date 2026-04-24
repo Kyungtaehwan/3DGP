@@ -50,6 +50,15 @@
     <Filter Include="02.Object_Manager\Terrain">
       <UniqueIdentifier>{e4b9f559-f1b4-459d-bd1b-48103b22bf5a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.Object_Manager\GameObject\02_02.Boss">
+      <UniqueIdentifier>{0831e734-4ba3-42f9-9e53-6494836c8a0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager\GameObject\02_03.Bullet">
+      <UniqueIdentifier>{75df451f-93c5-4ef9-846b-c9b437a1a9f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager\GameObject\02_04.Wall">
+      <UniqueIdentifier>{a0de0877-49c9-4c34-9b57-ab60732ac90e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainApp.h">
@@ -113,6 +122,15 @@
     <ClInclude Include="Terrain.h">
       <Filter>02.Object_Manager\Terrain</Filter>
     </ClInclude>
+    <ClInclude Include="BossMonster.h">
+      <Filter>02.Object_Manager\GameObject\02_02.Boss</Filter>
+    </ClInclude>
+    <ClInclude Include="Bullet.h">
+      <Filter>02.Object_Manager\GameObject\02_03.Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="Wall.h">
+      <Filter>02.Object_Manager\GameObject\02_04.Wall</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainApp.cpp">
@@ -165,6 +183,15 @@
     </ClCompile>
     <ClCompile Include="Terrain.cpp">
       <Filter>02.Object_Manager\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="BossMonster.cpp">
+      <Filter>02.Object_Manager\GameObject\02_02.Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="Bullet.cpp">
+      <Filter>02.Object_Manager\GameObject\02_03.Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="Wall.cpp">
+      <Filter>02.Object_Manager\GameObject\02_04.Wall</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

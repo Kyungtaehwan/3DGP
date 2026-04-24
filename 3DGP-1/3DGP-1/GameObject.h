@@ -18,10 +18,31 @@ public:
 	CMesh* m_pMesh = NULL;
 	XMFLOAT4X4   m_xmf4x4World = Matrix4x4::Identity();
 	BoundingOrientedBox m_xmOOBB = BoundingOrientedBox();
-	bool         m_bActive = true;
+	BoundingOrientedBox m_xmLocalOBB = BoundingOrientedBox();
+
+public:
+	virtual void OnHit(int nDamage)
+	{
+		m_iHP -= nDamage;
+		if (m_iHP <= 0)
+		{
+			m_iHP = 0;
+		}
+	}
+	bool IsDead() const { return m_bDead; }
+	int  GetHP()  const { return m_iHP; }
+
+
+	bool				m_bActive = true;
+	bool                m_bDead = false;
+	static bool			s_bShowOBB;
 
 protected:
+	int                 m_iMaxHP;
+	int                 m_iHP;
 	void UpdateBoundingBox();
+	void RenderOBB(HDC hDC);
 	void Render(HDC hDC, XMFLOAT4X4* pWorld, CMesh* pMesh, DWORD dwColor = RGB(255, 255, 255));
+
 
 };
