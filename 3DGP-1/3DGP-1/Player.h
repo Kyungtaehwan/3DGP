@@ -30,6 +30,7 @@ public:
     XMFLOAT3        GetBarrelTipWorld()  const { return m_xmf3BarrelTip; }
     XMFLOAT3        GetBarrelDirection() const { return m_xmf3BarrelDir; }
 
+    XMFLOAT3 m_xmf3RespawnPos = { 0.f, BODY_HH, -150.f };
     void SetVelocityZero() { m_xmf3Velocity = { 0.f, 0.f, 0.f }; }
     void RollbackPosition() { m_xmf3Position = m_xmf3PrevPosition; }
     void ReflectVelocity(XMFLOAT3 vNormal)
@@ -52,7 +53,21 @@ private:
     void            OnUpdateTransform();
     void            UpdateTurretWorld();
     void            UpdateBarrelWorld();
+    void            Respawn()
+    {
+        m_xmf3Position = m_xmf3RespawnPos;
+        m_xmf3Velocity = { 0.f, 0.f, 0.f };
+        m_fTurretYaw = 0.f;
+        m_fBarrelPitch = 0.f;
+        m_xmf3Right = { 1.f, 0.f, 0.f };
+        m_xmf3Up = { 0.f, 1.f, 0.f };
+        m_xmf3Look = { 0.f, 0.f, 1.f };
+        OnUpdateTransform();
+    }
 
+    bool IsDying() const { return m_bDead; }
+
+private:
 private:
     // 式式 詭蓮 式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式式
     CMesh* m_pBodyMesh = nullptr;

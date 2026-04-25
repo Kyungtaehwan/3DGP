@@ -13,7 +13,6 @@ void CPlayer::Initialize()
     m_pBodyMesh   = new CTankBodyMesh(BODY_W, BODY_H, BODY_D);
     m_pTurretMesh = new CTankTurretMesh(TURRET_W, TURRET_H, TURRET_D);
     m_pBarrelMesh = new CTankBarrelMesh(BARREL_LEN, BARREL_R);
-
     // ── 초기 위치/방향 ─────────────────────────────────────────
     m_xmf3Position = XMFLOAT3(0.f, BODY_HH, -150.f);  // y = 1.2f
     m_xmf3Right = XMFLOAT3(1.f, 0.f, 0.f);
@@ -26,12 +25,15 @@ void CPlayer::Initialize()
         XMFLOAT4(0.f, 0.f, 0.f, 1.f));
 
     OnUpdateTransform();
-
+    m_iMaxHP = 100;
+    m_iHP = m_iMaxHP;
 
 }
 
 int CPlayer::Update(float dt)
 {
+    if (m_bDead) return OBJ_NOEVENT;
+
     Key_Input(dt);
 
     // 속도 제한
@@ -52,6 +54,14 @@ int CPlayer::Update(float dt)
     }
 
     Move(m_xmf3Velocity, dt);
+
+    const float TERRAIN_HALF = 245.f;
+    if (m_xmf3Position.x < -TERRAIN_HALF || m_xmf3Position.x > TERRAIN_HALF ||
+        m_xmf3Position.z < -TERRAIN_HALF || m_xmf3Position.z > TERRAIN_HALF)
+    {
+        Respawn();
+    }
+
     OnUpdateTransform();        // 차체 World 갱신
     UpdateTurretWorld();        // 포탑 World 갱신
     UpdateBarrelWorld();        // 포신 World 갱신
@@ -68,9 +78,19 @@ void CPlayer::Late_Update(float dt) {
 
 void CPlayer::Render(HDC hDC)
 {
-    CGameObject::Render(hDC, &m_xmf4x4World, m_pBodyMesh, RGB(255, 0, 0));
-    CGameObject::Render(hDC, &m_xmf4x4BarrelWorld, m_pBarrelMesh, RGB(0, 0, 255));
-    CGameObject::Render(hDC, &m_xmf4x4TurretWorld, m_pTurretMesh, RGB(0, 255, 0));
+    if (m_bDead)
+    {
+        // 어두운 색으로
+        CGameObject::Render(hDC, &m_xmf4x4World, m_pBodyMesh, RGB(60, 0, 0));
+        CGameObject::Render(hDC, &m_xmf4x4BarrelWorld, m_pBarrelMesh, RGB(20, 20, 20));
+        CGameObject::Render(hDC, &m_xmf4x4TurretWorld, m_pTurretMesh, RGB(40, 0, 0));
+    }
+    else
+    {
+        CGameObject::Render(hDC, &m_xmf4x4World, m_pBodyMesh, RGB(255, 0, 0));
+        CGameObject::Render(hDC, &m_xmf4x4BarrelWorld, m_pBarrelMesh, RGB(0, 0, 255));
+        CGameObject::Render(hDC, &m_xmf4x4TurretWorld, m_pTurretMesh, RGB(0, 255, 0));
+    }
     RenderOBB(hDC);
 }
 
@@ -84,6 +104,9 @@ void CPlayer::Release()
 void CPlayer::Key_Input(float dt)
 {
     auto* pInput = CInput_Manager::Get_Instance();
+   
+    if (pInput->Key_Down('R'))
+        Respawn();
 
     // 전진 / 후진
     if (pInput->Key_Pressing('W'))
@@ -112,7 +135,7 @@ void CPlayer::Key_Input(float dt)
     {
         CBullet* pBullet = new CBullet();
         pBullet->Initialize();
-        pBullet->Fire(m_xmf3BarrelTip, m_xmf3BarrelDir, 80.f, true);
+        pBullet->Fire(m_xmf3BarrelTip, m_xmf3BarrelDir, 200.f, true);
         CObject_Manager::Get_Instance()->Add_Object(OBJ_PLAYER_BULLET, pBullet);
     }
 

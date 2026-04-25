@@ -23,6 +23,7 @@ public:
     void            SetBlowingUp() {
     
         m_bBlowingUp = true;
+        m_bActive = false;
     };
 
 

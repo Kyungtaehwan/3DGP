@@ -16,9 +16,6 @@ public:
 
     void            SetPlayer(CPlayer* pPlayer) { m_pPlayer = pPlayer; }
     XMFLOAT3        GetPosition() const { return m_xmf3Position; }
-    XMFLOAT3        GetLeftExhaustTip()  const { return m_xmf3LeftExhaustTip; }
-    XMFLOAT3        GetRightExhaustTip() const { return m_xmf3RightExhaustTip; }
-    XMFLOAT3        GetExhaustDir()      const { return XMFLOAT3(0.f, 1.f, 0.f); }
 
 private:
     void            UpdateBodyWorld();
@@ -54,6 +51,14 @@ private:
 
     XMFLOAT3 m_xmf3LeftExhaustTip = { 0,0,0 };
     XMFLOAT3 m_xmf3RightExhaustTip = { 0,0,0 };
+
+    // 공격 타이머
+    float m_fMissileTimer = 0.f;
+    float m_fMissileInterval = 4.f;
+    float m_fBulletTimer = 0.f;
+    float m_fBulletInterval = 1.5f;
+    int   m_nMissileCount = 0;
+    float m_fMissileDelay = 0.f;
 
     static constexpr float BODY_W = 25.f;
     static constexpr float BODY_H = 40.f;

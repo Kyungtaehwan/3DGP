@@ -20,12 +20,13 @@ public:
     bool    Key_Down(int _iKey);
     bool    Key_Up(int _iKey);
 
-    // 마우스 델타 (픽셀)
     int     GetMouseDX() const { return m_iMouseDX; }
     int     GetMouseDY() const { return m_iMouseDY; }
 
     void    SetMouseLock(bool bLock) { m_bMouseLock = bLock; }
     bool    GetMouseLock() const { return m_bMouseLock; }
+    POINT   GetMousePos() const { return m_ptMouse; }
+
 
 private:
     CInput_Manager();
@@ -34,7 +35,7 @@ private:
     static CInput_Manager* m_pInstance;
 
     bool    m_bKeyState[256];
-
+    POINT   m_ptMouse = {};
     int     m_iMouseDX = 0;
     int     m_iMouseDY = 0;
     bool    m_bMouseLock = true;   // 기본적으로 마우스 중앙 고정

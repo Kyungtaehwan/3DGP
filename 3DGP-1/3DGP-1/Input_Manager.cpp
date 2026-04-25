@@ -13,7 +13,8 @@ CInput_Manager::~CInput_Manager() {}
 
 void CInput_Manager::Update()
 {
-    // 필요시 프레임 단위 처리 추가
+    GetCursorPos(&m_ptMouse);
+    ScreenToClient(g_hWnd, &m_ptMouse);
 }
 
 // ─────────────────────────────────────────────────────────────

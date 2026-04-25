@@ -29,9 +29,6 @@
     <Filter Include="01.Level_Manager\Levels">
       <UniqueIdentifier>{c040b6fb-b39e-439f-bd79-9667c3fae000}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Level_Manager\Levels\01_01.Level_GamePlay">
-      <UniqueIdentifier>{e9ff6c86-ae4e-46a7-92bb-232a29dc01a6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="06.Timer">
       <UniqueIdentifier>{24e3358f-09f4-4b14-9f2f-852e96e96aad}</UniqueIdentifier>
     </Filter>
@@ -58,6 +55,21 @@
     </Filter>
     <Filter Include="02.Object_Manager\GameObject\02_04.Wall">
       <UniqueIdentifier>{a0de0877-49c9-4c34-9b57-ab60732ac90e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="07.UI_Manager">
+      <UniqueIdentifier>{3a6ee4d8-c2c1-43f1-bbd8-ec557d80689f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Level_Manager\Levels\01_02.Level_GamePlay">
+      <UniqueIdentifier>{e9ff6c86-ae4e-46a7-92bb-232a29dc01a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Level_Manager\Levels\01_03.Level_GameEnd">
+      <UniqueIdentifier>{65e301f3-9aee-47ab-9236-a74624ebca4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Level_Manager\Levels\01_01.Level_Menu">
+      <UniqueIdentifier>{a63bc7e7-94f1-4330-b5f1-96118bd9fbea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="08.Etc">
+      <UniqueIdentifier>{75fef75b-8172-4753-add5-60c5d0d8db33}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -86,7 +98,7 @@
       <Filter>01.Level_Manager\Levels</Filter>
     </ClInclude>
     <ClInclude Include="Level_GamePlay.h">
-      <Filter>01.Level_Manager\Levels\01_01.Level_GamePlay</Filter>
+      <Filter>01.Level_Manager\Levels\01_02.Level_GamePlay</Filter>
     </ClInclude>
     <ClInclude Include="Bmp_Manager.h">
       <Filter>03.Bmp_Manager</Filter>
@@ -125,11 +137,26 @@
     <ClInclude Include="BossMonster.h">
       <Filter>02.Object_Manager\GameObject\02_02.Boss</Filter>
     </ClInclude>
+    <ClInclude Include="Wall.h">
+      <Filter>02.Object_Manager\GameObject\02_04.Wall</Filter>
+    </ClInclude>
     <ClInclude Include="Bullet.h">
       <Filter>02.Object_Manager\GameObject\02_03.Bullet</Filter>
     </ClInclude>
-    <ClInclude Include="Wall.h">
-      <Filter>02.Object_Manager\GameObject\02_04.Wall</Filter>
+    <ClInclude Include="UI_Manager.h">
+      <Filter>07.UI_Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Level_Menu.h">
+      <Filter>01.Level_Manager\Levels\01_01.Level_Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="Level_Win.h">
+      <Filter>01.Level_Manager\Levels\01_03.Level_GameEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="Level_Lose.h">
+      <Filter>01.Level_Manager\Levels\01_03.Level_GameEnd</Filter>
+    </ClInclude>
+    <ClInclude Include="Button.h">
+      <Filter>08.Etc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -149,7 +176,7 @@
       <Filter>01.Level_Manager\Levels</Filter>
     </ClCompile>
     <ClCompile Include="Level_GamePlay.cpp">
-      <Filter>01.Level_Manager\Levels\01_01.Level_GamePlay</Filter>
+      <Filter>01.Level_Manager\Levels\01_02.Level_GamePlay</Filter>
     </ClCompile>
     <ClCompile Include="Bmp_Manager.cpp">
       <Filter>03.Bmp_Manager</Filter>
@@ -187,11 +214,26 @@
     <ClCompile Include="BossMonster.cpp">
       <Filter>02.Object_Manager\GameObject\02_02.Boss</Filter>
     </ClCompile>
+    <ClCompile Include="Wall.cpp">
+      <Filter>02.Object_Manager\GameObject\02_04.Wall</Filter>
+    </ClCompile>
     <ClCompile Include="Bullet.cpp">
       <Filter>02.Object_Manager\GameObject\02_03.Bullet</Filter>
     </ClCompile>
-    <ClCompile Include="Wall.cpp">
-      <Filter>02.Object_Manager\GameObject\02_04.Wall</Filter>
+    <ClCompile Include="UI_Manager.cpp">
+      <Filter>07.UI_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_Menu.cpp">
+      <Filter>01.Level_Manager\Levels\01_01.Level_Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_Win.cpp">
+      <Filter>01.Level_Manager\Levels\01_03.Level_GameEnd</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_Lose.cpp">
+      <Filter>01.Level_Manager\Levels\01_03.Level_GameEnd</Filter>
+    </ClCompile>
+    <ClCompile Include="Button.cpp">
+      <Filter>08.Etc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

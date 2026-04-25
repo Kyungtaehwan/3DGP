@@ -23,14 +23,26 @@ void CLevel_Manager::Level_Change(LEVEL_ID eID)
 
 
 		case LEVEL_MENU:
-			//m_pLevel = new CLevel_Menu;
+			m_pLevel = new CLevel_Menu;
 			break;
 
 		case LEVEL_GAMEPLAY:
 			m_pLevel = new CLevel_GamePlay;
 			break;
-		}
 
+		case LEVEL_WIN:
+			m_pLevel = new CLevel_Win;
+			break;
+
+		case LEVEL_LOSE:
+			m_pLevel = new CLevel_Lose;
+			break;
+
+		default:
+			break;
+
+
+		}
 
 		m_pLevel->Initialize();
 		m_ePreLevel = m_eCurLevel;

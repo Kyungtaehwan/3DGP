@@ -1,6 +1,9 @@
 #pragma once
 #include "define.h"
 #include "Level_GamePlay.h"
+#include "Level_Menu.h"
+#include "Level_Lose.h"
+#include "Level_Win.h"
 
 class CLevel_Manager
 {

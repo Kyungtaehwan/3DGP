@@ -1,8 +1,11 @@
 #include "stdafx.h"
 #include "Level_GamePlay.h"
 #include "Object_Manager.h"
-#include "GraphicsPipeline.h"
+#include "Level_Manager.h"
+#include "UI_Manager.h"
 #include "Bmp_Manager.h"
+#include "Input_Manager.h"
+#include "GraphicsPipeline.h"
 #include "Player.h"
 #include "Camera.h"
 #include "Terrain.h"
@@ -17,7 +20,7 @@ void CLevel_GamePlay::Initialize()
 {
 
     CBmp_Manager::Get_Instance()->Insert_Bmp(L"../Resource/BackGround.bmp", L"Back");
-    
+    CInput_Manager::Get_Instance()->SetMouseLock(true);
     
     CTerrain* m_pTerrain = new CTerrain();
     m_pTerrain->Initialize();
@@ -35,12 +38,33 @@ void CLevel_GamePlay::Initialize()
     m_pCamera->GenerateViewMatrix(); // 초기 뷰 행렬
     CObject_Manager::Get_Instance()->SetCamera(m_pCamera);
     CBullet::PrepareExplosion();
+
     Set_GameWorld();
 }
 
 int CLevel_GamePlay::Update(float dt)
 {
     CObject_Manager::Get_Instance()->Update(dt);
+    if (!m_bDeathDetected)
+    {
+        auto Boss = CObject_Manager::Get_Instance()->Get_List(OBJ_BOSS)->front();
+        auto Player = CObject_Manager::Get_Instance()->Get_Player();
+
+        bool BossDead = Boss->IsDead();
+        bool PlayerDead = Player->IsDead();
+
+        if (BossDead || PlayerDead)
+            m_bDeathDetected = true;
+    }
+
+    if (m_bDeathDetected)
+    {
+        m_fDeathTimer += dt;
+        if (m_fDeathTimer >= m_fDeathDelay)
+        {   
+            CLevel_Manager::Get_Instance()->Level_Change(LEVEL_WIN);
+        }
+    }
     return 0;
 }
 
@@ -52,17 +76,27 @@ void CLevel_GamePlay::Late_Update(float dt)
 
 void CLevel_GamePlay::Render(HDC hDC)
 {
-    // 파이프라인에 카메라 행렬 세팅
     CGraphicsPipeline::SetViewPerspectiveProjectTransform(m_pCamera->GetViewProjectMatrix());
     CGraphicsPipeline::SetViewport(m_pCamera->GetViewport());
 
     HDC	hMemDC = CBmp_Manager::Get_Instance()->Find_Img(L"Back");
     BitBlt(hDC, 0, 0, WINCX, WINCY, hMemDC, 0, 0, SRCCOPY);
     CObject_Manager::Get_Instance()->Render(hDC);
+
+    auto Boss = CObject_Manager::Get_Instance()->Get_List(OBJ_BOSS)->front();
+    auto Player = CObject_Manager::Get_Instance()->Get_Player();
+
+    int nBossHP = Boss->GetHP();
+    int nBossMaxHP = Boss->GetMaxHp();
+    int nPlayerHP = Player->GetHP();
+    int nPlayerMaxHP = Player->GetMaxHp();
+
+    CUI_Manager::Get_Instance()->Render(hDC, nPlayerHP, nPlayerMaxHP, nBossHP, nBossMaxHP);
 }
 
 void CLevel_GamePlay::Release()
 {
+    CInput_Manager::Get_Instance()->SetMouseLock(false);
     CBullet::ReleaseExplosion();
     if (m_pCamera) { delete m_pCamera; m_pCamera = nullptr; }
     CObject_Manager::Get_Instance()->Release();

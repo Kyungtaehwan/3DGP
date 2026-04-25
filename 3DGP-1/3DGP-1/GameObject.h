@@ -27,11 +27,12 @@ public:
 		if (m_iHP <= 0)
 		{
 			m_iHP = 0;
+			m_bDead = true;
 		}
 	}
 	bool IsDead() const { return m_bDead; }
 	int  GetHP()  const { return m_iHP; }
-
+	int	 GetMaxHp() { return m_iMaxHP; }
 
 	bool				m_bActive = true;
 	bool                m_bDead = false;

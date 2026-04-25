@@ -64,7 +64,7 @@ void CBullet::Fire(XMFLOAT3 vPos, XMFLOAT3 vDir, float fSpeed, bool bGravity)
 
 int CBullet::Update(float dt)
 {
-    if (!m_bActive) return OBJ_NOEVENT;
+    if (!m_bActive && !m_bBlowingUp) return OBJ_NOEVENT;
 
     if (m_bBlowingUp)
     {
@@ -139,7 +139,7 @@ void CBullet::Late_Update(float dt) {
 
 void CBullet::Render(HDC hDC)
 {
-    if (!m_bActive) return;
+    if (!m_bActive && !m_bBlowingUp) return;
 
     if (m_bBlowingUp)
     {
