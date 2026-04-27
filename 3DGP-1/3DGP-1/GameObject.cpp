@@ -13,8 +13,7 @@ CGameObject::~CGameObject()
 
 void CGameObject::UpdateBoundingBox()
 {
-    // m_xmLocalOBB가 세팅되어 있으면 그걸 사용
-    // 없으면 기존처럼 메시에서 가져옴
+
     BoundingOrientedBox& localOBB =
         (m_xmLocalOBB.Extents.x > 0.f) ? m_xmLocalOBB :
         (m_pMesh ? m_pMesh->m_xmOOBB : m_xmLocalOBB);
@@ -42,12 +41,10 @@ void CGameObject::RenderOBB(HDC hDC)
 {
     if (!s_bShowOBB) return;
 
-    // OBB 8개 꼭짓점 계산
     XMFLOAT3 corners[8];
-    m_xmOOBB.GetCorners(corners);  // DirectXCollision 내장 함수
+    m_xmOOBB.GetCorners(corners);
 
-    // 꼭짓점을 프로젝션 후 스크린 변환
-    // World 행렬은 Identity (OBB가 이미 월드 공간에 있음)
+
     XMFLOAT4X4 identity = Matrix4x4::Identity();
     CGraphicsPipeline::SetWorldTransform(&identity);
 
@@ -59,11 +56,10 @@ void CGameObject::RenderOBB(HDC hDC)
         valid[i] = (proj[i].z >= 0.f && proj[i].z <= 1.f);
     }
 
-    HPEN hPen = ::CreatePen(PS_SOLID, 1, RGB(0, 255, 0));  // 초록색
+    HPEN hPen = ::CreatePen(PS_SOLID, 1, RGB(0, 255, 0));
     HPEN hOldPen = (HPEN)::SelectObject(hDC, hPen);
 
-    // OBB 12개 엣지 그리기
-    // 앞면 4개
+
     auto DrawEdge = [&](int a, int b) {
         if (valid[a] && valid[b])
             Draw2DLine(hDC, proj[a], proj[b]);

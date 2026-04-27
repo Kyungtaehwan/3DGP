@@ -18,10 +18,11 @@ public:
 
 
 private:
-    void Set_GameWorld();
-    float m_fDeathTimer = 0.f;
-    float m_fDeathDelay = 3.f;  // 3초 뒤 레벨 전환
-    bool  m_bDeathDetected = false;
+    void    Set_GameWorld();
+    bool    m_bPlayerDead = false;
+    float   m_fDeathTimer = 0.f;
+    float   m_fDeathDelay = 3.f;
+    bool    m_bDeathDetected = false;
 private:
     CPlayer* m_pPlayer = nullptr; 
     CCamera* m_pCamera = nullptr; 

@@ -1,6 +1,6 @@
 #pragma once
 #include "Level.h"
-
+#include "Button.h"
 class CLevel_Win : public CLevel
 {
 public:
@@ -12,4 +12,7 @@ public:
     virtual void Late_Update(float dt) override;
     virtual void Render(HDC hDC) override;
     virtual void Release() override;
+
+private:
+    CButton m_btnMenu;
 };

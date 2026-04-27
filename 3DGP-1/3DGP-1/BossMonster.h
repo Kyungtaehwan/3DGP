@@ -52,7 +52,6 @@ private:
     XMFLOAT3 m_xmf3LeftExhaustTip = { 0,0,0 };
     XMFLOAT3 m_xmf3RightExhaustTip = { 0,0,0 };
 
-    // 공격 타이머
     float m_fMissileTimer = 0.f;
     float m_fMissileInterval = 4.f;
     float m_fBulletTimer = 0.f;

@@ -136,7 +136,7 @@ void CObject_Manager::DeleteID(OBJ_ID eID)
 
 void CObject_Manager::CheckCollisions()
 {
-    // 플레이어 총알 vs 보스
+    // 플레이어 총알  보스
     for (auto& pBullet : m_ObjectList[OBJ_PLAYER_BULLET])
     {
         if (!pBullet || !pBullet->m_bActive) continue;
@@ -151,7 +151,7 @@ void CObject_Manager::CheckCollisions()
         }
     }
 
-    // 보스 총알 vs 플레이어
+    // 보스 총알  플레이어
     for (auto& pBullet : m_ObjectList[OBJ_BOSS_BULLET])
     {
         if (!pBullet || !pBullet->m_bActive) continue;
@@ -166,7 +166,7 @@ void CObject_Manager::CheckCollisions()
         }
     }
 
-    // 플레이어 총알 vs 벽
+    // 플레이어 총알 벽
     for (auto& pBullet : m_ObjectList[OBJ_PLAYER_BULLET])
     {
         if (!pBullet || !pBullet->m_bActive) continue;
@@ -181,7 +181,7 @@ void CObject_Manager::CheckCollisions()
         }
     }
 
-    // 보스 총알 vs 벽
+    // 보스 총알 벽
     for (auto& pBullet : m_ObjectList[OBJ_BOSS_BULLET])
     {
         if (!pBullet || !pBullet->m_bActive) continue;
@@ -196,7 +196,7 @@ void CObject_Manager::CheckCollisions()
         }
     }
 
-    // 플레이어 vs 벽
+    // 플레이어  벽
     for (auto& pPlayer : m_ObjectList[OBJ_PLAYER])
     {
         if (!pPlayer) continue;
@@ -219,7 +219,6 @@ void CObject_Manager::CheckCollisions()
                     0.f,
                     playerPos.z - wallPos.z
                 };
-                // 정규화
                 float len = sqrtf(normal.x * normal.x + normal.z * normal.z);
                 if (len > 0.f)
                 {

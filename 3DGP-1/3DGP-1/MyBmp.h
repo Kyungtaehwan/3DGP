@@ -11,7 +11,7 @@ public:
 	HDC			Get_MemDC() { return m_hMemDC; }
 	void		Load_Bmp(const TCHAR* pFilePath);
 	void		Release();
-
+	HBITMAP Get_Bitmap() { return m_hBitmap; }
 private:
 	HDC			m_hMemDC;
 

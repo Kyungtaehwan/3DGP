@@ -18,8 +18,8 @@ public:
 public:
     void SetViewport(int l, int t, int w, int h);
     void GeneratePerspectiveProjectionMatrix(float fNear, float fFar, float fFOV);
-    void GenerateViewMatrix(); // Update + View행렬계산 통합
-    void GenerateViewMatrix_Fixed(); // 고정 카메라용
+    void GenerateViewMatrix(); 
+    void GenerateViewMatrix_Fixed(); 
     
     bool IsInFrustum(BoundingOrientedBox& obb);
 

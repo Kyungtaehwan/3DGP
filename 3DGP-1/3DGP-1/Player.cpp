@@ -13,14 +13,13 @@ void CPlayer::Initialize()
     m_pBodyMesh   = new CTankBodyMesh(BODY_W, BODY_H, BODY_D);
     m_pTurretMesh = new CTankTurretMesh(TURRET_W, TURRET_H, TURRET_D);
     m_pBarrelMesh = new CTankBarrelMesh(BARREL_LEN, BARREL_R);
-    // ── 초기 위치/방향 ─────────────────────────────────────────
-    m_xmf3Position = XMFLOAT3(0.f, BODY_HH, -150.f);  // y = 1.2f
+    m_xmf3Position = XMFLOAT3(0.f, BODY_HH, -150.f); 
     m_xmf3Right = XMFLOAT3(1.f, 0.f, 0.f);
     m_xmf3Up = XMFLOAT3(0.f, 1.f, 0.f);
     m_xmf3Look = XMFLOAT3(0.f, 0.f, 1.f);
 
     m_xmLocalOBB = BoundingOrientedBox(
-        XMFLOAT3(0.f, 0.f, 0.f),  // 로컬 중심은 (0,0,0)
+        XMFLOAT3(0.f, 0.f, 0.f), 
         XMFLOAT3(BODY_W * 0.5f, BODY_HH, BODY_D * 0.5f),
         XMFLOAT4(0.f, 0.f, 0.f, 1.f));
 
@@ -123,8 +122,6 @@ void CPlayer::Key_Input(float dt)
         XMStoreFloat3(&m_xmf3Velocity,
             XMVectorSubtract(v, XMVectorScale(look, m_fMoveSpeed)));
     }
-
-    // 차체 좌/우 회전
     if (pInput->Key_Pressing('A')) Rotate(0.f, -m_fRotSpeed * dt, 0.f);
     if (pInput->Key_Pressing('D')) Rotate(0.f, +m_fRotSpeed * dt, 0.f);
 
@@ -140,10 +137,10 @@ void CPlayer::Key_Input(float dt)
     }
 
     if (dx != 0)
-        m_fTurretYaw += dx * 0.15f;       // 좌우 → 포탑 Yaw
+        m_fTurretYaw += dx * 0.15f;       // 포탑 Yaw
     if (dy != 0)
     {
-        m_fBarrelPitch -= dy * 0.15f;  // ← + 를 - 로
+        m_fBarrelPitch -= dy * 0.15f;  
         m_fBarrelPitch = max(m_fBarrelPitchMin, min(m_fBarrelPitchMax, m_fBarrelPitch));
     }
 }
@@ -166,7 +163,6 @@ void CPlayer::Rotate(float fPitch, float fYaw, float fRoll)
         m_xmf3Right = Vector3::TransformNormal(m_xmf3Right, R);
         m_xmf3Look = Vector3::TransformNormal(m_xmf3Look, R);
 
-        // 차체가 회전한 만큼 포탑 Yaw에서 빼줘야 포탑이 월드 방향 유지
         m_fTurretYaw -= fYaw;
     }
 
@@ -188,13 +184,7 @@ void CPlayer::OnUpdateTransform()
 }
 
 
-// ─────────────────────────────────────────────────────────────
-//  포탑 World = 포탑 로컬 * 차체 World
-//
-//  포탑 로컬:
-//    1. 포탑 Yaw 회전 (Y축)
-//    2. 차체 top 위로 올리기 (Y 오프셋 = BODY_HH + TURRET_HH)
-// ─────────────────────────────────────────────────────────────
+
 void CPlayer::UpdateTurretWorld()
 {
     // 포탑 로컬 행렬: Y축 회전 후 차체 위로 이동
@@ -206,21 +196,14 @@ void CPlayer::UpdateTurretWorld()
     // → 차체 회전이 먼저 적용되고 그 위에서 포탑이 추가 회전
     XMMATRIX mBodyWorld = XMLoadFloat4x4(&m_xmf4x4World);
     XMMATRIX mTurretWorld =
-        XMMatrixTranslation(0.f, BODY_HH + TURRET_HH, 0.f) *   // 1. 차체 위로
-        XMMatrixRotationY(XMConvertToRadians(m_fTurretYaw)) *   // 2. 포탑 Yaw
-        mBodyWorld;                                              // 3. 차체 World 적용
+        XMMatrixTranslation(0.f, BODY_HH + TURRET_HH, 0.f) *   //  차체 위로
+        XMMatrixRotationY(XMConvertToRadians(m_fTurretYaw)) *   // 포탑 Yaw
+        mBodyWorld;                                              // 차체 World 적용
 
     XMStoreFloat4x4(&m_xmf4x4TurretWorld, mTurretWorld);
 }
 
-// ─────────────────────────────────────────────────────────────
-//  포신 World = 포신 로컬 * 포탑 World
-//
-//  포신 로컬:
-//    1. 포신 Pitch 회전 (X축)
-//    2. 포탑 앞면에서 시작 (Z 오프셋 = -TURRET_HD)
-//       포신 메쉬 자체가 -Z 방향으로 뻗으므로 추가 Z 이동 불필요
-// ─────────────────────────────────────────────────────────────
+
 void CPlayer::UpdateBarrelWorld()
 {
     XMMATRIX mBarrelLocal =
@@ -232,7 +215,6 @@ void CPlayer::UpdateBarrelWorld()
 
     XMStoreFloat4x4(&m_xmf4x4BarrelWorld, mBarrelWorld);
 
-    // 포신 끝 = +Z 방향으로 BARREL_LEN 만큼
     XMVECTOR vTip = XMVector3TransformCoord(
         XMVectorSet(0.f, 0.f, +BARREL_LEN, 1.f), mBarrelWorld);
     XMStoreFloat3(&m_xmf3BarrelTip, vTip);

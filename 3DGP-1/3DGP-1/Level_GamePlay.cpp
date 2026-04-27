@@ -12,6 +12,7 @@
 #include "BossMonster.h"
 #include "Bullet.h"
 #include "Wall.h"
+#include "GameObject.h"
 
 CLevel_GamePlay::CLevel_GamePlay() {}
 CLevel_GamePlay::~CLevel_GamePlay() { Release(); }
@@ -19,23 +20,22 @@ CLevel_GamePlay::~CLevel_GamePlay() { Release(); }
 void CLevel_GamePlay::Initialize()
 {
 
-    CBmp_Manager::Get_Instance()->Insert_Bmp(L"../Resource/BackGround.bmp", L"Back");
+    if (!CBmp_Manager::Get_Instance()->Insert_Bmp(L"../Resource/BackGround.bmp", L"Back"))
+        CBmp_Manager::Get_Instance()->Insert_Bmp(L"Resource/BackGround.bmp", L"Back");
     CInput_Manager::Get_Instance()->SetMouseLock(true);
     
     CTerrain* m_pTerrain = new CTerrain();
     m_pTerrain->Initialize();
     CObject_Manager::Get_Instance()->Add_Object(OBJ_TERRAIN, m_pTerrain);
     
-    // 플레이어 생성
     m_pPlayer = new CPlayer();
     m_pPlayer->Initialize();
     CObject_Manager::Get_Instance()->Add_Object(OBJ_PLAYER, m_pPlayer);
 
-    // 카메라 생성 - 플레이어 뒤 10, 위 5 위치
     m_pCamera = new CCamera(m_pPlayer, XMFLOAT3(0.0f, 15.0f, 30.0f));
     m_pCamera->SetViewport(0, 0, WINCX, WINCY);
     m_pCamera->GeneratePerspectiveProjectionMatrix(0.1f, 600.f, 60.f);
-    m_pCamera->GenerateViewMatrix(); // 초기 뷰 행렬
+    m_pCamera->GenerateViewMatrix();
     CObject_Manager::Get_Instance()->SetCamera(m_pCamera);
     CBullet::PrepareExplosion();
 
@@ -45,6 +45,7 @@ void CLevel_GamePlay::Initialize()
 int CLevel_GamePlay::Update(float dt)
 {
     CObject_Manager::Get_Instance()->Update(dt);
+
     if (!m_bDeathDetected)
     {
         auto Boss = CObject_Manager::Get_Instance()->Get_List(OBJ_BOSS)->front();
@@ -54,24 +55,35 @@ int CLevel_GamePlay::Update(float dt)
         bool PlayerDead = Player->IsDead();
 
         if (BossDead || PlayerDead)
+        {
             m_bDeathDetected = true;
+            m_bPlayerDead = PlayerDead;
+        }
     }
 
     if (m_bDeathDetected)
     {
         m_fDeathTimer += dt;
         if (m_fDeathTimer >= m_fDeathDelay)
-        {   
-            CLevel_Manager::Get_Instance()->Level_Change(LEVEL_WIN);
+        {
+            if (m_bPlayerDead)
+                CLevel_Manager::Get_Instance()->Level_Change(LEVEL_LOSE);
+            else
+                CLevel_Manager::Get_Instance()->Level_Change(LEVEL_WIN);
         }
     }
+
+
+    if (CInput_Manager::Get_Instance()->Key_Down('Q'))
+        CGameObject::s_bShowOBB = !CGameObject::s_bShowOBB;
+
     return 0;
 }
 
 void CLevel_GamePlay::Late_Update(float dt)
 {
     CObject_Manager::Get_Instance()->Late_Update(dt);
-    m_pCamera->GenerateViewMatrix(); // 기존 GenerateViewMatrix() 대신
+    m_pCamera->GenerateViewMatrix();
 }
 
 void CLevel_GamePlay::Render(HDC hDC)

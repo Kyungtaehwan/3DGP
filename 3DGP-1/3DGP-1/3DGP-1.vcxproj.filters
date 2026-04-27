@@ -38,9 +38,6 @@
     <Filter Include="02.Object_Manager\GameObject">
       <UniqueIdentifier>{ff764a0e-0a5d-43af-965b-56d6a0e64900}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GraphicsPipeline">
-      <UniqueIdentifier>{6f3ec249-25ab-4b90-ae56-0d46a918c086}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02.Object_Manager\GameObject\02_01.Player">
       <UniqueIdentifier>{b10c6d4e-0533-44f3-90dd-19389620f39e}</UniqueIdentifier>
     </Filter>
@@ -68,7 +65,10 @@
     <Filter Include="01.Level_Manager\Levels\01_01.Level_Menu">
       <UniqueIdentifier>{a63bc7e7-94f1-4330-b5f1-96118bd9fbea}</UniqueIdentifier>
     </Filter>
-    <Filter Include="08.Etc">
+    <Filter Include="08.GraphicsPipeline">
+      <UniqueIdentifier>{6f3ec249-25ab-4b90-ae56-0d46a918c086}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="09.Etc">
       <UniqueIdentifier>{75fef75b-8172-4753-add5-60c5d0d8db33}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -109,7 +109,6 @@
     <ClInclude Include="Object_Manager.h">
       <Filter>02.Object_Manager</Filter>
     </ClInclude>
-    <ClInclude Include="define.h" />
     <ClInclude Include="Timer.h">
       <Filter>06.Timer</Filter>
     </ClInclude>
@@ -123,7 +122,7 @@
       <Filter>02.Object_Manager\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsPipeline.h">
-      <Filter>GraphicsPipeline</Filter>
+      <Filter>08.GraphicsPipeline</Filter>
     </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>02.Object_Manager\GameObject\02_01.Player</Filter>
@@ -156,7 +155,10 @@
       <Filter>01.Level_Manager\Levels\01_03.Level_GameEnd</Filter>
     </ClInclude>
     <ClInclude Include="Button.h">
-      <Filter>08.Etc</Filter>
+      <Filter>09.Etc</Filter>
+    </ClInclude>
+    <ClInclude Include="define.h">
+      <Filter>09.Etc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -200,7 +202,7 @@
       <Filter>02.Object_Manager\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="GraphicsPipeline.cpp">
-      <Filter>GraphicsPipeline</Filter>
+      <Filter>08.GraphicsPipeline</Filter>
     </ClCompile>
     <ClCompile Include="Player.cpp">
       <Filter>02.Object_Manager\GameObject\02_01.Player</Filter>
@@ -233,7 +235,7 @@
       <Filter>01.Level_Manager\Levels\01_03.Level_GameEnd</Filter>
     </ClCompile>
     <ClCompile Include="Button.cpp">
-      <Filter>08.Etc</Filter>
+      <Filter>09.Etc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

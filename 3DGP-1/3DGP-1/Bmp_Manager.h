@@ -9,7 +9,7 @@ private:
 	~CBmp_Manager();
 
 public:
-	void		Insert_Bmp(const TCHAR* pFilePath, const TCHAR* pImgKey);
+	bool		Insert_Bmp(const TCHAR* pFilePath, const TCHAR* pImgKey);
 	HDC			Find_Img(const TCHAR* pImgKey);
 	void		Release(void);
 

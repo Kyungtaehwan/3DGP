@@ -52,8 +52,8 @@ void CBullet::Fire(XMFLOAT3 vPos, XMFLOAT3 vDir, float fSpeed, bool bGravity)
     m_fElapsedTimes = 0.f;
     m_bBlowingUp = false;
     m_bActive = true;
-    m_fVerticalVelocity = vDir.y * fSpeed;  // 초기 수직 속도
-    m_fGravity = bGravity ? 30.f : 0.f;  // 중력값
+    m_fVerticalVelocity = vDir.y * fSpeed;
+    m_fGravity = bGravity ? 30.f : 0.f;
     m_xmLocalOBB = BoundingOrientedBox(
         XMFLOAT3(0.f, 0.f, 0.f),
         XMFLOAT3(0.4f, 0.4f, 0.6f),
@@ -99,7 +99,6 @@ int CBullet::Update(float dt)
 
     if (m_fGravity > 0.f)
     {
-        // 중력 누적 → 수직 속도 감소
         m_fVerticalVelocity -= m_fGravity * dt;
         m_xmf3Position.y += m_fVerticalVelocity * dt;
     }

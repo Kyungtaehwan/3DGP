@@ -13,17 +13,23 @@ CBmp_Manager::~CBmp_Manager()
 	Release();
 }
 
-void CBmp_Manager::Insert_Bmp(const TCHAR* pFilePath, const TCHAR* pImgKey)
+bool CBmp_Manager::Insert_Bmp(const TCHAR* pFilePath, const TCHAR* pImgKey)
 {
-	auto	iter = find_if(m_mapBit.begin(), m_mapBit.end(), CTagFinder(pImgKey));
+    auto iter = find_if(m_mapBit.begin(), m_mapBit.end(), CTagFinder(pImgKey));
+    if (iter == m_mapBit.end())
+    {
+        CMyBmp* pBmp = new CMyBmp;
+        pBmp->Load_Bmp(pFilePath);
 
-	if (iter == m_mapBit.end())
-	{
-		CMyBmp* pBmp = new CMyBmp;
-		pBmp->Load_Bmp(pFilePath);
+        if (pBmp->Get_Bitmap() == nullptr)
+        {
+            delete pBmp;
+            return false;
+        }
 
-		m_mapBit.insert({ pImgKey, pBmp });
-	}
+        m_mapBit.insert({ pImgKey, pBmp });
+    }
+    return true;
 }
 
 HDC CBmp_Manager::Find_Img(const TCHAR* pImgKey)

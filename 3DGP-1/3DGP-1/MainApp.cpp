@@ -17,14 +17,15 @@ void CMainApp::Initialize(void)
 	m_hDC = GetDC(g_hWnd);
 	m_Timer.Reset(); 
 
-	CBmp_Manager::Get_Instance()->Insert_Bmp(L"../Resource/Back_Buffer.bmp", L"BackBuffer");
+	if (!CBmp_Manager::Get_Instance()->Insert_Bmp(L"../Resource/Back_Buffer.bmp", L"BackBuffer"))
+		CBmp_Manager::Get_Instance()->Insert_Bmp(L"Resource/Back_Buffer.bmp", L"BackBuffer");
 	CLevel_Manager::Get_Instance()->Level_Change(LEVEL_MENU);
 }
 
 void CMainApp::Update(float dt)
 {
-	CInput_Manager::Get_Instance()->Update();
 	CInput_Manager::Get_Instance()->Update_Mouse(g_hWnd);
+
 	CLevel_Manager::Get_Instance()->Update(dt);
 }
 

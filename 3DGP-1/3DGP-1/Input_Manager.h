@@ -14,7 +14,7 @@ public:
     }
 
     void    Update();
-    void    Update_Mouse(HWND hWnd);   // 매 프레임 호출 - 마우스 델타 계산
+    void    Update_Mouse(HWND hWnd);
 
     bool    Key_Pressing(int _iKey);
     bool    Key_Down(int _iKey);
@@ -23,7 +23,18 @@ public:
     int     GetMouseDX() const { return m_iMouseDX; }
     int     GetMouseDY() const { return m_iMouseDY; }
 
-    void    SetMouseLock(bool bLock) { m_bMouseLock = bLock; }
+    void SetMouseLock(bool bLock)
+    {
+        m_bMouseLock = bLock;
+        if (bLock)
+        {
+            while (ShowCursor(FALSE) >= 0);
+        }
+        else
+        {
+            while (ShowCursor(TRUE) < 0);
+        }
+    }
     bool    GetMouseLock() const { return m_bMouseLock; }
     POINT   GetMousePos() const { return m_ptMouse; }
 
@@ -38,5 +49,5 @@ private:
     POINT   m_ptMouse = {};
     int     m_iMouseDX = 0;
     int     m_iMouseDY = 0;
-    bool    m_bMouseLock = true;   // 기본적으로 마우스 중앙 고정
+    bool    m_bMouseLock = false;
 };

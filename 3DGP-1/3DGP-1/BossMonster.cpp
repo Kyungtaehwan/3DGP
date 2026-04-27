@@ -58,7 +58,6 @@ int CBossMonster::Update(float dt)
         }
     }
 
-    // ── 미사일 공격 (배기구에서 포물선) ──────────────────────
     m_fMissileTimer += dt;
     if (m_fMissileTimer >= m_fMissileInterval)
     {
@@ -77,15 +76,15 @@ int CBossMonster::Update(float dt)
             auto FireParabolic = [&](XMFLOAT3 vStart, XMFLOAT3 vTarget)
                 {
                     float fSpeed = 60.f;
-                    float fGravity = 30.f;  // Bullet의 중력값과 동일하게
+                    float fGravity = 30.f;
 
-                    // 수평 거리와 수직 거리
+
                     float dx = vTarget.x - vStart.x;
                     float dy = vTarget.y - vStart.y;
                     float dz = vTarget.z - vStart.z;
                     float fHorizDist = sqrtf(dx * dx + dz * dz);
 
-                    // 물리 공식: tan(θ) = (v² ± sqrt(v⁴ - g(g*x² + 2y*v²))) / (g*x)
+             
                     float v2 = fSpeed * fSpeed;
                     float g = fGravity;
                     float x = fHorizDist;
@@ -96,19 +95,14 @@ int CBossMonster::Update(float dt)
 
                     if (fDisc < 0.f)
                     {
-                        // 사거리 초과 - 45도로 발사
                         fAngle = XMConvertToRadians(45.f);
                     }
                     else
                     {
-                        // 높은 각도 선택 (+ 부호) → 더 높이 올라갔다가 내려옴
                         fAngle = atanf((v2 + sqrtf(fDisc)) / (g * x));
                     }
-
-                    // 수평 방향 단위벡터
                     XMFLOAT3 horizDir = { dx / fHorizDist, 0.f, dz / fHorizDist };
 
-                    // 발사 방향
                     float fCosA = cosf(fAngle);
                     float fSinA = sinf(fAngle);
                     XMFLOAT3 fireDir = {
@@ -130,7 +124,7 @@ int CBossMonster::Update(float dt)
         }
     }
 
-    // ── 직선탄 공격 (양쪽 배럴) ──────────────────────────────
+    // 직선탄
     m_fBulletTimer += dt;
     if (m_fBulletTimer >= m_fBulletInterval && m_pPlayer)
     {

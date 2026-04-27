@@ -36,35 +36,31 @@ void CCamera::GenerateViewMatrix()
 {
     XMFLOAT3 pPos = m_pPlayer->GetPosition();
     XMFLOAT3 pUp = m_pPlayer->GetUp();
-    XMFLOAT3 pLook = m_pPlayer->GetLook();  // ← 로컬 변수로 먼저 받기
+    XMFLOAT3 pLook = m_pPlayer->GetLook();  
 
     float fTurretYaw = m_pPlayer->GetTurretYaw();
     XMMATRIX mYaw = XMMatrixRotationY(XMConvertToRadians(fTurretYaw));
-    XMVECTOR vLook = XMLoadFloat3(&pLook);  // ← 로컬 변수 주소 사용
-    vLook = XMVector3TransformNormal(vLook, mYaw);        // 포탑 방향으로 회전
+    XMVECTOR vLook = XMLoadFloat3(&pLook);  
+    vLook = XMVector3TransformNormal(vLook, mYaw);      
 
     XMFLOAT3 turretLook;
     XMStoreFloat3(&turretLook, XMVector3Normalize(vLook));
-
-    // 카메라 위치 = 플레이어 위치에서 포탑방향 반대(뒤) + 위로 오프셋
     m_xmf3Position.x = pPos.x - turretLook.x * m_xmf3Offset.z + pUp.x * m_xmf3Offset.y;
     m_xmf3Position.y = pPos.y - turretLook.y * m_xmf3Offset.z + pUp.y * m_xmf3Offset.y;
     m_xmf3Position.z = pPos.z - turretLook.z * m_xmf3Offset.z + pUp.z * m_xmf3Offset.y;
-    // Look = 카메라 → 플레이어
+
     XMFLOAT3 vTarget = XMFLOAT3(
         pPos.x,
         pPos.y + 10.f, 
         pPos.z
     );
     m_xmf3Look = Vector3::Normalize(Vector3::Subtract(vTarget, m_xmf3Position));
-    // WorldUp 기준으로 Right, Up 계산 (카메라 수평 유지)
     XMFLOAT3 worldUp = { 0.f, 1.f, 0.f };
     m_xmf3Right = Vector3::Normalize(Vector3::CrossProduct(worldUp, m_xmf3Look));
     m_xmf3Up = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Look, m_xmf3Right));
 
 
 
-    // View 행렬 조립 (기존과 동일)
     m_xmf4x4View._11 = m_xmf3Right.x; m_xmf4x4View._12 = m_xmf3Up.x; m_xmf4x4View._13 = m_xmf3Look.x; m_xmf4x4View._14 = 0;
     m_xmf4x4View._21 = m_xmf3Right.y; m_xmf4x4View._22 = m_xmf3Up.y; m_xmf4x4View._23 = m_xmf3Look.y; m_xmf4x4View._24 = 0;
     m_xmf4x4View._31 = m_xmf3Right.z; m_xmf4x4View._32 = m_xmf3Up.z; m_xmf4x4View._33 = m_xmf3Look.z; m_xmf4x4View._34 = 0;
@@ -75,7 +71,6 @@ void CCamera::GenerateViewMatrix()
 
     m_xmf4x4ViewProject = Matrix4x4::Multiply(m_xmf4x4View, m_xmf4x4Project);
 
-    // 프러스텀 갱신 (기존과 동일)
     XMFLOAT4X4 invView = Matrix4x4::Identity();
     invView._11 = m_xmf3Right.x; invView._12 = m_xmf3Right.y; invView._13 = m_xmf3Right.z;
     invView._21 = m_xmf3Up.x;    invView._22 = m_xmf3Up.y;    invView._23 = m_xmf3Up.z;
@@ -90,12 +85,10 @@ void CCamera::GenerateViewMatrix_Fixed()
 {
     XMFLOAT3 pPos = m_pPlayer->GetPosition();
 
-    // 플레이어 위치 + 고정 오프셋
     m_xmf3Position.x = pPos.x + m_xmf3Offset.x;
     m_xmf3Position.y = pPos.y + m_xmf3Offset.y;
     m_xmf3Position.z = pPos.z + m_xmf3Offset.z;
 
-    // 축 고정
     m_xmf3Look = XMFLOAT3(0.f, 0.f, 1.f);
     m_xmf3Right = XMFLOAT3(1.f, 0.f, 0.f);
     m_xmf3Up = XMFLOAT3(0.f, 1.f, 0.f);

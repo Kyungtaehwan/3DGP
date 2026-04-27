@@ -7,23 +7,17 @@ CInput_Manager* CInput_Manager::m_pInstance = nullptr;
 CInput_Manager::CInput_Manager()
 {
     ZeroMemory(m_bKeyState, sizeof(m_bKeyState));
+    ShowCursor(FALSE);
 }
 
 CInput_Manager::~CInput_Manager() {}
 
-void CInput_Manager::Update()
-{
-    GetCursorPos(&m_ptMouse);
-    ScreenToClient(g_hWnd, &m_ptMouse);
-}
 
-// ─────────────────────────────────────────────────────────────
-//  매 프레임 호출
-//  - 화면 중앙 기준 마우스 델타 계산
-//  - m_bMouseLock = true 이면 마우스를 중앙으로 다시 고정
-// ─────────────────────────────────────────────────────────────
 void CInput_Manager::Update_Mouse(HWND hWnd)
 {
+
+    GetCursorPos(&m_ptMouse);
+    ScreenToClient(g_hWnd, &m_ptMouse);
     // 클라이언트 영역 중앙 계산
     RECT rc;
     GetClientRect(hWnd, &rc);
@@ -45,11 +39,11 @@ void CInput_Manager::Update_Mouse(HWND hWnd)
     if (m_bMouseLock)
     {
         SetCursorPos(ptCenterScreen.x, ptCenterScreen.y);
-        ShowCursor(FALSE);
     }
     else
     {
-        ShowCursor(TRUE);
+        m_iMouseDX = 0;
+        m_iMouseDY = 0;
     }
 }
 

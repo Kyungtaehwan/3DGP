@@ -16,7 +16,8 @@ CLevel_Menu::~CLevel_Menu()
 void CLevel_Menu::Initialize()
 {
     CInput_Manager::Get_Instance()->SetMouseLock(false);
-    CBmp_Manager::Get_Instance()->Insert_Bmp(L"../Resource/BackGround.bmp", L"Back");
+    if (!CBmp_Manager::Get_Instance()->Insert_Bmp(L"../Resource/BackGround.bmp", L"Back"))
+        CBmp_Manager::Get_Instance()->Insert_Bmp(L"Resource/BackGround.bmp", L"Back");
     int nBtnW = 200, nBtnH = 60;
     int nBtnX = (WINCX - nBtnW) / 2;
     int nBtnY = WINCY / 2;
@@ -41,8 +42,6 @@ void CLevel_Menu::Render(HDC hDC)
     HDC	hMemDC = CBmp_Manager::Get_Instance()->Find_Img(L"Back");
     BitBlt(hDC, 0, 0, WINCX, WINCY, hMemDC, 0, 0, SRCCOPY);
    
-
-    // ≈∏¿Ã∆≤
     SetBkMode(hDC, TRANSPARENT);
     SetTextColor(hDC, RGB(255, 215, 0));
     HFONT hFont = CreateFont(70, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
@@ -51,7 +50,7 @@ void CLevel_Menu::Render(HDC hDC)
     HFONT hOldFont = (HFONT)SelectObject(hDC, hFont);
 
     RECT rcTitle = { 0, WINCY / 4, WINCX, WINCY / 2 };
-    DrawText(hDC, _T("TANK BOSS"), -1, &rcTitle,
+    DrawText(hDC, _T("TANK GAME"), -1, &rcTitle,
         DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
     SelectObject(hDC, hOldFont);
