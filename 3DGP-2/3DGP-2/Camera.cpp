@@ -149,6 +149,11 @@ void CCamera::Rotate(float fPitch, float fYaw, float fRoll)
 {
     if (!IsZero(fPitch))
     {
+        // 피치 클램핑: Look과 Up이 평행해지는 것 방지 (LookToLH 크래시 원인)
+        m_fPitch += fPitch;
+        if (m_fPitch >  89.0f) { fPitch -= (m_fPitch -  89.0f); m_fPitch =  89.0f; }
+        if (m_fPitch < -89.0f) { fPitch -= (m_fPitch + 89.0f);  m_fPitch = -89.0f; }
+
         XMMATRIX mtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&m_xmf3Right), DegreeToRadian(fPitch));
         m_xmf3Look = Vector3::TransformNormal(m_xmf3Look, mtxRotate);
         m_xmf3Up   = Vector3::TransformNormal(m_xmf3Up,   mtxRotate);
@@ -192,11 +197,11 @@ void CSpaceShipCamera::Update(XMFLOAT3& xmf3LookAt, float fTimeElapsed)
         xmf4x4Rotate._14 = 0.0f; xmf4x4Rotate._24 = 0.0f; xmf4x4Rotate._34 = 0.0f;
         xmf4x4Rotate._41 = 0.0f; xmf4x4Rotate._42 = 0.0f; xmf4x4Rotate._43 = 0.0f; xmf4x4Rotate._44 = 1.0f;
 
-        // Offset transformed by player rotation
         XMFLOAT3 xmf3Offset = Vector3::TransformCoord(m_xmf3Offset, xmf4x4Rotate);
         XMFLOAT3 xmf3Position = Vector3::Add(m_pPlayer->GetPosition(), xmf3Offset);
 
-        if (m_fTimeLag > 0.0f)
+        // fTimeElapsed==0 (초기화 시)에는 즉시 이동, 이후는 lag 보간
+        if (m_fTimeLag > 0.0f && fTimeElapsed > 0.0f)
         {
             float fAlpha = fTimeElapsed / m_fTimeLag;
             m_xmf3Position.x += (xmf3Position.x - m_xmf3Position.x) * fAlpha;
@@ -289,7 +294,8 @@ void CThirdPersonCamera::Update(XMFLOAT3& xmf3LookAt, float fTimeElapsed)
         XMFLOAT3 xmf3Offset   = Vector3::TransformCoord(m_xmf3Offset, xmf4x4Rotate);
         XMFLOAT3 xmf3Position = Vector3::Add(m_pPlayer->GetPosition(), xmf3Offset);
 
-        if (m_fTimeLag > 0.0f)
+        // fTimeElapsed==0 (초기화 시)에는 즉시 이동, 이후는 lag 보간
+        if (m_fTimeLag > 0.0f && fTimeElapsed > 0.0f)
         {
             float fAlpha = fTimeElapsed / m_fTimeLag;
             m_xmf3Position.x += (xmf3Position.x - m_xmf3Position.x) * fAlpha;

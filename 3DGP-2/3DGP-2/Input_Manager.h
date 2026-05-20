@@ -13,31 +13,26 @@ public:
         if (m_pInstance) { delete m_pInstance; m_pInstance = nullptr; }
     }
 
-    void    Update();
-    void    Update_Mouse(HWND hWnd);
+    void Update();
+    void Update_Mouse(HWND hWnd);
 
-    bool    Key_Pressing(int _iKey);
-    bool    Key_Down(int _iKey);
-    bool    Key_Up(int _iKey);
+    bool Key_Pressing(int _iKey);
+    bool Key_Down(int _iKey);
+    bool Key_Up(int _iKey);
 
-    int     GetMouseDX() const { return m_iMouseDX; }
-    int     GetMouseDY() const { return m_iMouseDY; }
+    int  GetMouseDX() const { return m_iMouseDX; }
+    int  GetMouseDY() const { return m_iMouseDY; }
 
     void SetMouseLock(bool bLock)
     {
-        m_bMouseLock = bLock;
+        m_bMouseLock    = bLock;
+        m_bNeedRecenter = true;
         if (bLock)
-        {
             while (ShowCursor(FALSE) >= 0);
-        }
         else
-        {
-            while (ShowCursor(TRUE) < 0);
-        }
+            while (ShowCursor(TRUE)  <  0);
     }
-    bool    GetMouseLock() const { return m_bMouseLock; }
-    POINT   GetMousePos() const { return m_ptMouse; }
-
+    bool  GetMouseLock() const { return m_bMouseLock; }
 
 private:
     CInput_Manager();
@@ -45,10 +40,9 @@ private:
 
     static CInput_Manager* m_pInstance;
 
-    bool    m_bKeyState[256];
-    POINT   m_ptMouse = {};
-    int     m_iMouseDX = 0;
-    int     m_iMouseDY = 0;
-    bool    m_bMouseLock = false;
+    bool  m_bKeyState[256]  = {};
+    int   m_iMouseDX        = 0;
+    int   m_iMouseDY        = 0;
+    bool  m_bMouseLock      = false;
+    bool  m_bNeedRecenter   = true;   // 포커스 복귀 / 최초 시작 시 첫 델타 무시
 };
-

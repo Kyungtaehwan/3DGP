@@ -24,26 +24,27 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
 
     MSG msg = {};
 
-    while (true)
+    bool bQuit = false;
+    while (!bQuit)
     {
-        if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        // 쌓인 메시지를 전부 처리한 후 Update/Render 진입
+        while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
-            if (msg.message == WM_QUIT) break;
+            if (msg.message == WM_QUIT) { bQuit = true; break; }
             ::TranslateMessage(&msg);
             ::DispatchMessage(&msg);
         }
-        else
-        {
-            gMainApp.m_GameTimer.Tick(144.f);
-            float dt = gMainApp.m_GameTimer.GetTimeElapsed();
-            
-            TCHAR szFPS[32];
-            gMainApp.m_GameTimer.GetFrameRate(szFPS, 32);
+        if (bQuit) break;
 
-            gMainApp.Update(dt);
-            gMainApp.LateUpdate(dt);
-            gMainApp.Render();
-        }
+        gMainApp.m_GameTimer.Tick(144.f);
+        float dt = gMainApp.m_GameTimer.GetTimeElapsed();
+
+        TCHAR szFPS[32];
+        gMainApp.m_GameTimer.GetFrameRate(szFPS, 32);
+
+        gMainApp.Update(dt);
+        gMainApp.LateUpdate(dt);
+        gMainApp.Render();
     }
 
     gMainApp.Release();

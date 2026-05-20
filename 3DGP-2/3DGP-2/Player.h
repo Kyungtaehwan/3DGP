@@ -1,6 +1,7 @@
 #pragma once
 #include "GameObject.h"
 #include "Camera.h"
+#include "Input_Manager.h"
 
 // One humanoid body segment: a CGameObject + local offset from player root
 struct BodyPart
@@ -30,6 +31,8 @@ protected:
     float m_fFriction      = 2.0f;
 
     CCamera* m_pCamera = NULL;
+
+    ID3D12Device* m_pd3dDevice = NULL;  // 런타임 카메라 전환 시 cbuffer 생성용
 
     std::vector<BodyPart> m_BodyParts;
 

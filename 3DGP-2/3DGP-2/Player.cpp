@@ -85,8 +85,19 @@ void CPlayer::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
 
     XMFLOAT3 shift = { 0.0f, 0.0f, 0.0f };
 
-    if (dwDirection & DIR_FORWARD)  shift = Vector3::Add(shift, m_xmf3Look,   fDistance);
-    if (dwDirection & DIR_BACKWARD) shift = Vector3::Add(shift, m_xmf3Look,  -fDistance);
+    // 1인칭에서 앞/뒤 이동은 수평 평면으로 투영 (하늘 보고 W 눌러도 날지 않음)
+    DWORD nCamMode = m_pCamera ? m_pCamera->GetMode() : 0;
+    XMFLOAT3 moveLook = m_xmf3Look;
+    if (nCamMode == FIRST_PERSON_CAMERA)
+    {
+        moveLook.y = 0.0f;
+        float fLen = sqrtf(moveLook.x * moveLook.x + moveLook.z * moveLook.z);
+        if (fLen > 0.001f) { moveLook.x /= fLen; moveLook.z /= fLen; }
+        else               { moveLook = { 0.0f, 0.0f, 1.0f }; }
+    }
+
+    if (dwDirection & DIR_FORWARD)  shift = Vector3::Add(shift, moveLook,    fDistance);
+    if (dwDirection & DIR_BACKWARD) shift = Vector3::Add(shift, moveLook,   -fDistance);
     if (dwDirection & DIR_RIGHT)    shift = Vector3::Add(shift, m_xmf3Right,  fDistance);
     if (dwDirection & DIR_LEFT)     shift = Vector3::Add(shift, m_xmf3Right, -fDistance);
     if (dwDirection & DIR_UP)       shift = Vector3::Add(shift, m_xmf3Up,     fDistance);
@@ -166,6 +177,49 @@ void CPlayer::Rotate(float fPitch, float fYaw, float fRoll)
 
 int CPlayer::Update(float fTimeElapsed)
 {
+    CInput_Manager* pInput = CInput_Manager::Get_Instance();
+    pInput->Update_Mouse(g_hWnd);
+
+    // 1인칭 / 3인칭 전환
+    if (pInput->Key_Down('1'))
+        ChangeCamera(FIRST_PERSON_CAMERA, fTimeElapsed);
+    else if (pInput->Key_Down('3'))
+        ChangeCamera(THIRD_PERSON_CAMERA, fTimeElapsed);
+
+    // 이동 입력
+    const float fSpeed = 7.0f;
+    DWORD dwDir = 0;
+    bool bW = pInput->Key_Pressing('W');
+    bool bS = pInput->Key_Pressing('S');
+    bool bA = pInput->Key_Pressing('A');
+    bool bD = pInput->Key_Pressing('D');
+    if (bW) dwDir |= DIR_FORWARD;
+    if (bS) dwDir |= DIR_BACKWARD;
+    if (bA) dwDir |= DIR_LEFT;
+    if (bD) dwDir |= DIR_RIGHT;
+    if (dwDir) Move(dwDir, fSpeed * fTimeElapsed);
+
+    // 디버그: 타이틀바에 위치 + 키 상태 표시
+    {
+        static int s_tick = 0;
+        if (++s_tick % 20 == 0)
+        {
+            wchar_t buf[256];
+            swprintf_s(buf, 256,
+                L"Pos(%.1f,%.1f,%.1f)  W:%d A:%d S:%d D:%d  Cam:%d",
+                m_xmf3Position.x, m_xmf3Position.y, m_xmf3Position.z,
+                (int)bW, (int)bA, (int)bS, (int)bD,
+                m_pCamera ? (int)m_pCamera->GetMode() : -1);
+            SetWindowTextW(g_hWnd, buf);
+        }
+    }
+
+    // 마우스 회전
+    Rotate(pInput->GetMouseDY() * 0.15f,
+           pInput->GetMouseDX() * 0.15f,
+           0.0f);
+
+    // 물리 (속도, 중력, 마찰)
     m_xmf3Velocity = Vector3::Add(m_xmf3Velocity,
                                    Vector3::ScalarProduct(m_xmf3Gravity, fTimeElapsed));
 
@@ -191,12 +245,9 @@ int CPlayer::Update(float fTimeElapsed)
         m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, Vector3::ScalarProduct(dir, -fDecel));
     }
 
+    // 카메라 업데이트 (각 카메라 타입의 Update가 위치/방향/뷰행렬을 직접 관리)
     if (m_pCamera)
-    {
         m_pCamera->Update(m_xmf3LookAt, fTimeElapsed);
-        m_pCamera->SetLookAt(m_xmf3LookAt);
-        m_pCamera->RegenerateViewMatrix();
-    }
 
     return OBJ_NOEVENT;
 }
@@ -268,7 +319,7 @@ CCamera* CPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
         SetMaxVelocityXZ(10.0f);
         SetMaxVelocityY(10.0f);
         m_pCamera = OnChangeCamera(SPACESHIP_CAMERA, nCurrentMode);
-        m_pCamera->SetTimeLag(0.1f);
+        m_pCamera->SetTimeLag(0.0f);
         m_pCamera->SetOffset(XMFLOAT3(0.0f, 2.0f, -8.0f));
         m_pCamera->GenerateProjectionMatrix(0.1f, 500.0f, ASPECT_RATIO, 60.0f);
         m_pCamera->SetViewport(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f);
@@ -276,12 +327,23 @@ CCamera* CPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
         break;
 
     case THIRD_PERSON_CAMERA:
+        // 1인칭에서 피치가 쌓인 채로 전환하면 카메라가 깨지므로 수평으로 리셋
+        m_fPitch   = 0.0f;
+        m_xmf3Up   = XMFLOAT3(0.0f, 1.0f, 0.0f);
+        m_xmf3Look.y = 0.0f;
+        {
+            float fLen = sqrtf(m_xmf3Look.x * m_xmf3Look.x + m_xmf3Look.z * m_xmf3Look.z);
+            if (fLen > 0.001f) { m_xmf3Look.x /= fLen; m_xmf3Look.z /= fLen; }
+            else               { m_xmf3Look = XMFLOAT3(0.0f, 0.0f, 1.0f); }
+        }
+        m_xmf3Right = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Up, m_xmf3Look));
+
         SetFriction(10.0f);
         SetGravity(XMFLOAT3(0.0f, 0.0f, 0.0f));
         SetMaxVelocityXZ(10.0f);
         SetMaxVelocityY(10.0f);
         m_pCamera = OnChangeCamera(THIRD_PERSON_CAMERA, nCurrentMode);
-        m_pCamera->SetTimeLag(0.25f);
+        m_pCamera->SetTimeLag(0.0f);
         m_pCamera->SetOffset(XMFLOAT3(0.0f, 3.0f, -8.0f));
         m_pCamera->GenerateProjectionMatrix(0.1f, 500.0f, ASPECT_RATIO, 60.0f);
         m_pCamera->SetViewport(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f);
@@ -291,6 +353,10 @@ CCamera* CPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
     default:
         break;
     }
+
+    // 런타임 전환: 새 카메라의 GPU 상수 버퍼 생성 (upload heap → command list 불필요)
+    if (m_pd3dDevice)
+        m_pCamera->CreateShaderVariables(m_pd3dDevice, nullptr);
 
     OnPrepareRender();
     m_pCamera->Update(m_xmf3LookAt, fTimeElapsed);
@@ -303,6 +369,8 @@ CCamera* CPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 void CPlayer::CreateShaderVariables(ID3D12Device* pd3dDevice,
                                      ID3D12GraphicsCommandList* pd3dCommandList)
 {
+    m_pd3dDevice = pd3dDevice;  // 런타임 카메라 전환에서 재사용
+
     if (m_pCamera)
         m_pCamera->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 

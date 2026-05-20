@@ -166,14 +166,14 @@ void CMainApp::CreateDirect3DDevice()
 
     D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS d3dMsaaQualityLevels;
     d3dMsaaQualityLevels.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    d3dMsaaQualityLevels.SampleCount = 4; //Msaa4x ´ÙÁß »ùÇÃ¸µ
+    d3dMsaaQualityLevels.SampleCount = 4; //Msaa4x ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½
     d3dMsaaQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
     d3dMsaaQualityLevels.NumQualityLevels = 0;
     m_pd3dDevice->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
         &d3dMsaaQualityLevels, sizeof(D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS));
     m_nMsaa4xQualityLevels = d3dMsaaQualityLevels.NumQualityLevels;
     m_bMsaa4xEnable = (m_nMsaa4xQualityLevels > 1) ? true : false;
-    //´ÙÁß »ùÇÃÀÇ Ç°Áú ¼öÁØÀÌ 1º¸´Ù Å©¸é ´ÙÁß »ùÇÃ¸µÀ» È°¼ºÈ­ÇÑ´Ù. 
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ç°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­ï¿½Ñ´ï¿½. 
     hResult = m_pd3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence),
         (void**)&m_pd3dFence);
 
@@ -192,23 +192,23 @@ void CMainApp::CreateCommandQueueAndList()
     d3dCommandQueueDesc.Type  = D3D12_COMMAND_LIST_TYPE_DIRECT;
     d3dCommandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
-    //Á÷Á¢(Direct) ¸í·É Å¥¸¦ »ý¼ºÇÑ´Ù. 
+    //ï¿½ï¿½ï¿½ï¿½(Direct) ï¿½ï¿½ï¿½ï¿½ Å¥ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½. 
     HRESULT hResult = m_pd3dDevice->CreateCommandQueue(&d3dCommandQueueDesc,
         _uuidof(ID3D12CommandQueue), (void**)&m_pd3dCommandQueue);
 
 
-    //Á÷Á¢(Direct) ¸í·É ÇÒ´çÀÚ¸¦ »ý¼ºÇÑ´Ù. 
+    //ï¿½ï¿½ï¿½ï¿½(Direct) ï¿½ï¿½ï¿½ï¿½ ï¿½Ò´ï¿½ï¿½Ú¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½. 
     hResult = m_pd3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
         __uuidof(ID3D12CommandAllocator), (void**)&m_pd3dCommandAllocator);
 
 
-    //Á÷Á¢(Direct) ¸í·É ¸®½ºÆ®¸¦ »ý¼ºÇÑ´Ù. 
+    //ï¿½ï¿½ï¿½ï¿½(Direct) ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½. 
     m_pd3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
                                      m_pd3dCommandAllocator, NULL,
                                      __uuidof(ID3D12GraphicsCommandList),
                                      (void**)&m_pd3dCommandList);
 
-    //¸í·É ¸®½ºÆ®´Â »ý¼ºµÇ¸é ¿­¸°(Open) »óÅÂÀÌ¹Ç·Î ´ÝÈù(Closed) »óÅÂ·Î ¸¸µç´Ù. 
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½ ï¿½ï¿½ï¿½ï¿½(Open) ï¿½ï¿½ï¿½ï¿½ï¿½Ì¹Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½(Closed) ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½. 
     hResult = m_pd3dCommandList->Close();
 
 }
@@ -382,7 +382,9 @@ void CMainApp::ExecuteLevelLoad()
 
 void CMainApp::WaitForGpuComplete()
 {
-    const UINT64 nFence = ++m_nFenceValues[m_nSwapChainBufferIndex];
+    // m_nFenceValues[0]ì„ ì „ì—­ ë‹¨ì¡° ì¦ê°€ ì¹´ìš´í„°ë¡œ ì‚¬ìš© (ë²„í¼ ì¸ë±ìŠ¤ë³„ ë¶„ë¦¬ ì‹œ
+    // ë‘ ë²„í¼ê°€ ê°™ì€ ê°’ 1ì— ë„ë‹¬í•´ Waitë¥¼ ê±´ë„ˆë›°ì–´ Allocator Reset ì¶©ëŒ ë°œìƒ)
+    const UINT64 nFence = ++m_nFenceValues[0];
     m_pd3dCommandQueue->Signal(m_pd3dFence, nFence);
     if (m_pd3dFence->GetCompletedValue() < nFence)
     {
@@ -394,7 +396,8 @@ void CMainApp::WaitForGpuComplete()
 void CMainApp::MoveToNextFrame()
 {
     m_nSwapChainBufferIndex = m_pdxgiSwapChain->GetCurrentBackBufferIndex();
-    UINT64 nFence = ++m_nFenceValues[m_nSwapChainBufferIndex];
+    // ì „ì—­ ë‹¨ì¡° ì¦ê°€ ì¹´ìš´í„° ì‚¬ìš© â†’ í•­ìƒ í˜„ìž¬ í”„ë ˆìž„ GPU ìž‘ì—…ì´ ëë‚œ ë’¤ ë‹¤ìŒ í”„ë ˆìž„ ì‹œìž‘
+    const UINT64 nFence = ++m_nFenceValues[0];
     m_pd3dCommandQueue->Signal(m_pd3dFence, nFence);
     if (m_pd3dFence->GetCompletedValue() < nFence)
     {

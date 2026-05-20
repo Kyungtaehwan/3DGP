@@ -1,6 +1,8 @@
 #pragma once
 #include "Level.h"
 #include "Shader.h"
+#include "GameObject.h"
+#include <vector>
 
 class CCamera;
 
@@ -22,5 +24,7 @@ public:
 
 private:
     CObjectShader* m_pShader = NULL;
-    CCamera*  m_pCamera;
+    CCamera*  m_pCamera = NULL;
+
+    std::vector<CGameObject*> m_StaticObjects;
 };

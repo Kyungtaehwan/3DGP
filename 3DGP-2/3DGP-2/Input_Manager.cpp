@@ -12,32 +12,45 @@ CInput_Manager::CInput_Manager()
 
 CInput_Manager::~CInput_Manager() {}
 
+void CInput_Manager::Update()
+{
+    // í‚¤ ìƒíƒœëŠ” GetAsyncKeyStateë¡œ ì‹¤ì‹œê°„ ì¡°íšŒí•˜ë¯€ë¡œ ì¶”ê°€ ê°±ì‹  ë¶ˆí•„ìš”
+}
 
 void CInput_Manager::Update_Mouse(HWND hWnd)
 {
-
-    GetCursorPos(&m_ptMouse);
-    ScreenToClient(g_hWnd, &m_ptMouse);
-    // Å¬¶óÀÌ¾ðÆ® ¿µ¿ª Áß¾Ó °è»ê
     RECT rc;
     GetClientRect(hWnd, &rc);
-    POINT ptCenter = { (rc.right - rc.left) / 2, (rc.bottom - rc.top) / 2 };
-
-    // Å¬¶óÀÌ¾ðÆ® ¡æ ½ºÅ©¸° ÁÂÇ¥ º¯È¯
-    POINT ptCenterScreen = ptCenter;
+    POINT ptCenterScreen = { (rc.right - rc.left) / 2, (rc.bottom - rc.top) / 2 };
     ClientToScreen(hWnd, &ptCenterScreen);
 
-    // ÇöÀç ¸¶¿ì½º ½ºÅ©¸° ÁÂÇ¥
+    //// í¬ì»¤ìŠ¤ ì—†ìœ¼ë©´ ìŠ¤í‚µ ì¹´ìš´í„° ë¦¬ì…‹ í›„ ìž…ë ¥ 0
+    //if (GetForegroundWindow() != hWnd)
+    //{
+    //    m_iMouseDX = 0;
+    //    m_iMouseDY = 0;
+    //    return;
+    //}
+
+    //// í¬ì»¤ìŠ¤ ë³µê·€ ì§í›„ / ì‹œìž‘ ì§í›„: SetCursorPosê°€ ë¹„ë™ê¸°ì´ë¯€ë¡œ
+    //// ì»¤ì„œê°€ ì‹¤ì œë¡œ ì¤‘ì•™ì— ì•ˆì°©í•  ë•Œê¹Œì§€ ëª‡ í”„ë ˆìž„ ëŒ€ê¸°
+    //if (m_nFocusSkipFrames > 0)
+    //{
+    //    --m_nFocusSkipFrames;
+    //    m_iMouseDX = 0;
+    //    m_iMouseDY = 0;
+    //    if (m_bMouseLock)
+    //        SetCursorPos(ptCenterScreen.x, ptCenterScreen.y);
+    //    return;
+    //}
+
     POINT ptCurrent;
     GetCursorPos(&ptCurrent);
 
-    // µ¨Å¸ = ÇöÀç - Áß¾Ó
-    m_iMouseDX = ptCurrent.x - ptCenterScreen.x;
-    m_iMouseDY = ptCurrent.y - ptCenterScreen.y;
-
-    // ¸¶¿ì½º Áß¾Ó °íÁ¤
     if (m_bMouseLock)
     {
+        m_iMouseDX = ptCurrent.x - ptCenterScreen.x;
+        m_iMouseDY = ptCurrent.y - ptCenterScreen.y;
         SetCursorPos(ptCenterScreen.x, ptCenterScreen.y);
     }
     else
