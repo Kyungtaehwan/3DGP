@@ -1,0 +1,78 @@
+#pragma once
+#include "GameObject.h"
+#include "Camera.h"
+
+// One humanoid body segment: a CGameObject + local offset from player root
+struct BodyPart
+{
+    CGameObject* pObject = NULL;
+    XMFLOAT3     vOffset = { 0.0f, 0.0f, 0.0f };
+};
+
+class CPlayer : public CGameObject
+{
+protected:
+    XMFLOAT3 m_xmf3Position = { 0.0f, 0.0f, 0.0f };
+    XMFLOAT3 m_xmf3Right    = { 1.0f, 0.0f, 0.0f };
+    XMFLOAT3 m_xmf3Up       = { 0.0f, 1.0f, 0.0f };
+    XMFLOAT3 m_xmf3Look     = { 0.0f, 0.0f, 1.0f };
+
+    float m_fPitch = 0.0f;
+    float m_fYaw   = 0.0f;
+    float m_fRoll  = 0.0f;
+
+    XMFLOAT3 m_xmf3LookAt   = { 0.0f, 0.0f, 10.0f };
+    XMFLOAT3 m_xmf3Velocity = { 0.0f, 0.0f, 0.0f };
+    XMFLOAT3 m_xmf3Gravity  = { 0.0f, 0.0f, 0.0f };
+
+    float m_fMaxVelocityXZ = 20.0f;
+    float m_fMaxVelocityY  = 20.0f;
+    float m_fFriction      = 2.0f;
+
+    CCamera* m_pCamera = NULL;
+
+    std::vector<BodyPart> m_BodyParts;
+
+public:
+    CPlayer();
+    virtual ~CPlayer();
+
+    XMFLOAT3 GetPosition()    { return m_xmf3Position; }
+    XMFLOAT3 GetLookVector()  { return m_xmf3Look; }
+    XMFLOAT3 GetUpVector()    { return m_xmf3Up; }
+    XMFLOAT3 GetRightVector() { return m_xmf3Right; }
+
+    void SetFriction(float f)            { m_fFriction = f; }
+    void SetGravity(const XMFLOAT3& g)  { m_xmf3Gravity = g; }
+    void SetMaxVelocityXZ(float v)       { m_fMaxVelocityXZ = v; }
+    void SetMaxVelocityY(float v)        { m_fMaxVelocityY  = v; }
+    void SetPosition(const XMFLOAT3& pos);
+
+    CCamera* GetCamera()                  { return m_pCamera; }
+    void     SetCamera(CCamera* pCamera)  { m_pCamera = pCamera; }
+
+    void CreateBodyParts(ID3D12Device* pd3dDevice,
+                         ID3D12GraphicsCommandList* pd3dCommandList,
+                         CShader* pShader);
+
+    void Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity = false);
+    void Move(const XMFLOAT3& xmf3Shift, bool bUpdateVelocity = false);
+    void Rotate(float fPitch, float fYaw, float fRoll);
+
+    // Overrides CGameObject::Update (int return) - physics + camera update
+    virtual int Update(float fTimeElapsed) override;
+
+    CCamera* OnChangeCamera(DWORD nNewCameraMode, DWORD nCurrentCameraMode);
+    virtual CCamera* ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed);
+
+    virtual void OnPrepareRender();
+    virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera) override;
+
+    virtual void CreateShaderVariables(ID3D12Device* pd3dDevice,
+                                       ID3D12GraphicsCommandList* pd3dCommandList) override;
+    virtual void ReleaseShaderVariables() override;
+    virtual void ReleaseUploadBuffers() override;
+
+private:
+    void UpdateBodyPartsWorld();
+};
