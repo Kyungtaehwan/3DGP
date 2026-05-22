@@ -1,6 +1,5 @@
 #pragma once
 
-// Vertex structure: position + color (no normals — simple color shader)
 struct CVertex
 {
     XMFLOAT3 position;
@@ -42,5 +41,14 @@ public:
               float fWidth = 2.0f, float fHeight = 2.0f, float fDepth = 2.0f,
               XMFLOAT4 xmf4Color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
     virtual ~CCubeMesh();
+    virtual void ReleaseUploadBuffers() override;
+};
+
+
+class CGlockMesh : public CMesh
+{
+public:
+    CGlockMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+    virtual ~CGlockMesh();
     virtual void ReleaseUploadBuffers() override;
 };

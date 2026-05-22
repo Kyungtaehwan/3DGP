@@ -3,8 +3,8 @@
 
 class CCamera;
 class CShader;
+class COBBRenderer;
 
-// Constant buffer for world matrix (b1)
 struct CB_WORLD_MATRIX
 {
     XMFLOAT4X4 m_xmf4x4World;
@@ -18,7 +18,7 @@ public:
 
     virtual void Initialize() {}
     virtual int  Update(float dt) { return OBJ_NOEVENT; }
-    virtual void Late_Update(float dt) {}
+    virtual void Late_Update(float dt);
     virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
     virtual void Release();
 
@@ -47,10 +47,14 @@ public:
     bool IsDead() const { return m_bDead; }
     int  GetHP()  const { return m_iHP; }
 
-    bool       m_bActive = true;
-    XMFLOAT4X4 m_xmf4x4World;
+    bool                m_bActive = true;
+    XMFLOAT4X4          m_xmf4x4World;
+    BoundingOrientedBox m_xmOOBB;
+    BoundingOrientedBox m_xmLocalOBB;
 
 protected:
+    void UpdateBoundingBox();
+
     CMesh*   m_pMesh   = NULL;
     CShader* m_pShader = NULL;
 

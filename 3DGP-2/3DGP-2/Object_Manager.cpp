@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Object_Manager.h"
 #include "Camera.h"
+#include "Bullet.h"
 
 // Static member definition
 CObject_Manager* CObject_Manager::m_pInstance = nullptr;
@@ -61,8 +62,8 @@ void CObject_Manager::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera
     {
         for (CGameObject* pObj : m_ObjectList[i])
         {
-            if (pObj->m_bActive)
-                pObj->Render(pd3dCommandList, pCamera);
+            // Each object's Render() decides its own visibility (e.g. bullets render explosion even when inactive)
+            if (pObj) pObj->Render(pd3dCommandList, pCamera);
         }
     }
 }
@@ -102,52 +103,59 @@ void CObject_Manager::DeleteID(OBJ_ID eID)
 
 void CObject_Manager::CheckCollisions()
 {
-    // Basic sphere collision: player bullets vs enemies
-    auto& bulletList = m_ObjectList[OBJ_PLAYER_BULLET];
-    auto& enemyList  = m_ObjectList[OBJ_ENEMY];
+    auto& playerList      = m_ObjectList[OBJ_PLAYER];
+    auto& enemyList       = m_ObjectList[OBJ_ENEMY];
+    auto& playerBullets   = m_ObjectList[OBJ_PLAYER_BULLET];
+    auto& enemyBullets    = m_ObjectList[OBJ_ENEMY_BULLET];
 
-    const float fCollisionRadius = 1.5f; // Simple radius for cube-sized objects
-
-    for (auto itBullet = bulletList.begin(); itBullet != bulletList.end(); )
+    for (auto itB = playerBullets.begin(); itB != playerBullets.end(); )
     {
-        CGameObject* pBullet = *itBullet;
+        CGameObject* pBullet = *itB;
+        if (!pBullet || !pBullet->m_bActive) { ++itB; continue; }
+
         bool bHit = false;
-
-        for (auto itEnemy = enemyList.begin(); itEnemy != enemyList.end(); )
+        for (auto itE = enemyList.begin(); itE != enemyList.end(); )
         {
-            CGameObject* pEnemy = *itEnemy;
+            CGameObject* pEnemy = *itE;
+            if (!pEnemy) { ++itE; continue; }
 
-            float fDist = Vector3::Distance(pBullet->GetPosition(), pEnemy->GetPosition());
-            if (fDist < fCollisionRadius * 2.0f)
+            if (pBullet->m_xmOOBB.Intersects(pEnemy->m_xmOOBB))
             {
                 pEnemy->OnHit(25);
                 bHit = true;
-
                 if (pEnemy->IsDead())
                 {
                     delete pEnemy;
-                    itEnemy = enemyList.erase(itEnemy);
+                    itE = enemyList.erase(itE);
                 }
-                else
-                {
-                    ++itEnemy;
-                }
-                break; // Bullet hits one enemy per frame
+                else ++itE;
+                break;
             }
-            else
+            else ++itE;
+        }
+
+        if (bHit) { static_cast<CBullet*>(pBullet)->SetBlowingUp(); ++itB; }
+        else ++itB;
+    }
+
+    for (auto itB = enemyBullets.begin(); itB != enemyBullets.end(); )
+    {
+        CGameObject* pBullet = *itB;
+        if (!pBullet || !pBullet->m_bActive) { ++itB; continue; }
+
+        bool bHit = false;
+        for (auto& pPlayer : playerList)
+        {
+            if (!pPlayer) continue;
+            if (pBullet->m_xmOOBB.Intersects(pPlayer->m_xmOOBB))
             {
-                ++itEnemy;
+                pPlayer->OnHit(10);
+                bHit = true;
+                break;
             }
         }
 
-        if (bHit)
-        {
-            delete pBullet;
-            itBullet = bulletList.erase(itBullet);
-        }
-        else
-        {
-            ++itBullet;
-        }
+        if (bHit) { delete pBullet; itB = enemyBullets.erase(itB); }
+        else ++itB;
     }
 }

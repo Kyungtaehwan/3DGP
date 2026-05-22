@@ -1,13 +1,13 @@
 #pragma once
 
-// Camera type identifiers
+
 #define FIRST_PERSON_CAMERA   0x01
 #define SPACESHIP_CAMERA      0x02
 #define THIRD_PERSON_CAMERA   0x03
 
 class CPlayer;
 
-// Constant buffer data for b0 (camera info)
+
 struct VS_CB_CAMERA_INFO
 {
     XMFLOAT4X4 m_xmf4x4View;
@@ -23,20 +23,16 @@ public:
     CCamera(CCamera* pCamera);
     virtual ~CCamera();
 
-    // Shader resource management
     virtual void CreateShaderVariables(ID3D12Device* pd3dDevice,
                                        ID3D12GraphicsCommandList* pd3dCommandList);
     virtual void UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList);
     virtual void ReleaseShaderVariables();
 
-    // Upload buffer cleanup
     virtual void ReleaseUploadBuffers() {}
 
-    // Camera update — called every frame
     virtual void Update(XMFLOAT3& xmf3LookAt, float fTimeElapsed) {}
     virtual void SetLookAt(XMFLOAT3& xmf3LookAt) {}
 
-    // Viewport / scissor
     void SetViewport(int xTopLeft, int yTopLeft, int nWidth, int nHeight,
                      float fMinZ = 0.0f, float fMaxZ = 1.0f);
     void SetScissorRect(LONG xLeft, LONG yTop, LONG xRight, LONG yBottom);
@@ -46,7 +42,6 @@ public:
     void SetViewportsAndScissorRects(ID3D12GraphicsCommandList* pd3dCommandList);
     void RegenerateViewMatrix();
 
-    // Accessors
     void SetCamera(CCamera* pCamera) {}
     void SetPlayer(CPlayer* pPlayer) { m_pPlayer = pPlayer; }
     CPlayer* GetPlayer() { return m_pPlayer; }
@@ -124,9 +119,7 @@ protected:
     ID3D12Resource*     m_pd3dcbCamera    = NULL;
 };
 
-// ============================================================
-// Derived camera classes
-// ============================================================
+
 
 class CSpaceShipCamera : public CCamera
 {

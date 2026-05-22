@@ -143,6 +143,23 @@ void CGameObject::Rotate(float fPitch, float fYaw, float fRoll)
     m_xmf4x4World = Matrix4x4::Multiply(mtxRotate, m_xmf4x4World);
 }
 
+void CGameObject::Late_Update(float dt)
+{
+    UpdateBoundingBox();
+}
+
+void CGameObject::UpdateBoundingBox()
+{
+    if (m_xmLocalOBB.Extents.x <= 0.f &&
+        m_xmLocalOBB.Extents.y <= 0.f &&
+        m_xmLocalOBB.Extents.z <= 0.f)
+        return;
+
+    m_xmLocalOBB.Transform(m_xmOOBB, XMLoadFloat4x4(&m_xmf4x4World));
+    XMStoreFloat4(&m_xmOOBB.Orientation,
+        XMQuaternionNormalize(XMLoadFloat4(&m_xmOOBB.Orientation)));
+}
+
 void CGameObject::OnHit(int nDamage)
 {
     m_iHP -= nDamage;

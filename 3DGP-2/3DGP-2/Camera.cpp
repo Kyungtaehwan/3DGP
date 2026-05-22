@@ -309,7 +309,7 @@ void CThirdPersonCamera::Update(XMFLOAT3& xmf3LookAt, float fTimeElapsed)
 
         // Always look at player
         XMFLOAT3 xmf3LookAtPlayer = m_pPlayer->GetPosition();
-        xmf3LookAtPlayer.y += 1.0f; // Look at player's torso
+        xmf3LookAtPlayer.y += 3.0f; // Look at player's torso
         SetLookAt(xmf3LookAtPlayer);
         RegenerateViewMatrix();
     }

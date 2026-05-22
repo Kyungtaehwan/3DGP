@@ -3,7 +3,6 @@
 #include "Camera.h"
 #include "Input_Manager.h"
 
-// One humanoid body segment: a CGameObject + local offset from player root
 struct BodyPart
 {
     CGameObject* pObject = NULL;
@@ -32,9 +31,20 @@ protected:
 
     CCamera* m_pCamera = NULL;
 
-    ID3D12Device* m_pd3dDevice = NULL;  // 런타임 카메라 전환 시 cbuffer 생성용
+    ID3D12Device* m_pd3dDevice = NULL;
 
     std::vector<BodyPart> m_BodyParts;
+
+    // Walking animation
+    float m_fAnimTime = 0.0f;
+    bool  m_bIsMoving = false;
+
+    // Shoot recoil  (negative = idle)
+    float m_fRecoilTimer    = -1.0f;
+    static constexpr float RECOIL_DURATION = 0.22f;
+
+    // Body part array indices
+    enum { BP_HEAD=0, BP_TORSO, BP_ARM_L, BP_ARM_R, BP_LEG_L, BP_LEG_R, BP_GUN, BP_COUNT };
 
 public:
     CPlayer();
@@ -62,7 +72,6 @@ public:
     void Move(const XMFLOAT3& xmf3Shift, bool bUpdateVelocity = false);
     void Rotate(float fPitch, float fYaw, float fRoll);
 
-    // Overrides CGameObject::Update (int return) - physics + camera update
     virtual int Update(float fTimeElapsed) override;
 
     CCamera* OnChangeCamera(DWORD nNewCameraMode, DWORD nCurrentCameraMode);
@@ -78,4 +87,5 @@ public:
 
 private:
     void UpdateBodyPartsWorld();
+    void RenderFPSArm(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
 };

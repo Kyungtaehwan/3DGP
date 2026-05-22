@@ -2,7 +2,10 @@
 #include "Level.h"
 #include "Shader.h"
 #include "GameObject.h"
-#include <vector>
+#include "Map_Manager.h"
+#include "OBBRenderer.h"
+#include "Bullet.h"
+#include "Enemy.h"
 
 class CCamera;
 
@@ -23,8 +26,19 @@ public:
     virtual void ReleaseUploadBuffers() override;
 
 private:
-    CObjectShader* m_pShader = NULL;
-    CCamera*  m_pCamera = NULL;
+    void SpawnPlayer();
+    void SpawnAtStair();
+    void SpawnEnemies(ID3D12GraphicsCommandList* pd3dCommandList);
 
-    std::vector<CGameObject*> m_StaticObjects;
+    CObjectShader* m_pShader    = NULL;
+    CCamera*       m_pCamera    = NULL;
+    ID3D12Device*  m_pd3dDevice = NULL;
+
+    int  m_nCurrentMap           = 1;
+    bool m_bPendingMapSwitch     = false;
+    bool m_bPendingFloorSwitch   = false;
+    bool m_bFloorSwitchIsStair   = false;
+    bool m_bNeedReleaseUpload    = false;
+    bool m_bCleared              = false;
+    bool m_bWasOnBottomStair     = false;
 };

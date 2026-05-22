@@ -173,7 +173,7 @@ void CMainApp::CreateDirect3DDevice()
         &d3dMsaaQualityLevels, sizeof(D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS));
     m_nMsaa4xQualityLevels = d3dMsaaQualityLevels.NumQualityLevels;
     m_bMsaa4xEnable = (m_nMsaa4xQualityLevels > 1) ? true : false;
-    //���� ������ ǰ�� ������ 1���� ũ�� ���� ���ø��� Ȱ��ȭ�Ѵ�. 
+
     hResult = m_pd3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence),
         (void**)&m_pd3dFence);
 
@@ -192,23 +192,20 @@ void CMainApp::CreateCommandQueueAndList()
     d3dCommandQueueDesc.Type  = D3D12_COMMAND_LIST_TYPE_DIRECT;
     d3dCommandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
-    //����(Direct) ���� ť�� �����Ѵ�. 
     HRESULT hResult = m_pd3dDevice->CreateCommandQueue(&d3dCommandQueueDesc,
         _uuidof(ID3D12CommandQueue), (void**)&m_pd3dCommandQueue);
 
 
-    //����(Direct) ���� �Ҵ��ڸ� �����Ѵ�. 
     hResult = m_pd3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
         __uuidof(ID3D12CommandAllocator), (void**)&m_pd3dCommandAllocator);
 
 
-    //����(Direct) ���� ����Ʈ�� �����Ѵ�. 
     m_pd3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
                                      m_pd3dCommandAllocator, NULL,
                                      __uuidof(ID3D12GraphicsCommandList),
                                      (void**)&m_pd3dCommandList);
 
-    //���� ����Ʈ�� �����Ǹ� ����(Open) �����̹Ƿ� ����(Closed) ���·� �����. 
+
     hResult = m_pd3dCommandList->Close();
 
 }
@@ -382,8 +379,7 @@ void CMainApp::ExecuteLevelLoad()
 
 void CMainApp::WaitForGpuComplete()
 {
-    // m_nFenceValues[0]을 전역 단조 증가 카운터로 사용 (버퍼 인덱스별 분리 시
-    // 두 버퍼가 같은 값 1에 도달해 Wait를 건너뛰어 Allocator Reset 충돌 발생)
+
     const UINT64 nFence = ++m_nFenceValues[0];
     m_pd3dCommandQueue->Signal(m_pd3dFence, nFence);
     if (m_pd3dFence->GetCompletedValue() < nFence)
@@ -396,7 +392,7 @@ void CMainApp::WaitForGpuComplete()
 void CMainApp::MoveToNextFrame()
 {
     m_nSwapChainBufferIndex = m_pdxgiSwapChain->GetCurrentBackBufferIndex();
-    // 전역 단조 증가 카운터 사용 → 항상 현재 프레임 GPU 작업이 끝난 뒤 다음 프레임 시작
+
     const UINT64 nFence = ++m_nFenceValues[0];
     m_pd3dCommandQueue->Signal(m_pd3dFence, nFence);
     if (m_pd3dFence->GetCompletedValue() < nFence)
@@ -442,7 +438,6 @@ void CMainApp::ChangeSwapChainState()
 }
 
 
-// Update: input + level update (Object_Manager updates all objects incl. player)
 void CMainApp::Update(float dt)
 {
     CLevel_Manager::Get_Instance()->Update(dt);
@@ -454,9 +449,7 @@ void CMainApp::LateUpdate(float dt)
     CLevel_Manager::Get_Instance()->Late_Update(dt);
 }
 
-// ================================================================
-// Render
-// ================================================================
+
 void CMainApp::Render()
 {
     BeginRender();

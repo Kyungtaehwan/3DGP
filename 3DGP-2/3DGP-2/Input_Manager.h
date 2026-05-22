@@ -25,12 +25,12 @@ public:
 
     void SetMouseLock(bool bLock)
     {
-        m_bMouseLock    = bLock;
+        m_bMouseLock = bLock;
         m_bNeedRecenter = true;
         if (bLock)
             while (ShowCursor(FALSE) >= 0);
         else
-            while (ShowCursor(TRUE)  <  0);
+            while (ShowCursor(TRUE) < 0);
     }
     bool  GetMouseLock() const { return m_bMouseLock; }
 
@@ -40,9 +40,9 @@ private:
 
     static CInput_Manager* m_pInstance;
 
-    bool  m_bKeyState[256]  = {};
-    int   m_iMouseDX        = 0;
-    int   m_iMouseDY        = 0;
-    bool  m_bMouseLock      = false;
-    bool  m_bNeedRecenter   = true;   // 포커스 복귀 / 최초 시작 시 첫 델타 무시
+    bool  m_bKeyState[256] = {};
+    int   m_iMouseDX = 0;
+    int   m_iMouseDY = 0;
+    bool  m_bMouseLock = false;
+    bool  m_bNeedRecenter = true;
 };
