@@ -50,7 +50,8 @@ inline bool IsEqual(float a, float b) { return IsZero(a - b); }
 // ============================================================
 enum LEVEL_ID
 {
-    LEVEL_MENU = 0,
+    LEVEL_LOGO = 0,
+    LEVEL_MENU,
     LEVEL_GAMEPLAY,
     LEVEL_END
 };

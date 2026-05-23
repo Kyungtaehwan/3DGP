@@ -3,6 +3,7 @@
 #include "Input_Manager.h"
 #include "Level_Manager.h"
 #include "Object_Manager.h"
+#include "UI_Manager.h"
 
 ID3D12Resource* CreateBufferResource(
     ID3D12Device*              pd3dDevice,
@@ -358,8 +359,12 @@ void CMainApp::ExecuteLevelLoad()
     m_pd3dCommandAllocator->Reset();
     m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
 
+    // UI is global across all levels — init once here so the menu can use it too.
+    CUI_Manager::Get_Instance()->Init(
+        m_pd3dDevice, m_pd3dCommandList, m_pd3dRootSignature);
+
     CLevel_Manager::Get_Instance()->Level_Change(
-        LEVEL_GAMEPLAY,
+        LEVEL_LOGO,
         m_pd3dDevice,
         m_pd3dCommandList,
         m_pd3dRootSignature);
@@ -457,6 +462,30 @@ void CMainApp::Render()
     CLevel_Manager::Get_Instance()->Render(m_pd3dCommandList);
 
     EndRender();
+
+    // Any deferred Level switch is applied *after* the frame is presented so
+    // the live Level is never deleted while its own code is still on the stack.
+    if (CLevel_Manager::Get_Instance()->HasPendingChange())
+        ProcessPendingLevelChange();
+}
+
+void CMainApp::ProcessPendingLevelChange()
+{
+    m_pd3dCommandAllocator->Reset();
+    m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
+
+    CLevel_Manager::Get_Instance()->Apply_Pending_Change(
+        m_pd3dDevice, m_pd3dCommandList, m_pd3dRootSignature);
+
+    m_pd3dCommandList->Close();
+
+    ID3D12CommandList* ppLists[] = { m_pd3dCommandList };
+    m_pd3dCommandQueue->ExecuteCommandLists(1, ppLists);
+    WaitForGpuComplete();
+
+    CLevel_Manager::Get_Instance()->ReleaseUploadBuffers();
+
+    m_GameTimer.Reset();
 }
 
 
@@ -523,6 +552,20 @@ void CMainApp::BeginRender()
         TRUE,
         &dsvHandle);
 
+    // Default full-window viewport/scissor so levels without a camera
+    // (e.g. the menu) still rasterize to the back buffer.
+    D3D12_VIEWPORT vp = {};
+    vp.TopLeftX = 0.0f;
+    vp.TopLeftY = 0.0f;
+    vp.Width    = (float)m_nWndClientWidth;
+    vp.Height   = (float)m_nWndClientHeight;
+    vp.MinDepth = 0.0f;
+    vp.MaxDepth = 1.0f;
+    m_pd3dCommandList->RSSetViewports(1, &vp);
+
+    D3D12_RECT sc = { 0, 0, (LONG)m_nWndClientWidth, (LONG)m_nWndClientHeight };
+    m_pd3dCommandList->RSSetScissorRects(1, &sc);
+
     m_pd3dCommandList->SetGraphicsRootSignature(
         m_pd3dRootSignature);
 }
@@ -568,6 +611,7 @@ void CMainApp::Release()
     WaitForGpuComplete();
 
     CLevel_Manager::Destroy_Instance();
+    CUI_Manager::Destroy_Instance();
 
     if (m_pd3dRootSignature) { m_pd3dRootSignature->Release(); m_pd3dRootSignature = NULL; }
 

@@ -29,6 +29,9 @@
     <Filter Include="02.Level_Manager\Level\02_00.Level_Menu">
       <UniqueIdentifier>{56399d1c-916b-4ac3-aff3-4ba9dc12e5f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.Level_Manager\Level\02_02.Level_LOGO">
+      <UniqueIdentifier>{91a3c5d8-2b7f-4e1c-8d6a-3f9b7c4e8a12}</UniqueIdentifier>
+    </Filter>
     <Filter Include="03.Object_Manager">
       <UniqueIdentifier>{8b24259a-b77b-406b-a9f5-74f3e7cb9067}</UniqueIdentifier>
     </Filter>
@@ -49,6 +52,9 @@
     </Filter>
     <Filter Include="05.Input_Manager">
       <UniqueIdentifier>{8e92683f-b978-4f2f-b7d2-18f4a1abe782}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="08.UI_Manager">
+      <UniqueIdentifier>{c5e1d7a4-8b39-4f2e-9c47-2d6e8a1f3b95}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -75,6 +81,9 @@
     </ClInclude>
     <ClInclude Include="Level_GamePlay.h">
       <Filter>02.Level_Manager\Level\02_01.Level_GamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="Level_LOGO.h">
+      <Filter>02.Level_Manager\Level\02_02.Level_LOGO</Filter>
     </ClInclude>
     <ClInclude Include="Level_Manager.h">
       <Filter>02.Level_Manager</Filter>
@@ -106,6 +115,9 @@
     <ClInclude Include="Input_Manager.h">
       <Filter>05.Input_Manager</Filter>
     </ClInclude>
+    <ClInclude Include="UI_Manager.h">
+      <Filter>08.UI_Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -125,6 +137,9 @@
     </ClCompile>
     <ClCompile Include="Level_GamePlay.cpp">
       <Filter>02.Level_Manager\Level\02_01.Level_GamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_LOGO.cpp">
+      <Filter>02.Level_Manager\Level\02_02.Level_LOGO</Filter>
     </ClCompile>
     <ClCompile Include="Level_Manager.cpp">
       <Filter>02.Level_Manager</Filter>
@@ -152,6 +167,9 @@
     </ClCompile>
     <ClCompile Include="Input_Manager.cpp">
       <Filter>05.Input_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="UI_Manager.cpp">
+      <Filter>08.UI_Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

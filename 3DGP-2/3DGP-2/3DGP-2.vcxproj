@@ -147,10 +147,12 @@
     <ClInclude Include="Level_Manager.h" />
     <ClInclude Include="Level_GamePlay.h" />
     <ClInclude Include="Level_Menu.h" />
+    <ClInclude Include="Level_LOGO.h" />
     <ClInclude Include="MapData.h" />
     <ClInclude Include="Block.h" />
     <ClInclude Include="Map_Manager.h" />
     <ClInclude Include="MainApp.h" />
+    <ClInclude Include="UI_Manager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
@@ -170,11 +172,13 @@
     <ClCompile Include="Level_Manager.cpp" />
     <ClCompile Include="Level_GamePlay.cpp" />
     <ClCompile Include="Level_Menu.cpp" />
+    <ClCompile Include="Level_LOGO.cpp" />
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="Map_Manager.cpp" />
     <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="OBBRenderer.cpp" />
+    <ClCompile Include="UI_Manager.cpp" />
     <ClCompile Include="MainApp.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

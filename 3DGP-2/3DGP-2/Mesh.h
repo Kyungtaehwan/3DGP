@@ -44,6 +44,28 @@ public:
     virtual void ReleaseUploadBuffers() override;
 };
 
+// Single horizontal quad at y=fYTop, spanning fWidth (X) x fDepth (Z), centered on origin.
+// Has no side faces, so adjacent tiles can't produce coplanar-side artifacts.
+class CFloorQuadMesh : public CMesh
+{
+public:
+    CFloorQuadMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList,
+                   float fWidth, float fDepth, float fYTop, XMFLOAT4 xmf4Color);
+    virtual ~CFloorQuadMesh();
+    virtual void ReleaseUploadBuffers() override;
+};
+
+// Flat right-pointing triangle (play-icon) on the XY plane (z = 0), double-sided.
+// Apex on +X, base on -X. Centered on origin.
+class CTriangleMesh : public CMesh
+{
+public:
+    CTriangleMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList,
+                  float fWidth, float fHeight, XMFLOAT4 xmf4Color);
+    virtual ~CTriangleMesh();
+    virtual void ReleaseUploadBuffers() override;
+};
+
 
 class CGlockMesh : public CMesh
 {

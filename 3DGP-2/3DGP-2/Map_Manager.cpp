@@ -50,7 +50,7 @@ static const uint8_t s_Map1_F2[MAP_ROWS][MAP_COLS] = {
     {0, 1, 0, 6, 6, 6, 6, 6, 0, 1, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 0, 6, 6, 0, 1, 0},
     {0, 1, 0, 6, 6, 6, 6, 6, 0, 1, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 0, 6, 6, 0, 1, 0},
     {0, 1, 0, 6, 6, 6, 6, 6, 0, 1, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 0, 6, 6, 0, 1, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+    {0, 0, 0, 3, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
     {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
     {0, 1, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0},
     {0, 1, 0, 6, 6, 6, 6, 6, 6, 0, 1, 0, 1, 0, 6, 6, 6, 2, 6, 6, 6, 0, 1, 0, 6, 6, 6, 6, 6, 0, 1, 0},
@@ -382,9 +382,18 @@ void CMap_Manager::BuildFloor(ID3D12Device* pd3dDevice,
                                CShader* pShader, int r, int c,
                                float yCenter, XMFLOAT4 color)
 {
-    m_Objects.push_back(MakeBlock(pd3dDevice, pd3dCommandList, pShader,
-        TileX(c), yCenter, TileZ(r),
-        TILE_SCALE, 0.1f, TILE_SCALE, color));
+    // Render the floor as a single top-facing quad (no side faces) so adjacent
+    // tiles can't produce coplanar side artifacts that bleed through enemies.
+    // Quad y = yCenter + half of the old box height (0.05).
+    float yTop = yCenter + 0.05f;
+
+    CBlock* pBlock = new CBlock();
+    pBlock->SetShader(pShader);
+    pBlock->SetMesh(new CFloorQuadMesh(pd3dDevice, pd3dCommandList,
+                                       TILE_SCALE, TILE_SCALE, yTop, color));
+    pBlock->CreateShaderVariables(pd3dDevice, pd3dCommandList);
+    pBlock->SetPosition(TileX(c), 0.0f, TileZ(r));
+    m_Objects.push_back(pBlock);
 }
 
 void CMap_Manager::BuildStair(ID3D12Device* pd3dDevice,
@@ -472,22 +481,23 @@ void CMap_Manager::Build(ID3D12Device* pd3dDevice,
                 BuildWall(pd3dDevice, pd3dCommandList, pShader, r, c);
                 break;
             case TileType::FLOOR:
-                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.05f, COLOR_FLOOR);
+                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, COLOR_FLOOR);
                 break;
             case TileType::STAIR:
                 BuildStair(pd3dDevice, pd3dCommandList, pShader, r, c);
                 break;
             case TileType::DOOR:
+                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, COLOR_FLOOR);
                 BuildDoor(pd3dDevice, pd3dCommandList, pShader, r, c);
                 break;
             case TileType::START:
-                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.05f, COLOR_START);
+                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, COLOR_START);
                 break;
             case TileType::END:
-                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.05f, COLOR_END);
+                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, COLOR_END);
                 break;
             case TileType::ROOM:
-                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, 0.f, COLOR_ROOM);
+                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, COLOR_ROOM);
                 break;
             }
         }

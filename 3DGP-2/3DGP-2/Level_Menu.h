@@ -13,7 +13,7 @@ public:
 
     virtual int  Update(float dt) override;
     virtual void Late_Update(float dt) override {}
-    virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList) override {}
+    virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList) override;
     virtual void Release() override {}
 
 private:

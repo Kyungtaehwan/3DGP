@@ -1,10 +1,12 @@
 #include "pch.h"
 #include "Level_GamePlay.h"
+#include "Level_Manager.h"
 #include "Object_Manager.h"
 #include "Player.h"
 #include "Camera.h"
 #include "Mesh.h"
 #include "Input_Manager.h"
+#include "UI_Manager.h"
 #include <cmath>
 
 void CLevel_GamePlay::Initialize(ID3D12Device* pd3dDevice,
@@ -12,6 +14,11 @@ void CLevel_GamePlay::Initialize(ID3D12Device* pd3dDevice,
                                   ID3D12RootSignature* pd3dRootSignature)
 {
     m_pd3dDevice = pd3dDevice;
+
+    // Stage 1 -> map index 0, Stage 2 -> map index 1.
+    int nStage = CLevel_Manager::Get_Instance()->GetCurrentStage();
+    if (nStage < 1) nStage = 1;
+    m_nCurrentMap = nStage - 1;
 
     m_pShader = new CObjectShader();
     m_pShader->CreateShader(pd3dDevice, pd3dCommandList, pd3dRootSignature);
@@ -103,21 +110,32 @@ int CLevel_GamePlay::Update(float dt)
 
     XMFLOAT3 correctedPos = newPos;
 
-    // X axis: single center-Z row probe
-    int cPlus  = (int)floorf((newPos.x + radius) / TILE_SCALE);
-    int cMinus = (int)floorf((newPos.x - radius) / TILE_SCALE);
-    int zRow   = (int)floorf(newPos.z / TILE_SCALE);
+    // X axis: probe new X against prev Z (move-and-slide).
+    // Using prev Z avoids the "stuck inside wall" bug where newPos.z was already
+    // intersecting a wall row, causing X check to always fail.
+    // 4-corner AABB probe catches cases where the player's Z extent straddles tile rows.
+    {
+        int cP = (int)floorf((newPos.x + radius) / TILE_SCALE);
+        int cM = (int)floorf((newPos.x - radius) / TILE_SCALE);
+        int zP = (int)floorf((prevPos.z + radius) / TILE_SCALE);
+        int zM = (int)floorf((prevPos.z - radius) / TILE_SCALE);
 
-    if (!pMap->IsPassable(zRow, cPlus) || !pMap->IsPassable(zRow, cMinus))
-        correctedPos.x = prevPos.x;
+        if (!pMap->IsPassable(zP, cP) || !pMap->IsPassable(zP, cM) ||
+            !pMap->IsPassable(zM, cP) || !pMap->IsPassable(zM, cM))
+            correctedPos.x = prevPos.x;
+    }
 
-    // Z axis: single center-X col probe
-    int xCol   = (int)floorf(correctedPos.x / TILE_SCALE);
-    int rPlus  = (int)floorf((newPos.z + radius) / TILE_SCALE);
-    int rMinus = (int)floorf((newPos.z - radius) / TILE_SCALE);
+    // Z axis: probe new Z against the (already corrected) X.
+    {
+        int xP = (int)floorf((correctedPos.x + radius) / TILE_SCALE);
+        int xM = (int)floorf((correctedPos.x - radius) / TILE_SCALE);
+        int rP = (int)floorf((newPos.z + radius) / TILE_SCALE);
+        int rM = (int)floorf((newPos.z - radius) / TILE_SCALE);
 
-    if (!pMap->IsPassable(rPlus, xCol) || !pMap->IsPassable(rMinus, xCol))
-        correctedPos.z = prevPos.z;
+        if (!pMap->IsPassable(rP, xP) || !pMap->IsPassable(rP, xM) ||
+            !pMap->IsPassable(rM, xP) || !pMap->IsPassable(rM, xM))
+            correctedPos.z = prevPos.z;
+    }
 
     if (correctedPos.x != newPos.x || correctedPos.z != newPos.z)
     {
@@ -193,15 +211,27 @@ int CLevel_GamePlay::Update(float dt)
     if (pInput->Key_Down('R'))
         m_bPendingMapSwitch = true;
 
-    // Clear check: reach END tile on F1
-    if (!m_bCleared)
+    // End-of-stage detection (clear / game-over). Whichever happens first wins;
+    // after that we just tick the timer and return to the menu.
+    if (!m_bCleared && !m_bGameOver)
     {
         XMFLOAT3 pos = pPlayer->GetPosition();
         if (pMap->IsAtEnd(pos.x, pos.z))
         {
             m_bCleared = true;
-            m_bPendingMapSwitch = true;
+            m_fEndTimer = CLEAR_DURATION;
         }
+        else if (pPlayer->IsDead())
+        {
+            m_bGameOver = true;
+            m_fEndTimer = GAMEOVER_DURATION;
+        }
+    }
+    else
+    {
+        m_fEndTimer -= dt;
+        if (m_fEndTimer <= 0.0f)
+            CLevel_Manager::Get_Instance()->Request_Level_Change(LEVEL_MENU);
     }
 
     return 0;
@@ -289,12 +319,25 @@ void CLevel_GamePlay::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 
         pOBBR->Render(pd3dCommandList);
     }
+
+    // UI pass — drawn last so it sits on top of everything else.
+    CUI_Manager* pUI = CUI_Manager::Get_Instance();
+    pUI->Render(pd3dCommandList, m_pCamera);
+    if (pPlayerObj)
+        pUI->RenderHPBar(pd3dCommandList,
+                         pPlayerObj->GetHP(), pPlayerObj->GetMaxHP());
+    if (m_bCleared)
+        pUI->RenderClearOverlay(pd3dCommandList);
+    if (m_bGameOver)
+        pUI->RenderGameOverOverlay(pd3dCommandList);
 }
 
 void CLevel_GamePlay::Release()
 {
     CBullet::ReleaseShared();
     COBBRenderer::Destroy_Instance();
+    // UI_Manager intentionally not destroyed here — its lifetime spans levels
+    // (init'd by MainApp, freed at app exit).
 
     CMap_Manager* pMap = CMap_Manager::Get_Instance();
     pMap->ReleaseObjects();

@@ -33,6 +33,14 @@ int CObject_Manager::Update(float dt)
 
             if (nResult == OBJ_DEAD || pObj->IsDead())
             {
+                // The player object must outlive its IsDead() state — its camera
+                // is cached by the level and other systems hold references.
+                // Game-over handling is done in Level_GamePlay.
+                if (i == OBJ_PLAYER)
+                {
+                    ++it;
+                    continue;
+                }
                 delete pObj;
                 it = list.erase(it);
             }

@@ -44,8 +44,9 @@ public:
     void Rotate(float fPitch, float fYaw, float fRoll);
 
     virtual void OnHit(int nDamage);
-    bool IsDead() const { return m_bDead; }
-    int  GetHP()  const { return m_iHP; }
+    bool IsDead()   const { return m_bDead; }
+    int  GetHP()    const { return m_iHP; }
+    int  GetMaxHP() const { return m_iMaxHP; }
 
     bool                m_bActive = true;
     XMFLOAT4X4          m_xmf4x4World;

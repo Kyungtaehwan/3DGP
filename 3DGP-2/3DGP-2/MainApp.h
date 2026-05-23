@@ -28,6 +28,7 @@ private:
     void CreateDepthStencilView();
     void CreateRootSignature();
     void ExecuteLevelLoad();
+    void ProcessPendingLevelChange();
 
     void WaitForGpuComplete();
     void MoveToNextFrame();
