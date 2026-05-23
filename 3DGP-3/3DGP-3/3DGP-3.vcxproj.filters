@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="3DGP-3.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="define.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GameTimer.h" />
+    <ClInclude Include="Input_Manager.h" />
+    <ClInclude Include="Level.h" />
+    <ClInclude Include="Level_GamePlay.h" />
+    <ClInclude Include="Level_Manager.h" />
+    <ClInclude Include="MainApp.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Object_Manager.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="3DGP-3.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameTimer.cpp" />
+    <ClCompile Include="Input_Manager.cpp" />
+    <ClCompile Include="Level_GamePlay.cpp" />
+    <ClCompile Include="Level_Manager.cpp" />
+    <ClCompile Include="MainApp.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Object_Manager.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Shader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders.hlsl" />
+    <None Include="Model\Apache.bin">
+      <Filter>리소스 파일</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="3DGP-3.rc">
+      <Filter>리소스 파일</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="small.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="3DGP-3.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
+  </ItemGroup>
+</Project>
