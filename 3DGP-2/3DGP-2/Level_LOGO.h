@@ -25,7 +25,7 @@ private:
     struct LogoCube
     {
         CBlock*  pObj;
-        XMFLOAT3 localOffset;   // relative to logo group origin
+        XMFLOAT3 localOffset; 
     };
 
     void BuildLetter(ID3D12Device* pd3dDevice,
@@ -39,11 +39,9 @@ private:
     std::vector<LogoCube> m_LetterCubes;
     float m_fRotation = 0.0f;
 
-    CBlock* m_pPlayButton   = nullptr;   // dark grey cube
-    CBlock* m_pPlayTriangle = nullptr;   // white right-pointing triangle in front of the cube
+    CBlock* m_pPlayButton   = nullptr; 
+    CBlock* m_pPlayTriangle = nullptr; 
 
-    // Hard-coded NDC click region of the play button (camera is fixed,
-    // so projected screen position is also fixed).
     static constexpr float BTN_NDC_X_MIN = -0.20f;
     static constexpr float BTN_NDC_X_MAX = +0.20f;
     static constexpr float BTN_NDC_Y_MIN = -0.70f;

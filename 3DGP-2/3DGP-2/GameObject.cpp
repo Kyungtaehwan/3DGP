@@ -23,13 +23,10 @@ void CGameObject::Release()
 
     if (m_pMesh)
     {
-        // Mesh lifetime is managed externally or by the object
-        // Only delete if we own it; for now we do not delete shared meshes here
-        // to avoid double-free. Mesh ownership is assumed to be per-object in this framework.
+
         delete m_pMesh;
         m_pMesh = NULL;
     }
-    // Shader is shared; do not delete here
     m_pShader = NULL;
 }
 
@@ -50,12 +47,11 @@ void CGameObject::CreateShaderVariables(ID3D12Device* pd3dDevice,
 
 void CGameObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
-    // Transpose world matrix for HLSL column-major convention
     XMFLOAT4X4 xmf4x4World;
     XMStoreFloat4x4(&xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4World)));
     ::memcpy(&m_pcbMappedWorldMatrix->m_xmf4x4World, &xmf4x4World, sizeof(XMFLOAT4X4));
 
-    // Root parameter 1 -> b1 -> world matrix constant buffer
+    // Root parameter 1 -> b1
     D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = m_pd3dcbWorldMatrix->GetGPUVirtualAddress();
     pd3dCommandList->SetGraphicsRootConstantBufferView(1, cbGpuAddress);
 }
@@ -104,7 +100,7 @@ XMFLOAT3 CGameObject::GetPosition() const
 
 XMFLOAT3 CGameObject::GetLook() const
 {
-    // Look is the forward vector: 3rd column of the world matrix (row-major)
+    
     return Vector3::Normalize(XMFLOAT3(m_xmf4x4World._31, m_xmf4x4World._32, m_xmf4x4World._33));
 }
 

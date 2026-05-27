@@ -37,7 +37,7 @@ public:
     bool     IsAtStairBottom(int r, int c) const;
     bool     IsAtEnd(float worldX, float worldZ) const;
 
-    // Rendering (merged from CMapRenderer)
+    // Rendering
     void Build(ID3D12Device* pd3dDevice,
                ID3D12GraphicsCommandList* pd3dCommandList,
                CShader* pShader);
@@ -58,6 +58,7 @@ private:
     // Map data members
     TileType  m_F2[MAP_ROWS][MAP_COLS];
     TileType  m_F1[MAP_ROWS][MAP_COLS];
+    int       m_MapIndex     = 0;   // 0 = stage 1, 1 = stage 2 (drives palette)
     int       m_CurrentFloor = 1;
     TileType(*m_Tiles)[MAP_COLS] = nullptr;
     bool      m_DoorOpen[MAP_ROWS][MAP_COLS] = {};
@@ -66,7 +67,7 @@ private:
     int       m_StairF2TopRow = 0, m_StairF2BotRow = 0, m_StairF2Col = 0;
     int       m_StairF1Row    = 0, m_StairF1Col    = 0;
 
-    // Rendering helpers
+
     CBlock*  MakeBlock(ID3D12Device*, ID3D12GraphicsCommandList*, CShader*,
                        float x, float y, float z,
                        float w, float h, float d, XMFLOAT4 color);

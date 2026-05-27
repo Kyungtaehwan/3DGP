@@ -50,6 +50,10 @@ protected:
     float m_fYaw   = 0.0f;
     float m_fRoll  = 0.0f;
 
+    // Smoothed banking angles (degrees) for natural helicopter tilt.
+    float m_fBankPitch = 0.0f;   // nose up/down when moving fwd/back
+    float m_fBankRoll  = 0.0f;   // wing dip when strafing left/right
+
     XMFLOAT3 m_xmf3LookAt = { 0.0f, 0.0f, 10.0f };
 
     float m_fMoveSpeed = 30.0f;

@@ -8,11 +8,8 @@ void CLevel_Menu::Initialize(ID3D12Device* pd3dDevice,
                               ID3D12GraphicsCommandList* pd3dCommandList,
                               ID3D12RootSignature* pd3dRootSignature)
 {
-    // Menu has no scene objects — the background is the cleared render target.
-    // UI_Manager is already initialized by MainApp.
-    m_fTimeAcc = 0.0f;
 
-    // Show OS cursor in the menu; gameplay re-locks it on entry.
+    m_fTimeAcc = 0.0f;
     CInput_Manager::Get_Instance()->SetMouseLock(false);
 }
 
@@ -22,17 +19,32 @@ int CLevel_Menu::Update(float dt)
 
     CInput_Manager* pInput = CInput_Manager::Get_Instance();
 
-    // '1' / '2' — pick stage and enter gameplay.
-    if (pInput->Key_Down('1'))
-        CLevel_Manager::Get_Instance()->Request_Level_Change(LEVEL_GAMEPLAY, 1);
-    else if (pInput->Key_Down('2'))
-        CLevel_Manager::Get_Instance()->Request_Level_Change(LEVEL_GAMEPLAY, 2);
+
+    if (pInput->Key_Down(VK_LBUTTON))
+    {
+        POINT pt;
+        GetCursorPos(&pt);
+        ScreenToClient(g_hWnd, &pt);
+
+        float ndcX = ((float)pt.x / (float)FRAME_BUFFER_WIDTH)  * 2.0f - 1.0f;
+        float ndcY = -(((float)pt.y / (float)FRAME_BUFFER_HEIGHT) * 2.0f - 1.0f);
+
+        if (ndcX >= STAGE1_NDC_X_MIN && ndcX <= STAGE1_NDC_X_MAX &&
+            ndcY >= STAGE1_NDC_Y_MIN && ndcY <= STAGE1_NDC_Y_MAX)
+        {
+            CLevel_Manager::Get_Instance()->Request_Level_Change(LEVEL_GAMEPLAY, 1);
+        }
+        else if (ndcX >= STAGE2_NDC_X_MIN && ndcX <= STAGE2_NDC_X_MAX &&
+                 ndcY >= STAGE2_NDC_Y_MIN && ndcY <= STAGE2_NDC_Y_MAX)
+        {
+            CLevel_Manager::Get_Instance()->Request_Level_Change(LEVEL_GAMEPLAY, 2);
+        }
+    }
 
     return 0;
 }
 
 void CLevel_Menu::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 {
-    // Draw the menu UI (two stage panels). UI is in NDC so no camera needed.
     CUI_Manager::Get_Instance()->RenderMenu(pd3dCommandList);
 }

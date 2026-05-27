@@ -23,23 +23,9 @@ void CMap_Manager::Destroy_Instance()
     }
 }
 
-// ================================================================
-//  MAP 1  "The Labyrinth"
-//  F2(upper): START=(1,1)    STAIR=(16,17)
-//  F1(lower): STAIR=(16,17)  END=(20,30)
-//
-//  Rooms [F2]:
-//    Room A  rows 3-9,  cols 11-20  doors: N(2,15) S(10,15) W(6,10)
-//    Room B  rows 13-18, cols 3-8   doors: N(12,5) W(15,2)
-//    StairRoom rows 13-18, cols 14-20  doors: N(12,17) S(19,17) E(15,21)
-//
-//  Rooms [F1]:
-//    Room D  rows 3-8,  cols 3-13   doors: N(2,8) S(9,8) W(5,2)
-//    Room E  rows 12-18, cols 19-28  doors: N(11,23) S(19,24) E(15,29)
-// ================================================================
-
+//Map1
 static const uint8_t s_Map1_F2[MAP_ROWS][MAP_COLS] = {
-//   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 4, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
     {0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
@@ -59,13 +45,12 @@ static const uint8_t s_Map1_F2[MAP_ROWS][MAP_COLS] = {
     {0, 1, 0, 6, 6, 6, 6, 6, 6, 0, 1, 1, 1, 0, 6, 6, 6, 2, 6, 6, 6, 0, 1, 0, 6, 6, 6, 6, 6, 0, 1, 0},
     {0, 1, 0, 6, 6, 6, 6, 6, 6, 0, 1, 0, 1, 0, 6, 6, 6, 2, 6, 6, 6, 0, 1, 0, 6, 6, 6, 6, 6, 0, 1, 0},
     {0, 1, 0, 6, 6, 6, 6, 6, 6, 0, 1, 0, 1, 0, 6, 6, 6, 2, 6, 6, 6, 0, 1, 0, 6, 6, 6, 6, 6, 0, 1, 0},
-    {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+    {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0},
     {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
 
 static const uint8_t s_Map1_F1[MAP_ROWS][MAP_COLS] = {
-//   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 4, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
     {0, 1, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
@@ -90,23 +75,9 @@ static const uint8_t s_Map1_F1[MAP_ROWS][MAP_COLS] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
 
-// ================================================================
-//  MAP 2  "The Citadel"
-//  F2(upper): START=(20,1)   STAIR=(15,15)
-//  F1(lower): STAIR=(15,15)  END=(1,30)
-//
-//  Rooms [F2]:
-//    Room P    rows 3-8,  cols 3-12   doors: N(2,7) S(9,7) W(5,2)
-//    Room Q    rows 3-8,  cols 16-28  doors: N(2,22) S(9,22) E(5,29)
-//    StairRoom rows 12-18, cols 10-21 doors: N(11,15) S(19,15) W(15,9) E(15,22)
-//
-//  Rooms [F1]:
-//    Room F    rows 3-9,  cols 22-28  doors: N(2,25) S(10,25) W(6,21) E(6,29)
-//    Room G    rows 13-18, cols 3-9   doors: N(12,6) S(19,6) W(15,2)
-// ================================================================
+//Map2
 
 static const uint8_t s_Map2_F2[MAP_ROWS][MAP_COLS] = {
-//   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
     {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 0},
@@ -132,7 +103,7 @@ static const uint8_t s_Map2_F2[MAP_ROWS][MAP_COLS] = {
 };
 
 static const uint8_t s_Map2_F1[MAP_ROWS][MAP_COLS] = {
-//   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
     {0, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0},
@@ -157,9 +128,7 @@ static const uint8_t s_Map2_F1[MAP_ROWS][MAP_COLS] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
 
-// ================================================================
-//  CMap_Manager implementation
-// ================================================================
+
 
 bool CMap_Manager::InBounds(int r, int c) const
 {
@@ -214,6 +183,7 @@ void CMap_Manager::Load(int mapIndex)
     if (mapIndex == 0) { srcF2 = s_Map1_F2; srcF1 = s_Map1_F1; }
     else               { srcF2 = s_Map2_F2; srcF1 = s_Map2_F1; }
 
+    m_MapIndex = (mapIndex == 1) ? 1 : 0;
     memset(m_DoorOpen, 0, sizeof(m_DoorOpen));
     m_CurrentFloor = 1;
 
@@ -255,7 +225,6 @@ void CMap_Manager::Load(int mapIndex)
         m_StairF2TopRow = (minR < MAP_ROWS) ? minR : 0;
         m_StairF2BotRow = (maxR >= 0)        ? maxR : 0;
 
-        // F1 arrival: prefer STAIR tile, fall back to START tile
         bool foundF1Stair = false;
         int  f1StartR = 1, f1StartC = 1;
         for (int r = 0; r < MAP_ROWS; ++r)
@@ -287,8 +256,7 @@ XMFLOAT3 CMap_Manager::GetSpawnPos() const
 
 XMFLOAT3 CMap_Manager::GetStairPos() const
 {
-    // After switching to F1, return F1 stair arrival tile center.
-    // While still on F2, return the top of the stair corridor.
+
     int r = (m_CurrentFloor == 0) ? m_StairF1Row    : m_StairF2TopRow;
     int c = (m_CurrentFloor == 0) ? m_StairF1Col    : m_StairF2Col;
     return XMFLOAT3(c * TILE_SCALE + TILE_SCALE * 0.5f, 0.0f, r * TILE_SCALE + TILE_SCALE * 0.5f);
@@ -297,7 +265,7 @@ XMFLOAT3 CMap_Manager::GetStairPos() const
 std::vector<XMFLOAT3> CMap_Manager::GetEnemySpawnPositions() const
 {
     std::vector<XMFLOAT3> positions;
-    // Sample every 4 tiles so each room gets 1-2 enemies
+
     for (int r = 1; r < MAP_ROWS - 1; r += 4)
         for (int c = 1; c < MAP_COLS - 1; c += 4)
             if (m_Tiles[r][c] == TileType::ROOM)
@@ -338,17 +306,44 @@ bool CMap_Manager::IsAtEnd(float worldX, float worldZ) const
     return (r == m_EndRow && c == m_EndCol);
 }
 
-// ================================================================
-//  Rendering (merged from CMapRenderer)
-// ================================================================
 
-static constexpr XMFLOAT4 COLOR_WALL  = { 0.38f, 0.38f, 0.40f, 1.0f };
-static constexpr XMFLOAT4 COLOR_FLOOR = { 0.62f, 0.60f, 0.56f, 1.0f };
-static constexpr XMFLOAT4 COLOR_STAIR = { 0.85f, 0.70f, 0.30f, 1.0f };
-static constexpr XMFLOAT4 COLOR_DOOR  = { 0.45f, 0.28f, 0.10f, 1.0f };
-static constexpr XMFLOAT4 COLOR_START = { 0.20f, 0.70f, 0.20f, 1.0f };
-static constexpr XMFLOAT4 COLOR_END   = { 0.85f, 0.75f, 0.10f, 1.0f };
-static constexpr XMFLOAT4 COLOR_ROOM  = { 0.55f, 0.52f, 0.60f, 1.0f };
+struct MapPalette
+{
+    XMFLOAT4 wall;
+    XMFLOAT4 floor;
+    XMFLOAT4 stair;
+    XMFLOAT4 door;
+    XMFLOAT4 start;
+    XMFLOAT4 end;
+    XMFLOAT4 room;
+};
+
+static const MapPalette s_Palettes[2] =
+{
+    {
+        { 0.38f, 0.38f, 0.40f, 1.0f },  // wall 
+        { 0.62f, 0.60f, 0.56f, 1.0f },  // floor
+        { 0.85f, 0.70f, 0.30f, 1.0f },  // stair
+        { 0.45f, 0.28f, 0.10f, 1.0f },  // door 
+        { 0.20f, 0.70f, 0.20f, 1.0f },  // start
+        { 0.85f, 0.75f, 0.10f, 1.0f },  // end  
+        { 0.55f, 0.52f, 0.60f, 1.0f },  // room 
+    },
+    {
+        { 0.18f, 0.22f, 0.34f, 1.0f },  // wall 
+        { 0.22f, 0.36f, 0.42f, 1.0f },  // floor
+        { 0.30f, 0.85f, 0.95f, 1.0f },  // stair
+        { 0.50f, 0.10f, 0.25f, 1.0f },  // door 
+        { 0.20f, 0.80f, 0.60f, 1.0f },  // start
+        { 0.90f, 0.25f, 0.75f, 1.0f },  // end  
+        { 0.32f, 0.22f, 0.55f, 1.0f },  // room 
+    },
+};
+
+static inline const MapPalette& PaletteFor(int idx)
+{
+    return s_Palettes[(idx == 1) ? 1 : 0];
+}
 
 static inline float TileX(int c) { return c * TILE_SCALE + TILE_SCALE * 0.5f; }
 static inline float TileZ(int r) { return r * TILE_SCALE + TILE_SCALE * 0.5f; }
@@ -374,7 +369,7 @@ void CMap_Manager::BuildWall(ID3D12Device* pd3dDevice,
 {
     m_Objects.push_back(MakeBlock(pd3dDevice, pd3dCommandList, pShader,
         TileX(c), 1.0f, TileZ(r),
-        TILE_SCALE, 2.0f, TILE_SCALE, COLOR_WALL));
+        TILE_SCALE, 2.0f, TILE_SCALE, PaletteFor(m_MapIndex).wall));
 }
 
 void CMap_Manager::BuildFloor(ID3D12Device* pd3dDevice,
@@ -382,9 +377,7 @@ void CMap_Manager::BuildFloor(ID3D12Device* pd3dDevice,
                                CShader* pShader, int r, int c,
                                float yCenter, XMFLOAT4 color)
 {
-    // Render the floor as a single top-facing quad (no side faces) so adjacent
-    // tiles can't produce coplanar side artifacts that bleed through enemies.
-    // Quad y = yCenter + half of the old box height (0.05).
+
     float yTop = yCenter + 0.05f;
 
     CBlock* pBlock = new CBlock();
@@ -400,27 +393,27 @@ void CMap_Manager::BuildStair(ID3D12Device* pd3dDevice,
                                ID3D12GraphicsCommandList* pd3dCommandList,
                                CShader* pShader, int r, int c)
 {
+    const MapPalette& pal = PaletteFor(m_MapIndex);
+
     float x    = TileX(c), z = TileZ(r);
     float half = TILE_SCALE * 0.5f;
 
     int totalSteps = m_StairF2BotRow - m_StairF2TopRow + 1;
     if (totalSteps <= 1)
     {
-        // F1 arrival tile: flat stair marker
+ 
         m_Objects.push_back(MakeBlock(pd3dDevice, pd3dCommandList, pShader,
-            x, -0.05f, z, TILE_SCALE, 0.1f, TILE_SCALE, COLOR_STAIR));
+            x, -0.05f, z, TILE_SCALE, 0.1f, TILE_SCALE, pal.stair));
         return;
     }
 
-    // Compute which step index this tile is (0 = top, N-1 = bottom)
     int stepIndex = r - m_StairF2TopRow;
     float stepY   = -STAIR_DROP * (float)stepIndex / (float)(totalSteps - 1);
 
-    // Tread (horizontal surface the player walks on)
-    m_Objects.push_back(MakeBlock(pd3dDevice, pd3dCommandList, pShader,
-        x, stepY - 0.05f, z, TILE_SCALE, 0.1f, TILE_SCALE, COLOR_STAIR));
 
-    // Riser (vertical face on south edge connecting down to the next step)
+    m_Objects.push_back(MakeBlock(pd3dDevice, pd3dCommandList, pShader,
+        x, stepY - 0.05f, z, TILE_SCALE, 0.1f, TILE_SCALE, pal.stair));
+
     if (stepIndex < totalSteps - 1)
     {
         float nextY  = -STAIR_DROP * (float)(stepIndex + 1) / (float)(totalSteps - 1);
@@ -428,19 +421,18 @@ void CMap_Manager::BuildStair(ID3D12Device* pd3dDevice,
         float riserY = stepY - riserH * 0.5f;
 
         m_Objects.push_back(MakeBlock(pd3dDevice, pd3dCommandList, pShader,
-            x, riserY, z + TILE_SCALE * 0.5f - 0.05f, TILE_SCALE, riserH, 0.1f, COLOR_STAIR));
+            x, riserY, z + TILE_SCALE * 0.5f - 0.05f, TILE_SCALE, riserH, 0.1f, pal.stair));
     }
 
-    // Side walls enclosing the stair corridor (east and west)
     static constexpr float SWALL_THICK = 0.15f;
     float wallH  = 2.0f + STAIR_DROP;
     float wallCY = (2.0f - STAIR_DROP) * 0.5f;
     m_Objects.push_back(MakeBlock(pd3dDevice, pd3dCommandList, pShader,
         x - half + SWALL_THICK * 0.5f, wallCY, z,
-        SWALL_THICK, wallH, TILE_SCALE, COLOR_WALL));
+        SWALL_THICK, wallH, TILE_SCALE, pal.wall));
     m_Objects.push_back(MakeBlock(pd3dDevice, pd3dCommandList, pShader,
         x + half - SWALL_THICK * 0.5f, wallCY, z,
-        SWALL_THICK, wallH, TILE_SCALE, COLOR_WALL));
+        SWALL_THICK, wallH, TILE_SCALE, pal.wall));
 }
 
 void CMap_Manager::BuildDoor(ID3D12Device* pd3dDevice,
@@ -450,17 +442,19 @@ void CMap_Manager::BuildDoor(ID3D12Device* pd3dDevice,
     float x = TileX(c);
     float z = TileZ(r);
 
-    // N/S neighbors passable -> corridor N-S -> door faces E-W (thin Z) -> slides along X
+
     bool nsPassage = IsPassable(r - 1, c) || IsPassable(r + 1, c);
+
+    const XMFLOAT4& doorColor = PaletteFor(m_MapIndex).door;
 
     CDoorBlock* pDoor = new CDoorBlock();
     pDoor->SetShader(pShader);
     if (nsPassage)
         pDoor->SetMesh(new CCubeMesh(pd3dDevice, pd3dCommandList,
-                                     TILE_SCALE, 2.0f, 0.1f, COLOR_DOOR));
+                                     TILE_SCALE, 2.0f, 0.1f, doorColor));
     else
         pDoor->SetMesh(new CCubeMesh(pd3dDevice, pd3dCommandList,
-                                     0.1f, 2.0f, TILE_SCALE, COLOR_DOOR));
+                                     0.1f, 2.0f, TILE_SCALE, doorColor));
     pDoor->CreateShaderVariables(pd3dDevice, pd3dCommandList);
     pDoor->Init({ x, 1.0f, z }, nsPassage);
 
@@ -471,6 +465,8 @@ void CMap_Manager::Build(ID3D12Device* pd3dDevice,
                           ID3D12GraphicsCommandList* pd3dCommandList,
                           CShader* pShader)
 {
+    const MapPalette& pal = PaletteFor(m_MapIndex);
+
     for (int r = 0; r < MAP_ROWS; ++r)
     {
         for (int c = 0; c < MAP_COLS; ++c)
@@ -481,23 +477,23 @@ void CMap_Manager::Build(ID3D12Device* pd3dDevice,
                 BuildWall(pd3dDevice, pd3dCommandList, pShader, r, c);
                 break;
             case TileType::FLOOR:
-                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, COLOR_FLOOR);
+                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, pal.floor);
                 break;
             case TileType::STAIR:
                 BuildStair(pd3dDevice, pd3dCommandList, pShader, r, c);
                 break;
             case TileType::DOOR:
-                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, COLOR_FLOOR);
+                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, pal.floor);
                 BuildDoor(pd3dDevice, pd3dCommandList, pShader, r, c);
                 break;
             case TileType::START:
-                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, COLOR_START);
+                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, pal.start);
                 break;
             case TileType::END:
-                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, COLOR_END);
+                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, pal.end);
                 break;
             case TileType::ROOM:
-                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, COLOR_ROOM);
+                BuildFloor(pd3dDevice, pd3dCommandList, pShader, r, c, -0.06f, pal.room);
                 break;
             }
         }

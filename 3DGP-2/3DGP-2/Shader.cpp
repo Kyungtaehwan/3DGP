@@ -255,10 +255,8 @@ void CObjectShader::CreateShader(ID3D12Device* pd3dDevice,
 
     CShader::CreateShader(pd3dDevice, pd3dCommandList, pd3dRootSignature);
 
-    // Release blobs after PSO creation
     if (m_pd3dVertexShaderBlob) { m_pd3dVertexShaderBlob->Release(); m_pd3dVertexShaderBlob = NULL; }
     if (m_pd3dPixelShaderBlob)  { m_pd3dPixelShaderBlob->Release();  m_pd3dPixelShaderBlob  = NULL; }
 
-    // Release input layout descriptor storage
     if (m_pd3dInputElements) { delete[] m_pd3dInputElements; m_pd3dInputElements = NULL; }
 }

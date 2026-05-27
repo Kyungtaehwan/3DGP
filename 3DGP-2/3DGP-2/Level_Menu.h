@@ -18,4 +18,14 @@ public:
 
 private:
     float m_fTimeAcc = 0.0f;
+
+    static constexpr float STAGE1_NDC_X_MIN = -0.70f;
+    static constexpr float STAGE1_NDC_X_MAX = -0.10f;
+    static constexpr float STAGE1_NDC_Y_MIN = -0.50f;
+    static constexpr float STAGE1_NDC_Y_MAX = +0.50f;
+
+    static constexpr float STAGE2_NDC_X_MIN = +0.10f;
+    static constexpr float STAGE2_NDC_X_MAX = +0.70f;
+    static constexpr float STAGE2_NDC_Y_MIN = -0.50f;
+    static constexpr float STAGE2_NDC_Y_MAX = +0.50f;
 };

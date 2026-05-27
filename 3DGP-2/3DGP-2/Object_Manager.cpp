@@ -33,9 +33,6 @@ int CObject_Manager::Update(float dt)
 
             if (nResult == OBJ_DEAD || pObj->IsDead())
             {
-                // The player object must outlive its IsDead() state — its camera
-                // is cached by the level and other systems hold references.
-                // Game-over handling is done in Level_GamePlay.
                 if (i == OBJ_PLAYER)
                 {
                     ++it;
@@ -70,7 +67,7 @@ void CObject_Manager::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera
     {
         for (CGameObject* pObj : m_ObjectList[i])
         {
-            // Each object's Render() decides its own visibility (e.g. bullets render explosion even when inactive)
+            
             if (pObj) pObj->Render(pd3dCommandList, pCamera);
         }
     }
@@ -112,39 +109,8 @@ void CObject_Manager::DeleteID(OBJ_ID eID)
 void CObject_Manager::CheckCollisions()
 {
     auto& playerList      = m_ObjectList[OBJ_PLAYER];
-    auto& enemyList       = m_ObjectList[OBJ_ENEMY];
-    auto& playerBullets   = m_ObjectList[OBJ_PLAYER_BULLET];
     auto& enemyBullets    = m_ObjectList[OBJ_ENEMY_BULLET];
 
-    for (auto itB = playerBullets.begin(); itB != playerBullets.end(); )
-    {
-        CGameObject* pBullet = *itB;
-        if (!pBullet || !pBullet->m_bActive) { ++itB; continue; }
-
-        bool bHit = false;
-        for (auto itE = enemyList.begin(); itE != enemyList.end(); )
-        {
-            CGameObject* pEnemy = *itE;
-            if (!pEnemy) { ++itE; continue; }
-
-            if (pBullet->m_xmOOBB.Intersects(pEnemy->m_xmOOBB))
-            {
-                pEnemy->OnHit(25);
-                bHit = true;
-                if (pEnemy->IsDead())
-                {
-                    delete pEnemy;
-                    itE = enemyList.erase(itE);
-                }
-                else ++itE;
-                break;
-            }
-            else ++itE;
-        }
-
-        if (bHit) { static_cast<CBullet*>(pBullet)->SetBlowingUp(); ++itB; }
-        else ++itB;
-    }
 
     for (auto itB = enemyBullets.begin(); itB != enemyBullets.end(); )
     {

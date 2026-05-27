@@ -60,7 +60,6 @@ void CLevel_Manager::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 
 void CLevel_Manager::Request_Level_Change(LEVEL_ID eID, int nStage)
 {
-    // Last write wins if called multiple times in a frame.
     m_bHasPending   = true;
     m_ePendingLevel = eID;
     if (nStage > 0) m_nPendingStage = nStage;
@@ -75,8 +74,7 @@ void CLevel_Manager::Apply_Pending_Change(ID3D12Device* pd3dDevice,
     m_nCurrentStage = m_nPendingStage;
     LEVEL_ID target = m_ePendingLevel;
 
-    m_bHasPending = false;  // Clear before Level_Change so a new request from
-                            // Initialize() can be queued for next frame.
+    m_bHasPending = false; 
 
     Level_Change(target, pd3dDevice, pd3dCommandList, pd3dRootSignature);
 }

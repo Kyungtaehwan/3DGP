@@ -76,7 +76,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     ::AdjustWindowRect(&rcWnd, dwStyle, FALSE);
     g_hWnd = ::CreateWindowW(
         L"3DGP2WindowClass",
-        L"3DGP-2  DX12 Shooter",
+        L"3DGP-2",
         dwStyle,
         CW_USEDEFAULT, CW_USEDEFAULT,
         rcWnd.right - rcWnd.left,

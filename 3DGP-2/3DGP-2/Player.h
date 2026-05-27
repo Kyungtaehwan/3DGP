@@ -35,15 +35,14 @@ protected:
 
     std::vector<BodyPart> m_BodyParts;
 
-    // Walking animation
+    // Walk
     float m_fAnimTime = 0.0f;
     bool  m_bIsMoving = false;
 
-    // Shoot recoil  (negative = idle)
+    // Shoot
     float m_fRecoilTimer    = -1.0f;
     static constexpr float RECOIL_DURATION = 0.22f;
 
-    // Body part array indices
     enum { BP_HEAD=0, BP_TORSO, BP_ARM_L, BP_ARM_R, BP_LEG_L, BP_LEG_R, BP_GUN, BP_COUNT };
 
 public:

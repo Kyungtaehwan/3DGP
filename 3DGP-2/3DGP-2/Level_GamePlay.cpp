@@ -15,7 +15,6 @@ void CLevel_GamePlay::Initialize(ID3D12Device* pd3dDevice,
 {
     m_pd3dDevice = pd3dDevice;
 
-    // Stage 1 -> map index 0, Stage 2 -> map index 1.
     int nStage = CLevel_Manager::Get_Instance()->GetCurrentStage();
     if (nStage < 1) nStage = 1;
     m_nCurrentMap = nStage - 1;
@@ -110,10 +109,7 @@ int CLevel_GamePlay::Update(float dt)
 
     XMFLOAT3 correctedPos = newPos;
 
-    // X axis: probe new X against prev Z (move-and-slide).
-    // Using prev Z avoids the "stuck inside wall" bug where newPos.z was already
-    // intersecting a wall row, causing X check to always fail.
-    // 4-corner AABB probe catches cases where the player's Z extent straddles tile rows.
+
     {
         int cP = (int)floorf((newPos.x + radius) / TILE_SCALE);
         int cM = (int)floorf((newPos.x - radius) / TILE_SCALE);
@@ -125,7 +121,6 @@ int CLevel_GamePlay::Update(float dt)
             correctedPos.x = prevPos.x;
     }
 
-    // Z axis: probe new Z against the (already corrected) X.
     {
         int xP = (int)floorf((correctedPos.x + radius) / TILE_SCALE);
         int xM = (int)floorf((correctedPos.x - radius) / TILE_SCALE);
@@ -146,24 +141,46 @@ int CLevel_GamePlay::Update(float dt)
 
     CInput_Manager* pInput = CInput_Manager::Get_Instance();
 
-    // E key: toggle door in front of player
+
     if (pInput->Key_Down('E'))
     {
         CCamera* pCam = pPlayer->GetCamera();
         XMFLOAT3 pos  = pPlayer->GetPosition();
         XMFLOAT3 look = pCam->GetLookVector();
-        float dist = TILE_SCALE * 1.5f;
-        int checkR = (int)floorf((pos.z + look.z * dist) / TILE_SCALE);
-        int checkC = (int)floorf((pos.x + look.x * dist) / TILE_SCALE);
-        if (pMap->InBounds(checkR, checkC) &&
-            pMap->GetTile(checkR, checkC) == TileType::DOOR)
+
+        float lookLen = sqrtf(look.x * look.x + look.z * look.z);
+        if (lookLen > 1e-3f)
         {
-            pMap->ToggleDoor(checkR, checkC);
-            pMap->UpdateDoors();
+            float dirX = look.x / lookLen;
+            float dirZ = look.z / lookLen;
+
+            const float STEP      = 0.2f;
+            const float MAX_REACH = TILE_SCALE * 1.5f;
+
+            int lastR = -9999, lastC = -9999;
+            for (float t = 0.0f; t <= MAX_REACH; t += STEP)
+            {
+                int r = (int)floorf((pos.z + dirZ * t) / TILE_SCALE);
+                int c = (int)floorf((pos.x + dirX * t) / TILE_SCALE);
+                if (r == lastR && c == lastC) continue;
+                lastR = r; lastC = c;
+
+                if (!pMap->InBounds(r, c)) break;
+
+                TileType tile = pMap->GetTile(r, c);
+                if (tile == TileType::DOOR)
+                {
+                    pMap->ToggleDoor(r, c);
+                    pMap->UpdateDoors();
+                    break;
+                }
+
+                if (tile == TileType::WALL) break;
+            }
         }
     }
 
-    // Stair: adjust player Y based on position along the stair corridor (F2 only)
+
     if (pMap->GetCurrentFloor() == 1)
     {
         XMFLOAT3 pos = pPlayer->GetPosition();
@@ -178,7 +195,7 @@ int CLevel_GamePlay::Update(float dt)
             XMFLOAT3 camPos = pCam->GetPosition();
             pCam->SetPosition({ camPos.x, stairY + 1.7f, camPos.z });
 
-            // Trigger floor switch when player steps onto the bottom stair tile
+
             int pr = (int)floorf(pos.z / TILE_SCALE);
             int pc = (int)floorf(pos.x / TILE_SCALE);
             bool bOnBottom = pMap->IsAtStairBottom(pr, pc);
@@ -191,7 +208,7 @@ int CLevel_GamePlay::Update(float dt)
         }
         else
         {
-            // Not on stair: ensure Y stays at floor level
+
             m_bWasOnBottomStair = false;
             if (pos.y < -0.01f)
             {
@@ -203,16 +220,11 @@ int CLevel_GamePlay::Update(float dt)
         }
     }
 
-    // F3: toggle OBB wireframe
+
     if (pInput->Key_Down(VK_F3))
         COBBRenderer::s_bShow = !COBBRenderer::s_bShow;
 
-    // R key: manual map switch
-    if (pInput->Key_Down('R'))
-        m_bPendingMapSwitch = true;
 
-    // End-of-stage detection (clear / game-over). Whichever happens first wins;
-    // after that we just tick the timer and return to the menu.
     if (!m_bCleared && !m_bGameOver)
     {
         XMFLOAT3 pos = pPlayer->GetPosition();
@@ -253,7 +265,6 @@ void CLevel_GamePlay::Render(ID3D12GraphicsCommandList* pd3dCommandList)
         m_bNeedReleaseUpload = false;
     }
 
-    // Floor switch via stair
     if (m_bPendingFloorSwitch)
     {
         pMap->ReleaseObjects();
@@ -274,7 +285,6 @@ void CLevel_GamePlay::Render(ID3D12GraphicsCommandList* pd3dCommandList)
         m_bCleared            = false;
     }
 
-    // Map switch (R key or clear condition)
     if (m_bPendingMapSwitch)
     {
         pMap->ReleaseObjects();
@@ -301,7 +311,6 @@ void CLevel_GamePlay::Render(ID3D12GraphicsCommandList* pd3dCommandList)
     CObject_Manager::Get_Instance()->Render(pd3dCommandList, m_pCamera);
     pMap->Render(pd3dCommandList, m_pCamera);
 
-    // OBB wireframe overlay (F3 toggle)
     if (COBBRenderer::s_bShow)
     {
         COBBRenderer* pOBBR = COBBRenderer::Get_Instance();
@@ -320,7 +329,6 @@ void CLevel_GamePlay::Render(ID3D12GraphicsCommandList* pd3dCommandList)
         pOBBR->Render(pd3dCommandList);
     }
 
-    // UI pass — drawn last so it sits on top of everything else.
     CUI_Manager* pUI = CUI_Manager::Get_Instance();
     pUI->Render(pd3dCommandList, m_pCamera);
     if (pPlayerObj)
@@ -336,8 +344,6 @@ void CLevel_GamePlay::Release()
 {
     CBullet::ReleaseShared();
     COBBRenderer::Destroy_Instance();
-    // UI_Manager intentionally not destroyed here — its lifetime spans levels
-    // (init'd by MainApp, freed at app exit).
 
     CMap_Manager* pMap = CMap_Manager::Get_Instance();
     pMap->ReleaseObjects();

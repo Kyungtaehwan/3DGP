@@ -3,17 +3,12 @@
 #include "Mesh.h"
 #include "Camera.h"
 
-// ---------------------------------------------------------------
-// Static member definitions
-// ---------------------------------------------------------------
 XMFLOAT3 CBullet::s_SphereVecs[CBullet::DEBRIS_CNT];
 CMesh*   CBullet::s_pBulletMesh    = nullptr;
 CMesh*   CBullet::s_pDebrisMesh    = nullptr;
 CShader* CBullet::s_pSharedShader  = nullptr;
 
-// ---------------------------------------------------------------
-// PrepareShared / ReleaseShared
-// ---------------------------------------------------------------
+
 static XMFLOAT3 RandomSphereVec()
 {
     while (true)
@@ -37,11 +32,9 @@ void CBullet::PrepareShared(ID3D12Device* pd3dDevice,
     for (int i = 0; i < DEBRIS_CNT; ++i)
         s_SphereVecs[i] = RandomSphereVec();
 
-    // Small yellow cube for the bullet projectile
     s_pBulletMesh = new CCubeMesh(pd3dDevice, pd3dCommandList,
         0.05f, 0.05f, 0.10f, XMFLOAT4(1.f, 1.f, 0.f, 1.f));
 
-    // Tiny orange cube for explosion debris
     s_pDebrisMesh = new CCubeMesh(pd3dDevice, pd3dCommandList,
         0.07f, 0.07f, 0.07f, XMFLOAT4(1.f, 0.5f, 0.f, 1.f));
 }
@@ -59,9 +52,6 @@ void CBullet::ReleaseSharedUploadBuffers()
     if (s_pDebrisMesh) s_pDebrisMesh->ReleaseUploadBuffers();
 }
 
-// ---------------------------------------------------------------
-// Fire
-// ---------------------------------------------------------------
 void CBullet::Fire(ID3D12Device* pd3dDevice,
                    XMFLOAT3 vPos, XMFLOAT3 vDir,
                    CShader* pShader, float fSpeed)
@@ -78,20 +68,17 @@ void CBullet::Fire(ID3D12Device* pd3dDevice,
     XMStoreFloat4x4(&m_xmf4x4World,
         XMMatrixTranslation(vPos.x, vPos.y, vPos.z));
 
-    // OBB for enemy collision
     m_xmLocalOBB = BoundingOrientedBox(
         XMFLOAT3(0.f, 0.f, 0.f),
         XMFLOAT3(0.05f, 0.05f, 0.10f),
         XMFLOAT4(0.f, 0.f, 0.f, 1.f));
 
-    // World matrix CB (upload heap – no command list needed)
     if (!m_pd3dcbWorldMatrix)
         CGameObject::CreateShaderVariables(pd3dDevice, nullptr);
 
-    // Debris CB: DEBRIS_CNT × 256-byte slots
     if (!m_pDebrisCB)
     {
-        constexpr UINT SLOT  = (sizeof(XMFLOAT4X4) + 255) & ~255; // 256
+        constexpr UINT SLOT  = (sizeof(XMFLOAT4X4) + 255) & ~255;
         constexpr UINT TOTAL = SLOT * DEBRIS_CNT;
 
         D3D12_HEAP_PROPERTIES hp = {};
@@ -116,9 +103,7 @@ void CBullet::Fire(ID3D12Device* pd3dDevice,
     }
 }
 
-// ---------------------------------------------------------------
-// SetBlowingUp
-// ---------------------------------------------------------------
+
 void CBullet::SetBlowingUp()
 {
     m_bBlowingUp = true;
@@ -134,9 +119,7 @@ void CBullet::SetBlowingUp()
     }
 }
 
-// ---------------------------------------------------------------
-// Update
-// ---------------------------------------------------------------
+
 int CBullet::Update(float dt)
 {
     if (m_bBlowingUp)
@@ -157,13 +140,12 @@ int CBullet::Update(float dt)
             m_DebrisTx[i]._42 = m_vPos.y + s_SphereVecs[i].y * DEBRIS_SPD * t;
             m_DebrisTx[i]._43 = m_vPos.z + s_SphereVecs[i].z * DEBRIS_SPD * t;
         }
-        // UpdateBoundingBox via base Late_Update — skip during explosion
         return OBJ_NOEVENT;
     }
 
     if (!m_bActive) return OBJ_DEAD;
 
-    // Move forward
+
     float fDist = m_fSpeed * dt;
     m_vPos.x += m_vDir.x * fDist;
     m_vPos.y += m_vDir.y * fDist;
@@ -173,7 +155,6 @@ int CBullet::Update(float dt)
     XMStoreFloat4x4(&m_xmf4x4World,
         XMMatrixTranslation(m_vPos.x, m_vPos.y, m_vPos.z));
 
-    // Wall collision via tile map
     CMap_Manager* pMap = CMap_Manager::Get_Instance();
     if (pMap)
     {
@@ -195,9 +176,7 @@ int CBullet::Update(float dt)
     return OBJ_NOEVENT;
 }
 
-// ---------------------------------------------------------------
-// Render
-// ---------------------------------------------------------------
+
 void CBullet::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
     if (!m_bActive && !m_bBlowingUp) return;
@@ -209,13 +188,11 @@ void CBullet::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamer
 
     if (!m_bBlowingUp)
     {
-        // Flying bullet: draw small cube
         UpdateShaderVariables(pd3dCommandList);
         if (s_pBulletMesh) s_pBulletMesh->Render(pd3dCommandList);
     }
     else
     {
-        // Explosion: draw each debris piece with its own world matrix
         if (s_pDebrisMesh && m_pDebrisCB)
         {
             constexpr UINT SLOT = (sizeof(XMFLOAT4X4) + 255) & ~255;
@@ -235,9 +212,7 @@ void CBullet::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamer
     }
 }
 
-// ---------------------------------------------------------------
-// Release / ReleaseUploadBuffers
-// ---------------------------------------------------------------
+
 void CBullet::Release()
 {
     if (m_pDebrisCB)
@@ -247,14 +222,13 @@ void CBullet::Release()
         m_pDebrisCB     = nullptr;
         m_pMappedDebris = nullptr;
     }
-    m_pMesh   = nullptr; // shared – must not delete
+    m_pMesh   = nullptr;
     m_pShader = nullptr;
-    CGameObject::Release(); // releases m_pd3dcbWorldMatrix
+    CGameObject::Release();
 }
 
 void CBullet::ReleaseUploadBuffers()
 {
-    // Shared meshes: idempotent (CMesh sets ptr to null after first release)
     if (s_pBulletMesh) s_pBulletMesh->ReleaseUploadBuffers();
     if (s_pDebrisMesh) s_pDebrisMesh->ReleaseUploadBuffers();
 }

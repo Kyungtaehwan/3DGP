@@ -31,7 +31,6 @@ CCamera::CCamera(CCamera* pCamera)
         m_d3dViewport       = { 0.0f, 0.0f, (float)FRAME_BUFFER_WIDTH, (float)FRAME_BUFFER_HEIGHT, 0.0f, 1.0f };
         m_d3dScissorRect    = { 0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT };
     }
-    // New camera object owns its own cbuffer; reset the inherited pointers
     m_pcbMappedCamera = NULL;
     m_pd3dcbCamera    = NULL;
 }
@@ -44,7 +43,6 @@ CCamera::~CCamera()
 void CCamera::CreateShaderVariables(ID3D12Device* pd3dDevice,
                                     ID3D12GraphicsCommandList* pd3dCommandList)
 {
-    // Allocate a 256-byte aligned upload buffer for VS_CB_CAMERA_INFO
     UINT cbSize = (sizeof(VS_CB_CAMERA_INFO) + 255) & ~255;
 
     m_pd3dcbCamera = ::CreateBufferResource(
@@ -69,7 +67,7 @@ void CCamera::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
     ::memcpy(&m_pcbMappedCamera->m_xmf3Position,     &m_xmf3Position,   sizeof(XMFLOAT3));
     m_pcbMappedCamera->padding = 0.0f;
 
-    // Root parameter 0 -> b0 -> camera constant buffer
+    // Root parameter 0
     D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = m_pd3dcbCamera->GetGPUVirtualAddress();
     pd3dCommandList->SetGraphicsRootConstantBufferView(0, cbGpuAddress);
 }
@@ -117,7 +115,6 @@ void CCamera::GenerateViewMatrix()
 
 void CCamera::RegenerateViewMatrix()
 {
-    // Re-orthogonalize the camera axes
     m_xmf3Look  = Vector3::Normalize(m_xmf3Look);
     m_xmf3Right = Vector3::CrossProduct(m_xmf3Up, m_xmf3Look);
     m_xmf3Right = Vector3::Normalize(m_xmf3Right);
@@ -173,9 +170,7 @@ void CCamera::Rotate(float fPitch, float fYaw, float fRoll)
     RegenerateViewMatrix();
 }
 
-// ============================================================
-// CSpaceShipCamera
-// ============================================================
+
 
 CSpaceShipCamera::CSpaceShipCamera(CCamera* pCamera) : CCamera(pCamera)
 {
@@ -224,9 +219,6 @@ void CSpaceShipCamera::SetLookAt(XMFLOAT3& xmf3LookAt)
     m_xmf3Look  = XMFLOAT3(view._13, view._23, view._33);
 }
 
-// ============================================================
-// CFirstPersonCamera
-// ============================================================
 
 CFirstPersonCamera::CFirstPersonCamera(CCamera* pCamera) : CCamera(pCamera)
 {
@@ -237,7 +229,6 @@ void CFirstPersonCamera::Update(XMFLOAT3& xmf3LookAt, float fTimeElapsed)
 {
     if (m_pPlayer)
     {
-        // Camera is at player position + offset (eye height)
         XMFLOAT4X4 xmf4x4Rotate;
         XMFLOAT3 xmf3Right  = m_pPlayer->GetRightVector();
         XMFLOAT3 xmf3Up     = m_pPlayer->GetUpVector();
@@ -309,7 +300,7 @@ void CThirdPersonCamera::Update(XMFLOAT3& xmf3LookAt, float fTimeElapsed)
 
         // Always look at player
         XMFLOAT3 xmf3LookAtPlayer = m_pPlayer->GetPosition();
-        xmf3LookAtPlayer.y += 3.0f; // Look at player's torso
+        xmf3LookAtPlayer.y += 3.0f;
         SetLookAt(xmf3LookAtPlayer);
         RegenerateViewMatrix();
     }

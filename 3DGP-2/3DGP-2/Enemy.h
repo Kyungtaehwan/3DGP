@@ -25,13 +25,13 @@ private:
     float      m_fSpeed          = 3.0f;
     float      m_fDetectRange    = 12.0f;
     float      m_fAttackRange    = 6.0f;
-    float      m_fAttackCooldown = 1.5f;   // seconds between shots
-    float      m_fAttackTimer    = 0.0f;   // remaining time until next shot
+    float      m_fAttackCooldown = 1.5f;   
+    float      m_fAttackTimer    = 0.0f;   
 
-    // Needed to spawn enemy bullets in Update.
+
     ID3D12Device* m_pd3dDevice   = nullptr;
 
     static constexpr float RADIUS         = 0.6f;
-    static constexpr float BULLET_SPEED   = 8.0f;   // slow bullet
-    static constexpr float BULLET_SPAWN_Y = 0.7f;   // shoulder-ish height
+    static constexpr float BULLET_SPEED   = 8.0f;   
+    static constexpr float BULLET_SPAWN_Y = 0.7f;   
 };

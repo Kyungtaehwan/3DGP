@@ -7,7 +7,6 @@
 
 namespace
 {
-    // 3x5 grid: 1 = solid cube, 0 = empty. Row 0 = top of the letter.
     const int LETTER_3[5][3] = {
         {1,1,1},
         {0,0,1},
@@ -24,9 +23,9 @@ namespace
     };
     const int LETTER_G[5][3] = {
         {1,1,1},
-        {1,0,0},
-        {1,1,0},
         {1,0,1},
+        {1,1,1},
+        {0,0,1},
         {1,1,1},
     };
     const int LETTER_P[5][3] = {
@@ -37,8 +36,8 @@ namespace
         {1,0,0},
     };
 
-    constexpr float CELL = 0.18f;       // cube edge length
-    constexpr float LETTER_PITCH = 0.85f; // horizontal distance between letter centers
+    constexpr float CELL = 0.18f;       
+    constexpr float LETTER_PITCH = 0.85f; 
 }
 
 void CLevel_LOGO::Initialize(ID3D12Device* pd3dDevice,
@@ -47,14 +46,12 @@ void CLevel_LOGO::Initialize(ID3D12Device* pd3dDevice,
 {
     m_pd3dDevice = pd3dDevice;
 
-    // Show the OS cursor so users can aim at the play button.
+
     CInput_Manager::Get_Instance()->SetMouseLock(false);
 
-    // Shader (same one used elsewhere; position+color).
     m_pShader = new CObjectShader();
     m_pShader->CreateShader(pd3dDevice, pd3dCommandList, pd3dRootSignature);
 
-    // Fixed camera at z=-4 looking +Z. Default Right/Up/Look from CCamera ctor is fine.
     m_pCamera = new CCamera();
     m_pCamera->CreateShaderVariables(pd3dDevice, pd3dCommandList);
     m_pCamera->SetPosition(XMFLOAT3(0.0f, 0.0f, -4.0f));
@@ -63,19 +60,17 @@ void CLevel_LOGO::Initialize(ID3D12Device* pd3dDevice,
     m_pCamera->SetViewport(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f);
     m_pCamera->SetScissorRect(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
 
-    // Build "3DGP" — 4 letters, centered horizontally on x = 0.
     const XMFLOAT4 cyan   = { 0.4f, 1.0f, 1.0f, 1.0f };
     const XMFLOAT4 yellow = { 1.0f, 0.9f, 0.3f, 1.0f };
     const XMFLOAT4 pink   = { 1.0f, 0.5f, 0.7f, 1.0f };
     const XMFLOAT4 green  = { 0.4f, 1.0f, 0.5f, 1.0f };
 
-    float startX = -1.5f * LETTER_PITCH;   // 4 letters: -1.5, -0.5, +0.5, +1.5
+    float startX = -1.5f * LETTER_PITCH;  
     BuildLetter(pd3dDevice, pd3dCommandList, LETTER_3, startX + 0 * LETTER_PITCH, cyan);
     BuildLetter(pd3dDevice, pd3dCommandList, LETTER_D, startX + 1 * LETTER_PITCH, yellow);
     BuildLetter(pd3dDevice, pd3dCommandList, LETTER_G, startX + 2 * LETTER_PITCH, pink);
     BuildLetter(pd3dDevice, pd3dCommandList, LETTER_P, startX + 3 * LETTER_PITCH, green);
 
-    // Play button — dark grey box below the logo.
     {
         const XMFLOAT4 darkGrey = { 0.20f, 0.20f, 0.22f, 1.0f };
         m_pPlayButton = new CBlock();
@@ -86,7 +81,6 @@ void CLevel_LOGO::Initialize(ID3D12Device* pd3dDevice,
         m_pPlayButton->SetPosition(0.0f, -1.3f, 0.0f);
     }
 
-    // Play triangle — white, sitting slightly in front of the box face (z = -0.105).
     {
         const XMFLOAT4 white = { 1.0f, 1.0f, 1.0f, 1.0f };
         m_pPlayTriangle = new CBlock();
@@ -107,29 +101,30 @@ void CLevel_LOGO::BuildLetter(ID3D12Device* pd3dDevice,
     {
         for (int col = 0; col < 3; ++col)
         {
-            if (!pattern[row][col]) continue;
+            if (pattern[row][col] == 1)
+            {
 
-            // col 0..2 -> -1..+1 cells. row 0 = top -> +2 cells, row 4 = bottom -> -2 cells.
-            float localX = letterCenterX + (col - 1) * CELL;
-            float localY = (2 - row) * CELL;
+                float localX = letterCenterX + (col - 1) * CELL;
+                float localY = (2 - row) * CELL;
 
-            CBlock* pCube = new CBlock();
-            pCube->SetShader(m_pShader);
-            pCube->SetMesh(new CCubeMesh(pd3dDevice, pd3dCommandList,
-                                         CELL, CELL, CELL, color));
-            pCube->CreateShaderVariables(pd3dDevice, pd3dCommandList);
+                CBlock* pCube = new CBlock();
+                pCube->SetShader(m_pShader);
+                pCube->SetMesh(new CCubeMesh(pd3dDevice, pd3dCommandList,
+                    CELL, CELL, CELL, color));
+                    pCube->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 
-            LogoCube lc;
-            lc.pObj        = pCube;
-            lc.localOffset = XMFLOAT3(localX, localY, 0.0f);
-            m_LetterCubes.push_back(lc);
+                    LogoCube lc;
+                lc.pObj = pCube;
+                lc.localOffset = XMFLOAT3(localX, localY, 0.0f);
+                m_LetterCubes.push_back(lc);
+            }
         }
     }
 }
 
 int CLevel_LOGO::Update(float dt)
 {
-    // Spin the whole logo group around Y.
+
     m_fRotation += dt * 0.8f;
     XMMATRIX groupRot = XMMatrixRotationY(m_fRotation);
 
@@ -142,7 +137,7 @@ int CLevel_LOGO::Update(float dt)
         XMStoreFloat4x4(&lc.pObj->m_xmf4x4World, world);
     }
 
-    // Mouse click on the play button -> go to the menu.
+
     CInput_Manager* pInput = CInput_Manager::Get_Instance();
     if (pInput->Key_Down(VK_LBUTTON))
     {

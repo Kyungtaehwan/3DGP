@@ -43,7 +43,6 @@ private:
     bool m_bGameOver             = false;
     bool m_bWasOnBottomStair     = false;
 
-    // Shared end-of-stage timer used for both clear and game-over overlays.
     float m_fEndTimer             = 0.0f;
     static constexpr float CLEAR_DURATION    = 2.0f;
     static constexpr float GAMEOVER_DURATION = 2.5f;

@@ -113,6 +113,7 @@ public:
     void     OrbitInput(float fYawDelta, float fPitchDelta);
     XMFLOAT3 GetHorizontalForward();   // camera-facing direction projected onto XZ
     XMFLOAT3 GetHorizontalRight();
+    float    GetOrbitYaw() const { return m_fOrbitYaw; }
 
 private:
     float m_fOrbitYaw      = 0.0f;

@@ -22,8 +22,6 @@ void CEnemy::Init(ID3D12Device* pd3dDevice,
         XMFLOAT3(0.5f, 0.5f, 0.5f),
         XMFLOAT4(0.f, 0.f, 0.f, 1.f));
 
-    // y=0.501 so the cube bottom (y=0.001) sits just above the floor quad top
-    // (y=-0.01), avoiding both coplanar z-fight and any visible gap.
     XMStoreFloat4x4(&m_xmf4x4World,
         XMMatrixTranslation(spawnPos.x, 0.501f, spawnPos.z));
 }
@@ -45,7 +43,7 @@ int CEnemy::Update(float dt)
     if (m_eState == EnemyState::IDLE && dist < m_fDetectRange)
         m_eState = EnemyState::CHASE;
 
-    // Tick cooldown every frame so the enemy can fire as soon as we enter range.
+  
     if (m_fAttackTimer > 0.0f) m_fAttackTimer -= dt;
 
     if (m_eState == EnemyState::CHASE && dist > 0.5f)
@@ -56,7 +54,6 @@ int CEnemy::Update(float dt)
 
         if (dist > m_fAttackRange)
         {
-            // Chase: walk toward the player with tile-based wall collision.
             XMFLOAT3 prevPos = myPos;
             XMFLOAT3 newPos  = {
                 myPos.x + nx * m_fSpeed * dt,
@@ -64,8 +61,8 @@ int CEnemy::Update(float dt)
                 myPos.z + nz * m_fSpeed * dt
             };
 
-            CMap_Manager*  pMap         = CMap_Manager::Get_Instance();
-            XMFLOAT3       correctedPos = newPos;
+            CMap_Manager*  pMap = CMap_Manager::Get_Instance();
+            XMFLOAT3 correctedPos = newPos;
 
             int cPlus  = (int)floorf((newPos.x + RADIUS) / TILE_SCALE);
             int cMinus = (int)floorf((newPos.x - RADIUS) / TILE_SCALE);
@@ -85,7 +82,6 @@ int CEnemy::Update(float dt)
         }
         else
         {
-            // In attack range: hold position, face the player, fire on cooldown.
             XMStoreFloat4x4(&m_xmf4x4World,
                 XMMatrixRotationY(yaw) *
                 XMMatrixTranslation(myPos.x, myPos.y, myPos.z));

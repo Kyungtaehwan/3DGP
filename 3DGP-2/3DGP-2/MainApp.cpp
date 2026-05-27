@@ -16,23 +16,25 @@ ID3D12Resource* CreateBufferResource(
 {
     ID3D12Resource* pd3dBuffer = NULL;
 
-    D3D12_HEAP_PROPERTIES heapProps = {};
-    heapProps.Type                 = d3dHeapType;
-    heapProps.CPUPageProperty      = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-    heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-    heapProps.CreationNodeMask     = 1;
-    heapProps.VisibleNodeMask      = 1;
+    D3D12_HEAP_PROPERTIES d3dHeapPropertiesDesc;
+    ::ZeroMemory(&d3dHeapPropertiesDesc, sizeof(D3D12_HEAP_PROPERTIES));
+    d3dHeapPropertiesDesc.Type                 = d3dHeapType;
+    d3dHeapPropertiesDesc.CPUPageProperty      = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+    d3dHeapPropertiesDesc.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+    d3dHeapPropertiesDesc.CreationNodeMask     = 1;
+    d3dHeapPropertiesDesc.VisibleNodeMask      = 1;
 
-    D3D12_RESOURCE_DESC resDesc = {};
-    resDesc.Dimension          = D3D12_RESOURCE_DIMENSION_BUFFER;
-    resDesc.Width              = nBytes;
-    resDesc.Height             = 1;
-    resDesc.DepthOrArraySize   = 1;
-    resDesc.MipLevels          = 1;
-    resDesc.Format             = DXGI_FORMAT_UNKNOWN;
-    resDesc.SampleDesc.Count   = 1;
-    resDesc.Layout             = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    resDesc.Flags              = D3D12_RESOURCE_FLAG_NONE;
+    D3D12_RESOURCE_DESC d3dResourceDesc;
+    ::ZeroMemory(&d3dResourceDesc, sizeof(D3D12_RESOURCE_DESC));
+    d3dResourceDesc.Dimension          = D3D12_RESOURCE_DIMENSION_BUFFER;
+    d3dResourceDesc.Width              = nBytes;
+    d3dResourceDesc.Height             = 1;
+    d3dResourceDesc.DepthOrArraySize   = 1;
+    d3dResourceDesc.MipLevels          = 1;
+    d3dResourceDesc.Format             = DXGI_FORMAT_UNKNOWN;
+    d3dResourceDesc.SampleDesc.Count   = 1;
+    d3dResourceDesc.Layout             = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+    d3dResourceDesc.Flags              = D3D12_RESOURCE_FLAG_NONE;
 
     D3D12_RESOURCE_STATES initState = D3D12_RESOURCE_STATE_COMMON;
     if (d3dHeapType == D3D12_HEAP_TYPE_UPLOAD)
@@ -41,16 +43,16 @@ ID3D12Resource* CreateBufferResource(
         initState = D3D12_RESOURCE_STATE_COPY_DEST;
 
     pd3dDevice->CreateCommittedResource(
-        &heapProps, D3D12_HEAP_FLAG_NONE, &resDesc, initState, NULL,
+        &d3dHeapPropertiesDesc, D3D12_HEAP_FLAG_NONE, &d3dResourceDesc, initState, NULL,
         __uuidof(ID3D12Resource), (void**)&pd3dBuffer);
 
     if (pData)
     {
         if (d3dHeapType == D3D12_HEAP_TYPE_DEFAULT && ppd3dUploadBuffer)
         {
-            heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
+            d3dHeapPropertiesDesc.Type = D3D12_HEAP_TYPE_UPLOAD;
             pd3dDevice->CreateCommittedResource(
-                &heapProps, D3D12_HEAP_FLAG_NONE, &resDesc,
+                &d3dHeapPropertiesDesc, D3D12_HEAP_FLAG_NONE, &d3dResourceDesc,
                 D3D12_RESOURCE_STATE_GENERIC_READ, NULL,
                 __uuidof(ID3D12Resource), (void**)ppd3dUploadBuffer);
 
@@ -167,7 +169,7 @@ void CMainApp::CreateDirect3DDevice()
 
     D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS d3dMsaaQualityLevels;
     d3dMsaaQualityLevels.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    d3dMsaaQualityLevels.SampleCount = 4; //Msaa4x ���� ���ø�
+    d3dMsaaQualityLevels.SampleCount = 4;
     d3dMsaaQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
     d3dMsaaQualityLevels.NumQualityLevels = 0;
     m_pd3dDevice->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
@@ -322,8 +324,6 @@ void CMainApp::CreateDepthStencilView()
 
 void CMainApp::CreateRootSignature()
 {
-    // param 0: b0 = camera (view/proj/camPos)
-    // param 1: b1 = world matrix (per object)
     D3D12_ROOT_PARAMETER params[2] = {};
 
     params[0].ParameterType             = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -341,17 +341,17 @@ void CMainApp::CreateRootSignature()
     sigDesc.pParameters   = params;
     sigDesc.Flags         = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-    ID3DBlob* pSigBlob = NULL;
-    ID3DBlob* pErrBlob = NULL;
+    ID3DBlob* pd3dSignatureBlob = NULL;
+    ID3DBlob* pd3dErrorBlob = NULL;
     ::D3D12SerializeRootSignature(&sigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-                                   &pSigBlob, &pErrBlob);
-    if (pErrBlob) { OutputDebugStringA((char*)pErrBlob->GetBufferPointer()); pErrBlob->Release(); }
+                                   &pd3dSignatureBlob, &pd3dErrorBlob);
+    if (pd3dErrorBlob) { OutputDebugStringA((char*)pd3dErrorBlob->GetBufferPointer()); pd3dErrorBlob->Release(); }
 
     m_pd3dDevice->CreateRootSignature(
-        0, pSigBlob->GetBufferPointer(), pSigBlob->GetBufferSize(),
+        0, pd3dSignatureBlob->GetBufferPointer(), pd3dSignatureBlob->GetBufferSize(),
         __uuidof(ID3D12RootSignature), (void**)&m_pd3dRootSignature);
 
-    pSigBlob->Release();
+    pd3dSignatureBlob->Release();
 }
 
 void CMainApp::ExecuteLevelLoad()
@@ -359,7 +359,6 @@ void CMainApp::ExecuteLevelLoad()
     m_pd3dCommandAllocator->Reset();
     m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
 
-    // UI is global across all levels — init once here so the menu can use it too.
     CUI_Manager::Get_Instance()->Init(
         m_pd3dDevice, m_pd3dCommandList, m_pd3dRootSignature);
 
@@ -448,7 +447,6 @@ void CMainApp::Update(float dt)
     CLevel_Manager::Get_Instance()->Update(dt);
 }
 
-// LateUpdate: late-frame processing, refresh camera pointer
 void CMainApp::LateUpdate(float dt)
 {
     CLevel_Manager::Get_Instance()->Late_Update(dt);
@@ -463,8 +461,6 @@ void CMainApp::Render()
 
     EndRender();
 
-    // Any deferred Level switch is applied *after* the frame is presented so
-    // the live Level is never deleted while its own code is still on the stack.
     if (CLevel_Manager::Get_Instance()->HasPendingChange())
         ProcessPendingLevelChange();
 }
@@ -552,8 +548,6 @@ void CMainApp::BeginRender()
         TRUE,
         &dsvHandle);
 
-    // Default full-window viewport/scissor so levels without a camera
-    // (e.g. the menu) still rasterize to the back buffer.
     D3D12_VIEWPORT vp = {};
     vp.TopLeftX = 0.0f;
     vp.TopLeftY = 0.0f;

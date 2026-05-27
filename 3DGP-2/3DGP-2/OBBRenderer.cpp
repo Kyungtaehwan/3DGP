@@ -16,9 +16,7 @@ void COBBRenderer::Destroy_Instance()
     if (s_pInstance) { delete s_pInstance; s_pInstance = nullptr; }
 }
 
-// ---------------------------------------------------------------
-// Init
-// ---------------------------------------------------------------
+
 void COBBRenderer::Init(ID3D12Device* pd3dDevice,
                         ID3D12GraphicsCommandList* pd3dCommandList,
                         ID3D12RootSignature* pd3dRootSignature)
@@ -38,27 +36,26 @@ void COBBRenderer::Init(ID3D12Device* pd3dDevice,
                        "PSMain", "ps_5_1", flags, 0, &pPS, &pErr);
     if (pErr) { OutputDebugStringA((char*)pErr->GetBufferPointer()); pErr->Release(); }
 
-    // -- Input layout (same as CObjectShader) --
+    
     D3D12_INPUT_ELEMENT_DESC inputElems[2] = {};
     inputElems[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0,  0,
                       D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
     inputElems[1] = { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12,
                       D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
-    // -- Rasterizer: no culling, solid (lines ignore fill mode) --
+
     D3D12_RASTERIZER_DESC raster = {};
     raster.FillMode              = D3D12_FILL_MODE_SOLID;
     raster.CullMode              = D3D12_CULL_MODE_NONE;
     raster.FrontCounterClockwise = FALSE;
     raster.DepthClipEnable       = TRUE;
 
-    // -- Depth stencil: read depth, no write so OBBs don't block scene --
+
     D3D12_DEPTH_STENCIL_DESC ds = {};
     ds.DepthEnable    = TRUE;
     ds.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
     ds.DepthFunc      = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
-    // -- Blend: default opaque --
     D3D12_BLEND_DESC blend = {};
     blend.RenderTarget[0].BlendEnable            = FALSE;
     blend.RenderTarget[0].RenderTargetWriteMask  = D3D12_COLOR_WRITE_ENABLE_ALL;
@@ -85,7 +82,6 @@ void COBBRenderer::Init(ID3D12Device* pd3dDevice,
     pVS->Release();
     pPS->Release();
 
-    // -- Upload vertex buffer (persistently mapped) --
     UINT vbBytes = sizeof(CVertex) * MAX_VERTICES;
 
     D3D12_HEAP_PROPERTIES heapUp = {};
@@ -112,7 +108,7 @@ void COBBRenderer::Init(ID3D12Device* pd3dDevice,
     m_vbView.SizeInBytes    = vbBytes;
     m_vbView.StrideInBytes  = sizeof(CVertex);
 
-    // -- Identity world matrix constant buffer (b1) --
+    // b1
     UINT cbBytes = (sizeof(XMFLOAT4X4) + 255) & ~255;
     resDesc.Width = cbBytes;
 
@@ -123,15 +119,12 @@ void COBBRenderer::Init(ID3D12Device* pd3dDevice,
 
     m_pCBWorld->Map(0, nullptr, &m_pMappedCBWorld);
 
-    // Store transposed identity (HLSL column-major convention)
+
     XMFLOAT4X4 identity;
     XMStoreFloat4x4(&identity, XMMatrixTranspose(XMMatrixIdentity()));
     memcpy(m_pMappedCBWorld, &identity, sizeof(XMFLOAT4X4));
 }
 
-// ---------------------------------------------------------------
-// BeginFrame / AddOBB / Render
-// ---------------------------------------------------------------
 void COBBRenderer::BeginFrame()
 {
     m_nVerts = 0;
@@ -173,9 +166,7 @@ void COBBRenderer::Render(ID3D12GraphicsCommandList* pd3dCommandList)
     pd3dCommandList->DrawInstanced(m_nVerts, 1, 0, 0);
 }
 
-// ---------------------------------------------------------------
-// Release
-// ---------------------------------------------------------------
+
 void COBBRenderer::Release()
 {
     if (m_pVB)

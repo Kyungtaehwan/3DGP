@@ -58,7 +58,7 @@ CCubeMesh::CCubeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCo
     float fHalfH = fHeight * 0.5f;
     float fHalfD = fDepth  * 0.5f;
 
-    // 8 unique cube corners
+    
     CVertex pVertices[8] =
     {
         // front face
@@ -73,7 +73,7 @@ CCubeMesh::CCubeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCo
         CVertex( fHalfW,  fHalfH,  fHalfD,  xmf4Color.x, xmf4Color.y, xmf4Color.z, xmf4Color.w), // 7
     };
 
-    // 36 indices (12 triangles, CCW winding for front-face)
+   
     UINT pIndices[36] =
     {
         // front  (z = -fHalfD, normal -Z)
@@ -90,7 +90,6 @@ CCubeMesh::CCubeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCo
         5, 4, 1,   5, 1, 0,
     };
 
-    // Create vertex buffer on default heap via upload buffer
     m_pd3dVertexBuffer = ::CreateBufferResource(
         pd3dDevice, pd3dCommandList,
         pVertices, sizeof(CVertex) * m_nVertices,
@@ -102,7 +101,7 @@ CCubeMesh::CCubeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCo
     m_d3dVertexBufferView.StrideInBytes  = sizeof(CVertex);
     m_d3dVertexBufferView.SizeInBytes    = sizeof(CVertex) * m_nVertices;
 
-    // Create index buffer on default heap via upload buffer
+    // Create index
     m_pd3dIndexBuffer = ::CreateBufferResource(
         pd3dDevice, pd3dCommandList,
         pIndices, sizeof(UINT) * m_nIndices,
@@ -117,7 +116,7 @@ CCubeMesh::CCubeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCo
 
 CCubeMesh::~CCubeMesh()
 {
-    // Base class destructor releases GPU buffers
+
 }
 
 void CCubeMesh::ReleaseUploadBuffers()
@@ -143,12 +142,11 @@ CFloorQuadMesh::CFloorQuadMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandLi
         CVertex(-hW, fYTop,  hD, c.x, c.y, c.z, c.w), // 3
     };
 
-    // Double-sided: 4 triangles, one pair per winding.
-    // With BACK culling enabled, one pair survives regardless of camera side.
+
     UINT pIndices[12] =
     {
-        0, 1, 2,   0, 2, 3,    // top side
-        0, 2, 1,   0, 3, 2,    // bottom side (reverse winding)
+        0, 1, 2,   0, 2, 3,    // top
+        0, 2, 1,   0, 3, 2,    // bottom
     };
 
     m_pd3dVertexBuffer = ::CreateBufferResource(
@@ -184,23 +182,20 @@ void CFloorQuadMesh::ReleaseUploadBuffers()
 CTriangleMesh::CTriangleMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList,
                              float fWidth, float fHeight, XMFLOAT4 c)
 {
-    m_nVertices            = 6;   // double-sided: 3 verts x 2 faces
+    m_nVertices            = 6;   
     m_nIndices             = 0;
     m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
     float hw = fWidth  * 0.5f;
     float hh = fHeight * 0.5f;
 
-    // Right-pointing triangle on the XY plane (apex at +X).
-    // Front face: vertices ordered to match the cube front-face winding that works.
-    // Back face: reversed winding so culling lets at least one side show.
     CVertex pVertices[6] =
     {
-        // Front (visible from -Z side)
+
         CVertex(-hw, -hh, 0.0f, c.x, c.y, c.z, c.w),
         CVertex( hw,  0.0f, 0.0f, c.x, c.y, c.z, c.w),
         CVertex(-hw,  hh, 0.0f, c.x, c.y, c.z, c.w),
-        // Back (visible from +Z side)
+
         CVertex(-hw, -hh, 0.0f, c.x, c.y, c.z, c.w),
         CVertex(-hw,  hh, 0.0f, c.x, c.y, c.z, c.w),
         CVertex( hw,  0.0f, 0.0f, c.x, c.y, c.z, c.w),

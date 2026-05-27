@@ -25,7 +25,6 @@ namespace
         XMFLOAT4 col;
     };
 
-    // Append a box outline (4 lines = 8 verts) to a vertex list.
     void AppendBoxOutline(std::vector<UIVertexLocal>& out,
                           float x0, float y0, float x1, float y1,
                           XMFLOAT4 c)
@@ -36,7 +35,6 @@ namespace
         out.push_back({ { x0, y1 }, c }); out.push_back({ { x0, y0 }, c });  // left
     }
 
-    // Append an "X" diagonal pair inside a box, useful as a fill pattern.
     void AppendBoxDiagonals(std::vector<UIVertexLocal>& out,
                             float x0, float y0, float x1, float y1,
                             XMFLOAT4 c)
@@ -45,7 +43,6 @@ namespace
         out.push_back({ { x0, y1 }, c }); out.push_back({ { x1, y0 }, c });
     }
 
-    // 6 verts (2 triangles) — same winding as the HP-bar fill that works.
     void AppendFilledQuad(std::vector<UIVertexLocal>& out,
                           float x0, float y0, float x1, float y1,
                           XMFLOAT4 c)
@@ -58,7 +55,7 @@ namespace
         out.push_back({ { x0, y1 }, c });
     }
 
-    // Digit "1" — flag tail + vertical stem + base bar (3 line segments).
+
     void AppendDigitOne(std::vector<UIVertexLocal>& out,
                         float cx, float cy, float halfH, XMFLOAT4 c)
     {
@@ -74,7 +71,6 @@ namespace
         out.push_back({ { cx + hw,        cy - halfH         }, c });
     }
 
-    // Digit "2" — top bar -> right shoulder -> diagonal -> bottom bar (4 lines).
     void AppendDigitTwo(std::vector<UIVertexLocal>& out,
                         float cx, float cy, float halfH, XMFLOAT4 c)
     {
@@ -93,7 +89,6 @@ namespace
         out.push_back({ { cx + hw, cy - halfH }, c });
     }
 
-    // Simple check mark (two segments forming a V tilted right).
     void AppendCheckMark(std::vector<UIVertexLocal>& out,
                          float cx, float cy, float size, XMFLOAT4 c)
     {
@@ -107,7 +102,6 @@ namespace
         out.push_back({ { cx + w,        cy + h        }, c });
     }
 
-    // "X" glyph centered at (cx, cy) with given half-extent.
     void AppendX(std::vector<UIVertexLocal>& out,
                  float cx, float cy, float halfSize, XMFLOAT4 c)
     {
@@ -119,7 +113,6 @@ namespace
         out.push_back({ { cx + halfSize, cy + halfSize }, c });
     }
 
-    // Underscore — a single horizontal segment.
     void AppendUnderscore(std::vector<UIVertexLocal>& out,
                           float cx, float cy, float halfW, XMFLOAT4 c)
     {
@@ -127,7 +120,6 @@ namespace
         out.push_back({ { cx + halfW, cy }, c });
     }
 
-    // Upload-heap vertex buffer, written once.
     ID3D12Resource* CreateStaticUploadVB(ID3D12Device* pd3dDevice,
                                          const void* pData, UINT nBytes,
                                          D3D12_VERTEX_BUFFER_VIEW& outView,
@@ -220,7 +212,6 @@ void CUI_Manager::Init(ID3D12Device* pd3dDevice,
     pd3dDevice->CreateGraphicsPipelineState(&psoDesc,
         __uuidof(ID3D12PipelineState), (void**)&m_pPSOLine);
 
-    // Triangle PSO — same desc, only topology differs.
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     pd3dDevice->CreateGraphicsPipelineState(&psoDesc,
         __uuidof(ID3D12PipelineState), (void**)&m_pPSOTriangle);
@@ -228,7 +219,7 @@ void CUI_Manager::Init(ID3D12Device* pd3dDevice,
     pVS->Release();
     pPS->Release();
 
-    // -- Crosshair VB --
+
     {
         const XMFLOAT4 white = { 1.0f, 1.0f, 1.0f, 1.0f };
         UIVertexLocal verts[4] =
@@ -244,7 +235,6 @@ void CUI_Manager::Init(ID3D12Device* pd3dDevice,
                                               sizeof(UIVertexLocal));
     }
 
-    // -- Menu fill VB (TRIANGLE): two filled panels --
     {
         std::vector<UIVertexLocal> v;
         const XMFLOAT4 darkGreen = { 0.10f, 0.40f, 0.15f, 1.0f };
@@ -259,7 +249,6 @@ void CUI_Manager::Init(ID3D12Device* pd3dDevice,
                                              m_vbViewMenuFill, sizeof(UIVertexLocal));
     }
 
-    // -- Menu line VB: panel outlines + "1" and "2" glyphs --
     {
         std::vector<UIVertexLocal> v;
         const XMFLOAT4 green = { 0.4f, 1.0f, 0.5f, 1.0f };
@@ -278,7 +267,7 @@ void CUI_Manager::Init(ID3D12Device* pd3dDevice,
                                              m_vbViewMenuLine, sizeof(UIVertexLocal));
     }
 
-    // -- Clear fill VB (TRIANGLE): big centered yellow box --
+
     {
         std::vector<UIVertexLocal> v;
         const XMFLOAT4 darkYellow = { 0.55f, 0.45f, 0.10f, 1.0f };
@@ -290,7 +279,7 @@ void CUI_Manager::Init(ID3D12Device* pd3dDevice,
                                               m_vbViewClearFill, sizeof(UIVertexLocal));
     }
 
-    // -- Clear line VB: outline + check mark --
+
     {
         std::vector<UIVertexLocal> v;
         const XMFLOAT4 yellow = { 1.0f, 0.95f, 0.2f, 1.0f };
@@ -305,7 +294,7 @@ void CUI_Manager::Init(ID3D12Device* pd3dDevice,
                                               m_vbViewClearLine, sizeof(UIVertexLocal));
     }
 
-    // -- Game-over fill VB (TRIANGLE): big centered dark-red box --
+
     {
         std::vector<UIVertexLocal> v;
         const XMFLOAT4 darkRed = { 0.55f, 0.10f, 0.10f, 1.0f };
@@ -317,7 +306,7 @@ void CUI_Manager::Init(ID3D12Device* pd3dDevice,
                                                  m_vbViewGameOverFill, sizeof(UIVertexLocal));
     }
 
-    // -- Game-over line VB: outline + "X_X" glyph --
+
     {
         std::vector<UIVertexLocal> v;
         const XMFLOAT4 brightRed = { 1.0f, 0.30f, 0.30f, 1.0f };
@@ -326,10 +315,9 @@ void CUI_Manager::Init(ID3D12Device* pd3dDevice,
         AppendBoxOutline(v, -0.55f, -0.30f, +0.55f, +0.30f, brightRed);
 
         const float xHalf = 0.10f;
-        // Eyes — slightly above center
+
         AppendX(v, -0.22f, +0.02f, xHalf, white);
         AppendX(v, +0.22f, +0.02f, xHalf, white);
-        // Mouth — small underscore between & below the eyes
         AppendUnderscore(v, 0.0f, -0.10f, 0.06f, white);
 
         m_nGameOverLineVerts = (UINT)v.size();
@@ -338,7 +326,7 @@ void CUI_Manager::Init(ID3D12Device* pd3dDevice,
                                                  m_vbViewGameOverLine, sizeof(UIVertexLocal));
     }
 
-    // -- HP bar outline VB (LINE, static): lower-left rectangle --
+
     {
         std::vector<UIVertexLocal> v;
         const XMFLOAT4 white = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -350,7 +338,6 @@ void CUI_Manager::Init(ID3D12Device* pd3dDevice,
                                               m_vbViewHPOutline, sizeof(UIVertexLocal));
     }
 
-    // -- HP bar fill VB (TRIANGLE, dynamic): 6 verts = 2 triangles, persistently mapped --
     {
         UINT bytes = sizeof(UIVertexLocal) * 6;
 
@@ -379,7 +366,7 @@ void CUI_Manager::Init(ID3D12Device* pd3dDevice,
         m_vbViewHPFill.StrideInBytes  = sizeof(UIVertexLocal);
     }
 
-    // -- Dummy 256-byte CB for binding b0/b1 when no scene CBs are bound --
+
     {
         D3D12_HEAP_PROPERTIES heapUp = {};
         heapUp.Type = D3D12_HEAP_TYPE_UPLOAD;
@@ -401,7 +388,7 @@ void CUI_Manager::Init(ID3D12Device* pd3dDevice,
     }
 }
 
-// Crosshair only in first-person view.
+
 void CUI_Manager::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
     if (!m_pPSOLine || !pCamera) return;
@@ -417,7 +404,6 @@ void CUI_Manager::RenderMenu(ID3D12GraphicsCommandList* pd3dCommandList)
 {
     if (!m_pPSOLine || !m_pPSOTriangle) return;
 
-    // Satisfy the root signature: bind dummy CBs to b0/b1. Shader ignores them.
     if (m_pCBDummy)
     {
         D3D12_GPU_VIRTUAL_ADDRESS gpuAddr = m_pCBDummy->GetGPUVirtualAddress();
@@ -425,7 +411,6 @@ void CUI_Manager::RenderMenu(ID3D12GraphicsCommandList* pd3dCommandList)
         pd3dCommandList->SetGraphicsRootConstantBufferView(1, gpuAddr);
     }
 
-    // Fill first (filled panels), then outlines + digit glyphs on top.
     if (m_nMenuFillVerts > 0)
     {
         pd3dCommandList->SetPipelineState(m_pPSOTriangle);
@@ -447,7 +432,6 @@ void CUI_Manager::RenderClearOverlay(ID3D12GraphicsCommandList* pd3dCommandList)
 {
     if (!m_pPSOLine || !m_pPSOTriangle) return;
 
-    // Fill first, then outline + check mark on top.
     if (m_nClearFillVerts > 0)
     {
         pd3dCommandList->SetPipelineState(m_pPSOTriangle);
@@ -496,21 +480,18 @@ void CUI_Manager::RenderHPBar(ID3D12GraphicsCommandList* pd3dCommandList,
 
     float ratio = (float)currentHP / (float)maxHP;
 
-    // Same rect as the outline; fill width is clipped to HP ratio.
     const float x0    = -0.95f;
     const float x1Max = -0.55f;
     const float y0    = -0.92f;
     const float y1    = -0.86f;
     const float x1    = x0 + (x1Max - x0) * ratio;
 
-    // Color shifts from green -> yellow -> red as HP drops.
     XMFLOAT4 col;
     if (ratio > 0.5f) col = { 0.2f, 1.0f, 0.3f, 1.0f };
     else if (ratio > 0.25f) col = { 1.0f, 0.85f, 0.2f, 1.0f };
     else col = { 1.0f, 0.25f, 0.25f, 1.0f };
 
-    // Write fill quad (TRIANGLELIST, 6 verts).
-    // Winding matches the cube top-face convention used elsewhere.
+
     UIVertexLocal* p = (UIVertexLocal*)m_pMappedHPFill;
     p[0] = { { x0, y0 }, col };
     p[1] = { { x1, y0 }, col };
@@ -519,7 +500,6 @@ void CUI_Manager::RenderHPBar(ID3D12GraphicsCommandList* pd3dCommandList,
     p[4] = { { x1, y1 }, col };
     p[5] = { { x0, y1 }, col };
 
-    // Bind dummy CBs so the root signature is satisfied if no scene CBs are.
     if (m_pCBDummy)
     {
         D3D12_GPU_VIRTUAL_ADDRESS gpuAddr = m_pCBDummy->GetGPUVirtualAddress();
@@ -527,7 +507,6 @@ void CUI_Manager::RenderHPBar(ID3D12GraphicsCommandList* pd3dCommandList,
         pd3dCommandList->SetGraphicsRootConstantBufferView(1, gpuAddr);
     }
 
-    // Fill first (TRIANGLE PSO), then outline on top (LINE PSO).
     if (currentHP > 0)
     {
         pd3dCommandList->SetPipelineState(m_pPSOTriangle);

@@ -36,9 +36,7 @@ protected:
     D3D12_GRAPHICS_PIPELINE_STATE_DESC m_d3dPipelineStateDesc;
 };
 
-// ============================================================
-// CObjectShader: renders position+color objects using Shaders.hlsl
-// ============================================================
+
 class CObjectShader : public CShader
 {
 public:
@@ -54,7 +52,6 @@ public:
                               ID3D12RootSignature* pd3dRootSignature) override;
 
 private:
-    // Storage for input element descriptors (owned by this object)
     D3D12_INPUT_ELEMENT_DESC* m_pd3dInputElements = NULL;
     UINT                      m_nInputElements     = 0;
 };

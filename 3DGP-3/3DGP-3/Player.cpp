@@ -102,27 +102,46 @@ int CPlayer::Update(float fTimeElapsed)
                            (float)pInput->GetMouseDY() * 0.2f);
     }
 
-    // 2) Helicopter heading follows camera's horizontal forward (so the chopper
-    //    always faces where the camera is looking — natural for orbit cam).
-    XMFLOAT3 camFwd   = pOrbit ? pOrbit->GetHorizontalForward() : XMFLOAT3(0.0f, 0.0f, 1.0f);
-    XMFLOAT3 camRight = pOrbit ? pOrbit->GetHorizontalRight()   : XMFLOAT3(1.0f, 0.0f, 0.0f);
-    m_xmf3Look  = camFwd;
-    m_xmf3Right = camRight;
-    m_xmf3Up    = XMFLOAT3(0.0f, 1.0f, 0.0f);
+    // 2) Read movement input. WASD operates in the chopper's LOCAL frame --
+    //    the chopper's heading is fixed; mouse only orbits the camera.
+    float fForwardIn = 0.0f;   // +1 W, -1 S
+    float fStrafeIn  = 0.0f;   // +1 D, -1 A
+    if (pInput->Key_Pressing('W')) fForwardIn += 1.0f;
+    if (pInput->Key_Pressing('S')) fForwardIn -= 1.0f;
+    if (pInput->Key_Pressing('D')) fStrafeIn  += 1.0f;
+    if (pInput->Key_Pressing('A')) fStrafeIn  -= 1.0f;
 
-    // 3) WASD: move relative to camera direction. Space/Ctrl: vertical.
-    XMFLOAT3 shift = { 0.0f, 0.0f, 0.0f };
+    // Chopper's local axes from its (unchanged) yaw.
+    float yawR = DegreeToRadian(m_fYaw);
+    XMFLOAT3 helFwd = XMFLOAT3(sinf(yawR), 0.0f,  cosf(yawR));
+    XMFLOAT3 helRgt = XMFLOAT3(cosf(yawR), 0.0f, -sinf(yawR));
+
     float step = m_fMoveSpeed * fTimeElapsed;
-    if (pInput->Key_Pressing('W'))         shift = Vector3::Add(shift, camFwd,    step);
-    if (pInput->Key_Pressing('S'))         shift = Vector3::Add(shift, camFwd,   -step);
-    if (pInput->Key_Pressing('D'))         shift = Vector3::Add(shift, camRight,  step);
-    if (pInput->Key_Pressing('A'))         shift = Vector3::Add(shift, camRight, -step);
+    XMFLOAT3 shift = { 0.0f, 0.0f, 0.0f };
+    shift = Vector3::Add(shift, helFwd, fForwardIn * step);
+    shift = Vector3::Add(shift, helRgt, fStrafeIn  * step);
     if (pInput->Key_Pressing(VK_SPACE))    shift.y += step;
     if (pInput->Key_Pressing(VK_CONTROL))  shift.y -= step;
     if (!IsZero(shift.x) || !IsZero(shift.y) || !IsZero(shift.z))
         m_xmf3Position = Vector3::Add(m_xmf3Position, shift);
 
-    // 4) Camera updates after player position/heading are set.
+    // 3) Bank straight from input (input is already in the chopper's local frame).
+    const float kMaxBankPitch = 20.0f;
+    const float kMaxBankRoll  = 25.0f;
+    const float kBankTau      = 0.15f;
+    float fTargetBankPitch =  fForwardIn * kMaxBankPitch;
+    float fTargetBankRoll  = -fStrafeIn  * kMaxBankRoll;   // D -> right wing dips down
+    float fBankT = fTimeElapsed / kBankTau;
+    if (fBankT > 1.0f) fBankT = 1.0f;
+    m_fBankPitch += (fTargetBankPitch - m_fBankPitch) * fBankT;
+    m_fBankRoll  += (fTargetBankRoll  - m_fBankRoll)  * fBankT;
+
+    // 4) Cache local axes (yaw is unchanged here).
+    m_xmf3Look  = helFwd;
+    m_xmf3Right = helRgt;
+    m_xmf3Up    = XMFLOAT3(0.0f, 1.0f, 0.0f);
+
+    // 6) Camera updates after player position/heading are set.
     if (m_pCamera) m_pCamera->Update(m_xmf3LookAt, fTimeElapsed);
 
     // Spin the rotors (CApacheObject::Animate behavior).
@@ -139,16 +158,18 @@ int CPlayer::Update(float fTimeElapsed)
             Matrix4x4::Multiply(r, m_pTailRotorFrame->m_xmf4x4Transform);
     }
 
-    // Update model transform: scale * rotate (local axes) + translate to player position
+    // 7) Build model transform: scale -> bank(roll Z, pitch X) -> yaw Y -> translate.
+    //    Bank is applied in the chopper's local frame BEFORE yaw so the lean
+    //    direction follows where the chopper is currently pointing.
     if (m_pModel)
     {
         XMMATRIX mScale = XMMatrixScaling(m_fModelScale, m_fModelScale, m_fModelScale);
-        XMFLOAT4X4 mRT;
-        mRT._11 = m_xmf3Right.x; mRT._12 = m_xmf3Right.y; mRT._13 = m_xmf3Right.z; mRT._14 = 0.0f;
-        mRT._21 = m_xmf3Up.x;    mRT._22 = m_xmf3Up.y;    mRT._23 = m_xmf3Up.z;    mRT._24 = 0.0f;
-        mRT._31 = m_xmf3Look.x;  mRT._32 = m_xmf3Look.y;  mRT._33 = m_xmf3Look.z;  mRT._34 = 0.0f;
-        mRT._41 = m_xmf3Position.x; mRT._42 = m_xmf3Position.y; mRT._43 = m_xmf3Position.z; mRT._44 = 1.0f;
-        m_pModel->m_xmf4x4Transform = Matrix4x4::Multiply(mScale, mRT);
+        XMMATRIX mRoll  = XMMatrixRotationZ(DegreeToRadian(m_fBankRoll));
+        XMMATRIX mPitch = XMMatrixRotationX(DegreeToRadian(m_fBankPitch));
+        XMMATRIX mYaw   = XMMatrixRotationY(yawR);
+        XMMATRIX mTrans = XMMatrixTranslation(m_xmf3Position.x, m_xmf3Position.y, m_xmf3Position.z);
+        XMMATRIX mWorld = mScale * mRoll * mPitch * mYaw * mTrans;
+        XMStoreFloat4x4(&m_pModel->m_xmf4x4Transform, mWorld);
         m_pModel->UpdateTransform(NULL);
     }
 

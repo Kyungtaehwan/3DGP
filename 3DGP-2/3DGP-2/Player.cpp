@@ -10,12 +10,10 @@
 CPlayer::CPlayer()
 {
     m_xmf4x4World = Matrix4x4::Identity();
-
-    // Capsule-shaped OBB covering the whole body (feet at y=0, head at y=2)
     m_xmLocalOBB = BoundingOrientedBox(
-        XMFLOAT3(0.0f, 1.0f, 0.0f),       // local center (waist height)
-        XMFLOAT3(0.28f, 1.0f, 0.28f),     // half-extents
-        XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f) // no rotation
+        XMFLOAT3(0.0f, 1.0f, 0.0f),      
+        XMFLOAT3(0.28f, 1.0f, 0.28f),   
+        XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f) 
     );
 }
 
@@ -50,20 +48,19 @@ void CPlayer::CreateBodyParts(ID3D12Device* pd3dDevice,
         m_BodyParts.push_back(bp);
     };
 
-    // [BP_HEAD]  y:[1.60, 2.00]
+    // BP_HEAD
     addPart(0.40f, 0.40f, 0.40f, skin,    {  0.00f, 1.80f, 0.00f });
-    // [BP_TORSO] y:[0.90, 1.60]
+    // BP_TORSO
     addPart(0.50f, 0.70f, 0.25f, clothes, {  0.00f, 1.25f, 0.00f });
-    // [BP_ARM_L] shoulder pivot (-0.34, 1.60, 0), hangs 0.30 below → rest center (-0.34, 1.30, 0)
+    // BP_ARM_L
     addPart(0.18f, 0.60f, 0.18f, clothes, { -0.34f, 1.30f, 0.00f });
-    // [BP_ARM_R] shoulder pivot (0.34, 1.60, 0), extended forward via Rx(-90°)
+    // BP_ARM_R
     addPart(0.18f, 0.60f, 0.18f, clothes, {  0.34f, 1.60f, 0.30f });
-    // [BP_LEG_L] hip pivot (-0.14, 1.00, 0), hangs 0.50 below → rest center (-0.14, 0.50, 0), y:[0.00,1.00]
+    // BP_LEG_L
     addPart(0.22f, 1.00f, 0.22f, pants,   { -0.14f, 0.50f, 0.00f });
-    // [BP_LEG_R] hip pivot (0.14, 1.00, 0)
+
     addPart(0.22f, 1.00f, 0.22f, pants,   {  0.14f, 0.50f, 0.00f });
 
-    // [BP_GUN] Glock — attached to right arm tip; CGlockMesh ignores color param
     {
         BodyPart bp;
         bp.pObject = new CGameObject();
@@ -86,11 +83,11 @@ void CPlayer::UpdateBodyPartsWorld()
         XMStoreFloat4x4(&obj->m_xmf4x4World, m);
     };
 
-    // [BP_HEAD]
+
     setWorld(m_BodyParts[BP_HEAD].pObject,
         XMMatrixTranslation(0, 1.80f, 0) * mRot * mPos);
 
-    // [BP_TORSO]
+
     setWorld(m_BodyParts[BP_TORSO].pObject,
         XMMatrixTranslation(0, 1.25f, 0) * mRot * mPos);
 
@@ -103,8 +100,7 @@ void CPlayer::UpdateBodyPartsWorld()
             * mRot * mPos);
     }
 
-    // [BP_ARM_R] pivot at (0.34, 1.60, 0), Rx(-90°) → arm extends forward (+Z)
-    //   arm center moves from (0,-0.30,0) → (0, 0, 0.30) after Rx(-90°)
+
     {
         setWorld(m_BodyParts[BP_ARM_R].pObject,
             XMMatrixTranslation(0, -0.30f, 0)
@@ -113,8 +109,7 @@ void CPlayer::UpdateBodyPartsWorld()
             * mRot * mPos);
     }
 
-    // [BP_LEG_L] pivot at (-0.14, 1.00, 0), leg center 0.50 below pivot
-    //   opposite phase to left arm = same as fSwing
+
     {
         XMMATRIX mSwing = XMMatrixRotationX(DegreeToRadian(fSwing));
         setWorld(m_BodyParts[BP_LEG_L].pObject,
@@ -123,7 +118,7 @@ void CPlayer::UpdateBodyPartsWorld()
             * mRot * mPos);
     }
 
-    // [BP_LEG_R] pivot at (0.14, 1.00, 0), opposite to left leg
+
     {
         XMMATRIX mSwing = XMMatrixRotationX(DegreeToRadian(-fSwing));
         setWorld(m_BodyParts[BP_LEG_R].pObject,
@@ -132,10 +127,10 @@ void CPlayer::UpdateBodyPartsWorld()
             * mRot * mPos);
     }
 
-    // [BP_GUN] 오른팔 끝(shoulder + 0.60 forward)에 부착
+    // GUN 오른팔 끝
     {
         XMMATRIX mGunLocal =
-            XMMatrixTranslation(0.0f, -0.12f, 0.0f)  // 그립 상단 → 손목
+            XMMatrixTranslation(0.0f, -0.12f, 0.0f)  
             * XMMatrixTranslation(0.34f, 1.60f, 0.60f) // 오른팔 끝
             * mRot * mPos;
         setWorld(m_BodyParts[BP_GUN].pObject, mGunLocal);
@@ -154,7 +149,7 @@ void CPlayer::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
 
     XMFLOAT3 shift = { 0.0f, 0.0f, 0.0f };
 
-    // 1인칭에서 앞/뒤 이동은 수평 평면으로 투영 (하늘 보고 W 눌러도 날지 않음)
+    // 1인칭에서 앞/뒤 이동은 수평 평면으로 투영
     DWORD nCamMode = m_pCamera ? m_pCamera->GetMode() : 0;
     XMFLOAT3 moveLook = m_xmf3Look;
     if (nCamMode == FIRST_PERSON_CAMERA)
@@ -271,7 +266,6 @@ int CPlayer::Update(float fTimeElapsed)
     m_bIsMoving  = (dwDir != 0);
     m_fAnimTime += fTimeElapsed;
 
-    // 좌클릭: 레이캐스트 즉발 + 반동
     if (pInput->Key_Down(VK_LBUTTON))
     {
         m_fRecoilTimer = 0.0f;
@@ -298,7 +292,7 @@ int CPlayer::Update(float fTimeElapsed)
             float hitDist        = RAY_MAX;
             CGameObject* pHitObj = nullptr;
 
-            // Ray vs enemy OBBs
+            // Ray -> 몬스터
             for (CGameObject* pEnemy : *CObject_Manager::Get_Instance()->Get_List(OBJ_ENEMY))
             {
                 if (!pEnemy) continue;
@@ -310,7 +304,7 @@ int CPlayer::Update(float fTimeElapsed)
                 }
             }
 
-            // Ray vs walls (tile stepping, 적보다 가까운 경우만)
+            // Ray -> 맵
             XMFLOAT3 dirN;
             XMStoreFloat3(&dirN, vDir);
             for (float t = 0.05f; t < hitDist; t += 0.05f)
@@ -325,11 +319,10 @@ int CPlayer::Update(float fTimeElapsed)
                 }
             }
 
-            // 적 명중 처리
             if (pHitObj)
                 pHitObj->OnHit(25);
 
-            // 충돌 지점에 폭발 파티클 스폰
+            // 충돌 지점 파티클
             XMFLOAT3 hitPos;
             XMStoreFloat3(&hitPos, XMVectorAdd(vOrigin, XMVectorScale(vDir, hitDist)));
 
@@ -347,20 +340,6 @@ int CPlayer::Update(float fTimeElapsed)
             m_fRecoilTimer = -1.0f;
     }
 
-    // 디버그: 타이틀바에 위치 + 키 상태 표시
-    {
-        static int s_tick = 0;
-        if (++s_tick % 20 == 0)
-        {
-            wchar_t buf[256];
-            swprintf_s(buf, 256,
-                L"Pos(%.1f,%.1f,%.1f)  W:%d A:%d S:%d D:%d  Cam:%d",
-                m_xmf3Position.x, m_xmf3Position.y, m_xmf3Position.z,
-                (int)bW, (int)bA, (int)bS, (int)bD,
-                m_pCamera ? (int)m_pCamera->GetMode() : -1);
-            SetWindowTextW(g_hWnd, buf);
-        }
-    }
 
     // 마우스 회전
     Rotate(pInput->GetMouseDY() * 0.15f,
@@ -393,7 +372,7 @@ int CPlayer::Update(float fTimeElapsed)
         m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, Vector3::ScalarProduct(dir, -fDecel));
     }
 
-    // 카메라 업데이트 (각 카메라 타입의 Update가 위치/방향/뷰행렬을 직접 관리)
+    // 카메라 업데이트
     if (m_pCamera)
         m_pCamera->Update(m_xmf3LookAt, fTimeElapsed);
 
@@ -429,7 +408,7 @@ void CPlayer::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamer
     }
 }
 
-// FPS 뷰모델: 오른팔을 카메라 로컬 공간 오른쪽 아래에 배치
+// FPS 뷰
 void CPlayer::RenderFPSArm(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
     if ((int)m_BodyParts.size() <= BP_ARM_R) return;
@@ -441,7 +420,7 @@ void CPlayer::RenderFPSArm(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* 
     XMFLOAT3 camUp    = m_pCamera->GetUpVector();
     XMFLOAT3 camLook  = m_pCamera->GetLookVector();
 
-    // 반동 크기: sin 커브 0→peak→0 (RECOIL_DURATION 동안)
+    // 반동 크기
     float fRecoil = 0.0f;
     if (m_fRecoilTimer >= 0.0f)
         fRecoil = sinf((m_fRecoilTimer / RECOIL_DURATION) * XM_PI);
@@ -455,13 +434,13 @@ void CPlayer::RenderFPSArm(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* 
         camPos.z + camRight.z * 0.38f - camUp.z * 0.22f + camLook.z * 0.1f
     };
 
-    // 반동 오프셋: 팔+총 전체가 카메라 뒤로 밀리고 위로 튕김
+    // 반동
     armPos.x += -camLook.x * fKickBack + camUp.x * fKickUp;
     armPos.y += -camLook.y * fKickBack + camUp.y * fKickUp;
     armPos.z += -camLook.z * fKickBack + camUp.z * fKickUp;
 
-    // 팔 Y축(긴 축) → camLook 방향으로 정렬 (팔이 화면 안쪽으로 뻗음)
-    // Row0=camRight, Row1=camLook, Row2=cross(camRight,camLook)
+    // 팔 Y축(긴 축)
+
     XMFLOAT3 armZ = {
         camRight.y * camLook.z - camRight.z * camLook.y,
         camRight.z * camLook.x - camRight.x * camLook.z,
@@ -477,19 +456,16 @@ void CPlayer::RenderFPSArm(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* 
     pArm->m_xmf4x4World = mWorld;
     pArm->Render(pd3dCommandList, pCamera);
 
-    // 총: 팔 끝에 배치, 별도 행렬 사용
-    // 총 로컬 Z(배럴) → camLook(앞), 총 로컬 Y → camUp(위), 총 로컬 X → camRight
+    // 총 배치
     if ((int)m_BodyParts.size() > BP_GUN && m_BodyParts[BP_GUN].pObject)
     {
-        // 팔 끝 = armCenter + camLook*0.30 (팔 절반길이)
-        // 총 origin을 팔 끝에 맞춤 (총 grip z=[−0.10,0]이 팔 끝 앞에 연결됨)
+\
         XMFLOAT3 gunPos = {
             armPos.x + camLook.x * 0.50f,
             armPos.y + camLook.y * 0.50f,
             armPos.z + camLook.z * 0.50f
         };
 
-        // 총 전용 행렬: Row0=camRight, Row1=camUp, Row2=camLook (배럴→앞)
         XMFLOAT4X4 mGun;
         mGun._11 = camRight.x; mGun._12 = camRight.y; mGun._13 = camRight.z; mGun._14 = 0.0f;
         mGun._21 = camUp.x;    mGun._22 = camUp.y;    mGun._23 = camUp.z;    mGun._24 = 0.0f;
@@ -583,7 +559,6 @@ CCamera* CPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
         break;
     }
 
-    // 런타임 전환: 새 카메라의 GPU 상수 버퍼 생성 (upload heap → command list 불필요)
     if (m_pd3dDevice)
         m_pCamera->CreateShaderVariables(m_pd3dDevice, nullptr);
 
@@ -598,7 +573,7 @@ CCamera* CPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 void CPlayer::CreateShaderVariables(ID3D12Device* pd3dDevice,
                                      ID3D12GraphicsCommandList* pd3dCommandList)
 {
-    m_pd3dDevice = pd3dDevice;  // 런타임 카메라 전환에서 재사용
+    m_pd3dDevice = pd3dDevice;
 
     if (m_pCamera)
         m_pCamera->CreateShaderVariables(pd3dDevice, pd3dCommandList);
