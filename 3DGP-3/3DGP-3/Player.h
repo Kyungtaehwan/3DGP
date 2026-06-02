@@ -56,7 +56,7 @@ protected:
 
     XMFLOAT3 m_xmf3LookAt = { 0.0f, 0.0f, 10.0f };
 
-    float m_fMoveSpeed = 30.0f;
+    float m_fMoveSpeed = 60.0f;
     float m_fModelScale = 0.2f;
 
     CCamera* m_pCamera = NULL;

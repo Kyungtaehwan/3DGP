@@ -2,6 +2,7 @@
 #include "Level.h"
 #include "Shader.h"
 #include "Block.h"
+#include "BitmapFont.h"
 #include <vector>
 
 class CCamera;
@@ -28,9 +29,11 @@ private:
         XMFLOAT3 localOffset; 
     };
 
-    void BuildLetter(ID3D12Device* pd3dDevice,
-                     ID3D12GraphicsCommandList* pd3dCommandList,
-                     const int pattern[5][3], float letterCenterX, XMFLOAT4 color);
+    // Builds one glyph as a group of cubes centered at (centerX, centerY).
+    void BuildGlyphCubes(ID3D12Device* pd3dDevice,
+                         ID3D12GraphicsCommandList* pd3dCommandList,
+                         const Glyph& glyph, float centerX, float centerY,
+                         float cell, XMFLOAT4 color);
 
     CObjectShader* m_pShader  = nullptr;
     CCamera*       m_pCamera  = nullptr;

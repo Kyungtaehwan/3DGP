@@ -2,6 +2,8 @@
 #include "MainApp.h"
 #include "Input_Manager.h"
 #include "Level_Manager.h"
+#include "TextManager.h"
+#include "ExplosionEffect.h"
 
 ID3D12Resource* CreateBufferResource(
     ID3D12Device*              pd3dDevice,
@@ -267,21 +269,42 @@ void CMainApp::CreateDepthStencilView()
 
 void CMainApp::CreateRootSignature()
 {
-    // b0 = camera (view/proj/pos), b1 = world matrix + object color
-    D3D12_ROOT_PARAMETER params[2] = {};
+    // Slot mapping (must match ROOT_SLOT_* macros in define.h and registers in Shaders.hlsl):
+    //   [ROOT_SLOT_CAMERA=0]     CBV  → register(b1)  cbCameraInfo
+    //   [ROOT_SLOT_GAMEOBJECT=1] CBV  → register(b2)  cbGameObjectInfo (world + Materials[8])
+    //   [ROOT_SLOT_LIGHTS=2]     CBV  → register(b4)  cbLights
+    //   [ROOT_SLOT_MATIDX_32=3]  CONST→ register(b3)  cbFrameworkConstantInfo (gnMaterial)
+    //   [ROOT_SLOT_TERRAINLINE=4]CBV  → register(b5)  cbTerrainLine (start/end overlay)
+    D3D12_ROOT_PARAMETER params[5] = {};
 
-    params[0].ParameterType             = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    params[0].Descriptor.ShaderRegister = 0;
-    params[0].Descriptor.RegisterSpace  = 0;
-    params[0].ShaderVisibility          = D3D12_SHADER_VISIBILITY_ALL;
+    params[ROOT_SLOT_CAMERA].ParameterType             = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    params[ROOT_SLOT_CAMERA].Descriptor.ShaderRegister = 1;
+    params[ROOT_SLOT_CAMERA].Descriptor.RegisterSpace  = 0;
+    params[ROOT_SLOT_CAMERA].ShaderVisibility          = D3D12_SHADER_VISIBILITY_ALL;
 
-    params[1].ParameterType             = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    params[1].Descriptor.ShaderRegister = 1;
-    params[1].Descriptor.RegisterSpace  = 0;
-    params[1].ShaderVisibility          = D3D12_SHADER_VISIBILITY_ALL;
+    params[ROOT_SLOT_GAMEOBJECT].ParameterType             = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    params[ROOT_SLOT_GAMEOBJECT].Descriptor.ShaderRegister = 2;
+    params[ROOT_SLOT_GAMEOBJECT].Descriptor.RegisterSpace  = 0;
+    params[ROOT_SLOT_GAMEOBJECT].ShaderVisibility          = D3D12_SHADER_VISIBILITY_ALL;
+
+    params[ROOT_SLOT_LIGHTS].ParameterType             = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    params[ROOT_SLOT_LIGHTS].Descriptor.ShaderRegister = 4;
+    params[ROOT_SLOT_LIGHTS].Descriptor.RegisterSpace  = 0;
+    params[ROOT_SLOT_LIGHTS].ShaderVisibility          = D3D12_SHADER_VISIBILITY_ALL;
+
+    params[ROOT_SLOT_MATIDX_32].ParameterType            = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+    params[ROOT_SLOT_MATIDX_32].Constants.Num32BitValues = 1;
+    params[ROOT_SLOT_MATIDX_32].Constants.ShaderRegister = 3;
+    params[ROOT_SLOT_MATIDX_32].Constants.RegisterSpace  = 0;
+    params[ROOT_SLOT_MATIDX_32].ShaderVisibility         = D3D12_SHADER_VISIBILITY_ALL;
+
+    params[ROOT_SLOT_TERRAINLINE].ParameterType             = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    params[ROOT_SLOT_TERRAINLINE].Descriptor.ShaderRegister = 5;
+    params[ROOT_SLOT_TERRAINLINE].Descriptor.RegisterSpace  = 0;
+    params[ROOT_SLOT_TERRAINLINE].ShaderVisibility          = D3D12_SHADER_VISIBILITY_ALL;
 
     D3D12_ROOT_SIGNATURE_DESC sigDesc = {};
-    sigDesc.NumParameters = 2;
+    sigDesc.NumParameters = 5;
     sigDesc.pParameters   = params;
     sigDesc.Flags         = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -304,7 +327,7 @@ void CMainApp::ExecuteLevelLoad()
     m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
 
     CLevel_Manager::Get_Instance()->Level_Change(
-        LEVEL_GAMEPLAY, m_pd3dDevice, m_pd3dCommandList, m_pd3dRootSignature);
+        LEVEL_LOGO, m_pd3dDevice, m_pd3dCommandList, m_pd3dRootSignature);
 
     m_pd3dCommandList->Close();
     ID3D12CommandList* ppLists[] = { m_pd3dCommandList };
@@ -350,6 +373,26 @@ void CMainApp::Render()
     BeginRender();
     CLevel_Manager::Get_Instance()->Render(m_pd3dCommandList);
     EndRender();
+
+    if (CLevel_Manager::Get_Instance()->HasPendingChange())
+        ProcessPendingLevelChange();
+}
+
+void CMainApp::ProcessPendingLevelChange()
+{
+    m_pd3dCommandAllocator->Reset();
+    m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
+
+    CLevel_Manager::Get_Instance()->Apply_Pending_Change(
+        m_pd3dDevice, m_pd3dCommandList, m_pd3dRootSignature);
+
+    m_pd3dCommandList->Close();
+    ID3D12CommandList* ppLists[] = { m_pd3dCommandList };
+    m_pd3dCommandQueue->ExecuteCommandLists(1, ppLists);
+    WaitForGpuComplete();
+
+    CLevel_Manager::Get_Instance()->ReleaseUploadBuffers();
+    m_GameTimer.Reset();
 }
 
 void CMainApp::BeginRender()
@@ -415,6 +458,11 @@ void CMainApp::Release()
 
     CLevel_Manager::Destroy_Instance();
     CInput_Manager::Destroy_Instance();
+    CText_Manager::Destroy_Instance();
+
+    // Shared explosion debris mesh lives for the whole app (reused across levels);
+    // free it once here, after the levels/objects are gone.
+    CExplosionEffect::ReleaseShared();
 
     if (m_pd3dRootSignature) { m_pd3dRootSignature->Release(); m_pd3dRootSignature = NULL; }
 

@@ -61,7 +61,7 @@ void CCamera::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
     m_pcbMappedCamera->padding = 0.0f;
 
     D3D12_GPU_VIRTUAL_ADDRESS cbGpuAddress = m_pd3dcbCamera->GetGPUVirtualAddress();
-    pd3dCommandList->SetGraphicsRootConstantBufferView(0, cbGpuAddress);
+    pd3dCommandList->SetGraphicsRootConstantBufferView(ROOT_SLOT_CAMERA, cbGpuAddress);
 }
 
 void CCamera::ReleaseShaderVariables()

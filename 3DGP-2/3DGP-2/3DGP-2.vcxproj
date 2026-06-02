@@ -150,6 +150,7 @@
     <ClInclude Include="Level_LOGO.h" />
     <ClInclude Include="MapData.h" />
     <ClInclude Include="Block.h" />
+    <ClInclude Include="BitmapFont.h" />
     <ClInclude Include="Map_Manager.h" />
     <ClInclude Include="MainApp.h" />
     <ClInclude Include="UI_Manager.h" />
@@ -174,6 +175,7 @@
     <ClCompile Include="Level_Menu.cpp" />
     <ClCompile Include="Level_LOGO.cpp" />
     <ClCompile Include="Block.cpp" />
+    <ClCompile Include="BitmapFont.cpp" />
     <ClCompile Include="Map_Manager.cpp" />
     <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="Enemy.cpp" />

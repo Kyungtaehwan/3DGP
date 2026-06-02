@@ -15,13 +15,13 @@ CMeshLoadInfo::~CMeshLoadInfo()
 }
 
 CMesh::~CMesh() {}
-
 void CMesh::ReleaseUploadBuffers() {}
 
 CMeshFromFile::CMeshFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList,
                               CMeshLoadInfo* pMeshInfo)
 {
     m_nVertices = pMeshInfo->m_nVertices;
+    m_nType     = pMeshInfo->m_nType;
 
     m_pd3dPositionBuffer = ::CreateBufferResource(
         pd3dDevice, pd3dCommandList,
@@ -105,4 +105,115 @@ void CMeshFromFile::Render(ID3D12GraphicsCommandList* pd3dCommandList, int nSubS
     {
         pd3dCommandList->DrawInstanced(m_nVertices, 1, m_nOffset, 0);
     }
+}
+
+// ============================================================
+// CMeshIlluminatedFromFile (position + normal)
+// ============================================================
+CMeshIlluminatedFromFile::CMeshIlluminatedFromFile(ID3D12Device* pd3dDevice,
+                                                    ID3D12GraphicsCommandList* pd3dCommandList,
+                                                    CMeshLoadInfo* pMeshInfo)
+    : CMeshFromFile(pd3dDevice, pd3dCommandList, pMeshInfo)
+{
+    m_pd3dNormalBuffer = ::CreateBufferResource(
+        pd3dDevice, pd3dCommandList,
+        pMeshInfo->m_pxmf3Normals, sizeof(XMFLOAT3) * m_nVertices,
+        D3D12_HEAP_TYPE_DEFAULT,
+        D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+        &m_pd3dNormalUploadBuffer);
+
+    m_d3dNormalBufferView.BufferLocation = m_pd3dNormalBuffer->GetGPUVirtualAddress();
+    m_d3dNormalBufferView.StrideInBytes  = sizeof(XMFLOAT3);
+    m_d3dNormalBufferView.SizeInBytes    = sizeof(XMFLOAT3) * m_nVertices;
+}
+
+CMeshIlluminatedFromFile::~CMeshIlluminatedFromFile()
+{
+    if (m_pd3dNormalBuffer) m_pd3dNormalBuffer->Release();
+}
+
+void CMeshIlluminatedFromFile::ReleaseUploadBuffers()
+{
+    CMeshFromFile::ReleaseUploadBuffers();
+
+    if (m_pd3dNormalUploadBuffer)
+    {
+        m_pd3dNormalUploadBuffer->Release();
+        m_pd3dNormalUploadBuffer = NULL;
+    }
+}
+
+void CMeshIlluminatedFromFile::Render(ID3D12GraphicsCommandList* pd3dCommandList, int nSubSet)
+{
+    pd3dCommandList->IASetPrimitiveTopology(m_d3dPrimitiveTopology);
+
+    D3D12_VERTEX_BUFFER_VIEW views[2] = { m_d3dPositionBufferView, m_d3dNormalBufferView };
+    pd3dCommandList->IASetVertexBuffers(m_nSlot, 2, views);
+
+    if ((m_nSubMeshes > 0) && (nSubSet < m_nSubMeshes))
+    {
+        pd3dCommandList->IASetIndexBuffer(&m_pd3dSubSetIndexBufferViews[nSubSet]);
+        pd3dCommandList->DrawIndexedInstanced(m_pnSubSetIndices[nSubSet], 1, 0, 0, 0);
+    }
+    else
+    {
+        pd3dCommandList->DrawInstanced(m_nVertices, 1, m_nOffset, 0);
+    }
+}
+
+CColorCubeMesh::CColorCubeMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList,
+                               float fWidth, float fHeight, float fDepth, XMFLOAT4 c)
+{
+    float x = fWidth * 0.5f, y = fHeight * 0.5f, z = fDepth * 0.5f;
+
+
+    XMFLOAT3 p[8] = {
+        { -x, +y, -z }, { +x, +y, -z }, { +x, +y, +z }, { -x, +y, +z },
+        { -x, -y, -z }, { +x, -y, -z }, { +x, -y, +z }, { -x, -y, +z },
+    };
+
+    int idx[36] = {
+        0,1,2, 0,2,3, 
+        4,6,5, 4,7,6, 
+        4,5,1, 4,1,0, 
+        3,2,6, 3,6,7, 
+        4,0,3, 4,3,7, 
+        1,5,6, 1,6,2, 
+    };
+
+    m_nVertices            = 36;
+    m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+    CColorVertex verts[36];
+    for (int i = 0; i < 36; ++i)
+    {
+        verts[i].m_xmf3Position = p[idx[i]];
+        verts[i].m_xmf4Color    = c;
+    }
+
+    m_pd3dVertexBuffer = ::CreateBufferResource(
+        pd3dDevice, pd3dCommandList, verts, sizeof(CColorVertex) * 36,
+        D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+        &m_pd3dVertexUploadBuffer);
+
+    m_d3dVertexBufferView.BufferLocation = m_pd3dVertexBuffer->GetGPUVirtualAddress();
+    m_d3dVertexBufferView.StrideInBytes  = sizeof(CColorVertex);
+    m_d3dVertexBufferView.SizeInBytes    = sizeof(CColorVertex) * 36;
+}
+
+CColorCubeMesh::~CColorCubeMesh()
+{
+    if (m_pd3dVertexBuffer) m_pd3dVertexBuffer->Release();
+}
+
+void CColorCubeMesh::ReleaseUploadBuffers()
+{
+    if (m_pd3dVertexUploadBuffer) { m_pd3dVertexUploadBuffer->Release(); m_pd3dVertexUploadBuffer = NULL; }
+}
+
+void CColorCubeMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList, int /*nSubSet*/)
+{
+    pd3dCommandList->IASetPrimitiveTopology(m_d3dPrimitiveTopology);
+    pd3dCommandList->IASetVertexBuffers(m_nSlot, 1, &m_d3dVertexBufferView);
+    pd3dCommandList->DrawInstanced(m_nVertices, 1, 0, 0);
 }

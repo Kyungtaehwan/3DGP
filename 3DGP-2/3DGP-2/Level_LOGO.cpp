@@ -7,37 +7,8 @@
 
 namespace
 {
-    const int LETTER_3[5][3] = {
-        {1,1,1},
-        {0,0,1},
-        {0,1,1},
-        {0,0,1},
-        {1,1,1},
-    };
-    const int LETTER_D[5][3] = {
-        {1,1,0},
-        {1,0,1},
-        {1,0,1},
-        {1,0,1},
-        {1,1,0},
-    };
-    const int LETTER_G[5][3] = {
-        {1,1,1},
-        {1,0,1},
-        {1,1,1},
-        {0,0,1},
-        {1,1,1},
-    };
-    const int LETTER_P[5][3] = {
-        {1,1,1},
-        {1,0,1},
-        {1,1,1},
-        {1,0,0},
-        {1,0,0},
-    };
-
-    constexpr float CELL = 0.18f;       
-    constexpr float LETTER_PITCH = 0.85f; 
+    constexpr float CELL = 0.07f;        // cube size for the 16x16 Korean glyphs
+    constexpr float SYLLABLE_PITCH = 1.30f;
 }
 
 void CLevel_LOGO::Initialize(ID3D12Device* pd3dDevice,
@@ -60,16 +31,16 @@ void CLevel_LOGO::Initialize(ID3D12Device* pd3dDevice,
     m_pCamera->SetViewport(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f);
     m_pCamera->SetScissorRect(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
 
-    const XMFLOAT4 cyan   = { 0.4f, 1.0f, 1.0f, 1.0f };
-    const XMFLOAT4 yellow = { 1.0f, 0.9f, 0.3f, 1.0f };
-    const XMFLOAT4 pink   = { 1.0f, 0.5f, 0.7f, 1.0f };
-    const XMFLOAT4 green  = { 0.4f, 1.0f, 0.5f, 1.0f };
+    const XMFLOAT4 cyan = { 0.4f, 1.0f, 1.0f, 1.0f };
+    const XMFLOAT4 pink = { 1.0f, 0.5f, 0.7f, 1.0f };
 
-    float startX = -1.5f * LETTER_PITCH;  
-    BuildLetter(pd3dDevice, pd3dCommandList, LETTER_3, startX + 0 * LETTER_PITCH, cyan);
-    BuildLetter(pd3dDevice, pd3dCommandList, LETTER_D, startX + 1 * LETTER_PITCH, yellow);
-    BuildLetter(pd3dDevice, pd3dCommandList, LETTER_G, startX + 2 * LETTER_PITCH, pink);
-    BuildLetter(pd3dDevice, pd3dCommandList, LETTER_P, startX + 3 * LETTER_PITCH, green);
+    // Game name (Korean) placeholder "GE-IM" (2 syllables). Centered, two
+    // syllables side by side. Replace with the real name later.
+    float startX = -0.5f * SYLLABLE_PITCH;
+    BuildGlyphCubes(pd3dDevice, pd3dCommandList, *KoreanGlyph(KOR_GE),
+                    startX + 0 * SYLLABLE_PITCH, 0.0f, CELL, cyan);
+    BuildGlyphCubes(pd3dDevice, pd3dCommandList, *KoreanGlyph(KOR_IM),
+                    startX + 1 * SYLLABLE_PITCH, 0.0f, CELL, pink);
 
     {
         const XMFLOAT4 darkGrey = { 0.20f, 0.20f, 0.22f, 1.0f };
@@ -92,33 +63,27 @@ void CLevel_LOGO::Initialize(ID3D12Device* pd3dDevice,
     }
 }
 
-void CLevel_LOGO::BuildLetter(ID3D12Device* pd3dDevice,
-                              ID3D12GraphicsCommandList* pd3dCommandList,
-                              const int pattern[5][3],
-                              float letterCenterX, XMFLOAT4 color)
+void CLevel_LOGO::BuildGlyphCubes(ID3D12Device* pd3dDevice,
+                                  ID3D12GraphicsCommandList* pd3dCommandList,
+                                  const Glyph& glyph, float centerX, float centerY,
+                                  float cell, XMFLOAT4 color)
 {
-    for (int row = 0; row < 5; ++row)
+    std::vector<XMFLOAT3> cells;
+    float left = centerX - (glyph.cols * cell) * 0.5f;
+    LayoutGlyph(glyph, left, centerY, cell, 0.0f, cells);
+
+    for (const XMFLOAT3& p : cells)
     {
-        for (int col = 0; col < 3; ++col)
-        {
-            if (pattern[row][col] == 1)
-            {
+        CBlock* pCube = new CBlock();
+        pCube->SetShader(m_pShader);
+        pCube->SetMesh(new CCubeMesh(pd3dDevice, pd3dCommandList,
+                                     cell, cell, cell, color));
+        pCube->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 
-                float localX = letterCenterX + (col - 1) * CELL;
-                float localY = (2 - row) * CELL;
-
-                CBlock* pCube = new CBlock();
-                pCube->SetShader(m_pShader);
-                pCube->SetMesh(new CCubeMesh(pd3dDevice, pd3dCommandList,
-                    CELL, CELL, CELL, color));
-                    pCube->CreateShaderVariables(pd3dDevice, pd3dCommandList);
-
-                    LogoCube lc;
-                lc.pObj = pCube;
-                lc.localOffset = XMFLOAT3(localX, localY, 0.0f);
-                m_LetterCubes.push_back(lc);
-            }
-        }
+        LogoCube lc;
+        lc.pObj        = pCube;
+        lc.localOffset = p;
+        m_LetterCubes.push_back(lc);
     }
 }
 

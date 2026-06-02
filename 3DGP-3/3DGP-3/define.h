@@ -23,18 +23,36 @@ extern HWND g_hWnd;
 #define DegreeToRadian(x) ((x) * (XM_PI / 180.0f))
 #define EPSILON 1.0e-6f
 
+// Root signature slot layout — must match CreateRootSignature() in MainApp.cpp
+// and the cbuffer registers in Shaders.hlsl / Light.hlsli.
+//   ROOT_SLOT_CAMERA      → register(b1)
+//   ROOT_SLOT_GAMEOBJECT  → register(b2)  // world matrix + Materials[8]
+//   ROOT_SLOT_LIGHTS      → register(b4)
+//   ROOT_SLOT_MATIDX_32   → register(b3)  // 32-bit root constant: current material index
+#define ROOT_SLOT_CAMERA      0
+#define ROOT_SLOT_GAMEOBJECT  1
+#define ROOT_SLOT_LIGHTS      2
+#define ROOT_SLOT_MATIDX_32   3
+#define ROOT_SLOT_TERRAINLINE 4   // CBV b5: start/end line painted on the terrain
+
 inline bool IsZero(float f)  { return (fabsf(f) < EPSILON); }
 inline bool IsEqual(float a, float b) { return IsZero(a - b); }
 
 enum LEVEL_ID
 {
-    LEVEL_GAMEPLAY = 0,
+    LEVEL_LOGO = 0,
+    LEVEL_MENU,
+    LEVEL_GAMEPLAY,
     LEVEL_END
 };
 
 enum OBJ_ID
 {
     OBJ_PLAYER = 0,
+    OBJ_HUMVEE,
+    OBJ_TREE,
+    OBJ_TANK,
+    OBJ_EFFECT,
     OBJ_END
 };
 

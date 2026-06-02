@@ -1,6 +1,3 @@
-// Shaders.hlsl
-// Simple position+color shader — no lighting
-
 cbuffer cbCameraInfo : register(b0)
 {
     matrix gmtxView;
@@ -41,10 +38,6 @@ float4 PSMain(VS_OUTPUT input) : SV_TARGET
     return input.color;
 }
 
-// =========================================================================
-// UI shaders — vertices supplied directly in NDC space (orthographic).
-// b0/b1 stay bound from the scene pass but are unused here.
-// =========================================================================
 
 struct VS_UI_INPUT
 {

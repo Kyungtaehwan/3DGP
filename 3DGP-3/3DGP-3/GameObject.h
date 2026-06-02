@@ -4,10 +4,80 @@
 class CCamera;
 class CShader;
 
+// Must match Shaders.hlsl cbGameObjectInfo (MATERIALS_IN_HIERARCHY).
+#define MATERIALS_IN_HIERARCHY 8
+
+struct MATERIALLOADINFO
+{
+    XMFLOAT4 m_xmf4AlbedoColor   = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+    XMFLOAT4 m_xmf4EmissiveColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+    XMFLOAT4 m_xmf4SpecularColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+
+    float    m_fGlossiness        = 0.0f;
+    float    m_fSmoothness        = 0.0f;
+    float    m_fSpecularHighlight = 0.0f;
+    float    m_fMetallic          = 0.0f;
+    float    m_fGlossyReflection  = 0.0f;
+};
+
+struct MATERIALSLOADINFO
+{
+    int               m_nMaterials = 0;
+    MATERIALLOADINFO* m_pMaterials = NULL;
+    ~MATERIALSLOADINFO() { if (m_pMaterials) delete[] m_pMaterials; }
+};
+
+class CMaterialColors
+{
+public:
+    CMaterialColors() {}
+    CMaterialColors(MATERIALLOADINFO* p);
+    ~CMaterialColors() {}
+
+    void AddRef()  { m_nReferences++; }
+    void Release() { if (--m_nReferences <= 0) delete this; }
+
+    XMFLOAT4 m_xmf4Ambient  = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+    XMFLOAT4 m_xmf4Diffuse  = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+    XMFLOAT4 m_xmf4Specular = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f); // a = specular power
+    XMFLOAT4 m_xmf4Emissive = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+
+private:
+    int m_nReferences = 0;
+};
+
+class CMaterial
+{
+public:
+    CMaterial();
+    ~CMaterial();
+
+    void AddRef()  { m_nReferences++; }
+    void Release() { if (--m_nReferences <= 0) delete this; }
+
+    void SetShader(CShader* pShader);
+    void SetMaterialColors(CMaterialColors* p);
+
+    CShader*         m_pShader         = NULL;
+    CMaterialColors* m_pMaterialColors = NULL;
+
+private:
+    int m_nReferences = 0;
+};
+
+// One per-material payload in the GameObject constant buffer (matches HLSL MATERIAL).
+struct MATERIAL_CB
+{
+    XMFLOAT4 m_xmf4Ambient;
+    XMFLOAT4 m_xmf4Diffuse;
+    XMFLOAT4 m_xmf4Specular; // a = power
+    XMFLOAT4 m_xmf4Emissive;
+};
+
 struct CB_GAMEOBJECT_INFO
 {
-    XMFLOAT4X4 m_xmf4x4World;
-    XMFLOAT4   m_xmf4Color;
+    XMFLOAT4X4  m_xmf4x4World;
+    MATERIAL_CB m_Materials[MATERIALS_IN_HIERARCHY];
 };
 
 class CGameObject
@@ -23,7 +93,8 @@ public:
 
     CMesh* m_pMesh = NULL;
 
-    XMFLOAT4 m_xmf4Color = XMFLOAT4(0.7f, 0.7f, 0.75f, 1.0f);
+    int          m_nMaterials  = 0;
+    CMaterial**  m_ppMaterials = NULL;
 
     XMFLOAT4X4 m_xmf4x4Transform;
     XMFLOAT4X4 m_xmf4x4World;
@@ -33,8 +104,11 @@ public:
     CGameObject* m_pSibling = NULL;
 
     void SetMesh(CMesh* pMesh);
-    void SetShader(CShader* pShader) { m_pShader = pShader; }
-    void SetColor(XMFLOAT4 c) { m_xmf4Color = c; }
+    // Creates a single default material that uses pShader (used when a frame
+    // has a mesh but no <Materials> block).
+    void SetShader(CShader* pShader);
+    void SetShader(int nMaterial, CShader* pShader);
+    void SetMaterial(int nMaterial, CMaterial* pMaterial);
 
     void SetChild(CGameObject* pChild, bool bReferenceUpdate = false);
 
@@ -70,18 +144,20 @@ public:
     void UpdateTransform(XMFLOAT4X4* pxmf4x4Parent = NULL);
     CGameObject* FindFrame(char* pstrFrameName);
 
+    UINT GetMeshType() const { return m_pMesh ? m_pMesh->GetType() : 0; }
+
     static CGameObject* LoadFrameHierarchyFromFile(
         ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList,
         FILE* pInFile, CShader* pShader);
     static CGameObject* LoadGeometryFromFile(
         ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList,
         const char* pstrFileName, CShader* pShader);
-    static CMeshLoadInfo* LoadMeshInfoFromFile(FILE* pInFile);
+    static CMeshLoadInfo*     LoadMeshInfoFromFile(FILE* pInFile);
+    static MATERIALSLOADINFO* LoadMaterialsInfoFromFile(FILE* pInFile);
 
 protected:
     int      m_nReferences = 0;
-    CShader* m_pShader     = NULL;
 
-    ID3D12Resource*     m_pd3dcbGameObject       = NULL;
-    CB_GAMEOBJECT_INFO* m_pcbMappedGameObject    = NULL;
+    ID3D12Resource*     m_pd3dcbGameObject    = NULL;
+    CB_GAMEOBJECT_INFO* m_pcbMappedGameObject = NULL;
 };

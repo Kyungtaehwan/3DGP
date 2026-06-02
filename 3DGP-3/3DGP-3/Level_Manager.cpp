@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Level_Manager.h"
 #include "Level_GamePlay.h"
+#include "Level_LOGO.h"
+#include "Level_Menu.h"
 
 CLevel_Manager* CLevel_Manager::m_pInstance = nullptr;
 
@@ -14,11 +16,22 @@ void CLevel_Manager::Level_Change(LEVEL_ID eID,
     m_eCurLevel = eID;
     switch (eID)
     {
+    case LEVEL_LOGO:     m_pLevel = new CLevel_LOGO();     break;
+    case LEVEL_MENU:     m_pLevel = new CLevel_Menu();     break;
     case LEVEL_GAMEPLAY: m_pLevel = new CLevel_GamePlay(); break;
-    default:             m_pLevel = new CLevel_GamePlay(); break;
+    default:             m_pLevel = new CLevel_LOGO();     break;
     }
 
     if (m_pLevel) m_pLevel->Initialize(pd3dDevice, pd3dCommandList, pd3dRootSignature);
+}
+
+void CLevel_Manager::Apply_Pending_Change(ID3D12Device* pd3dDevice,
+                                          ID3D12GraphicsCommandList* pd3dCommandList,
+                                          ID3D12RootSignature* pd3dRootSignature)
+{
+    if (!m_bHasPending) return;
+    m_bHasPending = false;
+    Level_Change(m_ePendingLevel, pd3dDevice, pd3dCommandList, pd3dRootSignature);
 }
 
 int CLevel_Manager::Update(float dt)

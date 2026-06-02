@@ -65,17 +65,8 @@ D3D12_DEPTH_STENCIL_DESC CShader::CreateDepthStencilState()
     return d3dDepthStencilDesc;
 }
 
-D3D12_SHADER_BYTECODE CShader::CreateVertexShader()
-{
-    D3D12_SHADER_BYTECODE bc{ NULL, 0 };
-    return bc;
-}
-
-D3D12_SHADER_BYTECODE CShader::CreatePixelShader()
-{
-    D3D12_SHADER_BYTECODE bc{ NULL, 0 };
-    return bc;
-}
+D3D12_SHADER_BYTECODE CShader::CreateVertexShader() { D3D12_SHADER_BYTECODE bc{ NULL, 0 }; return bc; }
+D3D12_SHADER_BYTECODE CShader::CreatePixelShader()  { D3D12_SHADER_BYTECODE bc{ NULL, 0 }; return bc; }
 
 D3D12_SHADER_BYTECODE CShader::CompileShaderFromFile(const WCHAR* pszFileName, LPCSTR pszShaderName,
                                                      LPCSTR pszShaderProfile,
@@ -87,7 +78,7 @@ D3D12_SHADER_BYTECODE CShader::CompileShaderFromFile(const WCHAR* pszFileName, L
 #endif
 
     ID3DBlob* pd3dErrorBlob = NULL;
-    HRESULT hResult = ::D3DCompileFromFile(pszFileName, NULL, NULL,
+    HRESULT hResult = ::D3DCompileFromFile(pszFileName, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE,
                                             pszShaderName, pszShaderProfile,
                                             nCompileFlags, 0,
                                             ppd3dShaderBlob, &pd3dErrorBlob);
@@ -97,9 +88,12 @@ D3D12_SHADER_BYTECODE CShader::CompileShaderFromFile(const WCHAR* pszFileName, L
         pd3dErrorBlob->Release();
     }
 
-    D3D12_SHADER_BYTECODE bc;
-    bc.pShaderBytecode = (*ppd3dShaderBlob)->GetBufferPointer();
-    bc.BytecodeLength  = (*ppd3dShaderBlob)->GetBufferSize();
+    D3D12_SHADER_BYTECODE bc{ NULL, 0 };
+    if (*ppd3dShaderBlob)
+    {
+        bc.pShaderBytecode = (*ppd3dShaderBlob)->GetBufferPointer();
+        bc.BytecodeLength  = (*ppd3dShaderBlob)->GetBufferSize();
+    }
     return bc;
 }
 
@@ -137,7 +131,7 @@ void CShader::CreateShader(ID3D12Device* pd3dDevice,
         (void**)&m_ppd3dPipelineStates[0]);
 
     if (FAILED(hResult))
-        OutputDebugStringA("ERROR: Failed to create pipeline state object!\n");
+        OutputDebugStringA("ERROR: CreateGraphicsPipelineState failed.\n");
 }
 
 void CShader::OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList)
@@ -152,28 +146,23 @@ void CShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamer
 }
 
 // ============================================================
-// CObjectShader
+// CIlluminatedShader
 // ============================================================
-
-CObjectShader::CObjectShader() {}
-
-CObjectShader::~CObjectShader()
+CIlluminatedShader::CIlluminatedShader() {}
+CIlluminatedShader::~CIlluminatedShader()
 {
     if (m_pd3dInputElements) { delete[] m_pd3dInputElements; m_pd3dInputElements = NULL; }
 }
 
-D3D12_INPUT_LAYOUT_DESC CObjectShader::CreateInputLayout()
+D3D12_INPUT_LAYOUT_DESC CIlluminatedShader::CreateInputLayout()
 {
-    m_nInputElements    = 1;
+    m_nInputElements    = 2;
     m_pd3dInputElements = new D3D12_INPUT_ELEMENT_DESC[m_nInputElements];
 
-    m_pd3dInputElements[0].SemanticName         = "POSITION";
-    m_pd3dInputElements[0].SemanticIndex        = 0;
-    m_pd3dInputElements[0].Format               = DXGI_FORMAT_R32G32B32_FLOAT;
-    m_pd3dInputElements[0].InputSlot            = 0;
-    m_pd3dInputElements[0].AlignedByteOffset    = 0;
-    m_pd3dInputElements[0].InputSlotClass       = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
-    m_pd3dInputElements[0].InstanceDataStepRate = 0;
+    m_pd3dInputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
+                               D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+    m_pd3dInputElements[1] = { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0,
+                               D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
     D3D12_INPUT_LAYOUT_DESC desc;
     desc.pInputElementDescs = m_pd3dInputElements;
@@ -181,19 +170,77 @@ D3D12_INPUT_LAYOUT_DESC CObjectShader::CreateInputLayout()
     return desc;
 }
 
-D3D12_SHADER_BYTECODE CObjectShader::CreateVertexShader()
+D3D12_SHADER_BYTECODE CIlluminatedShader::CreateVertexShader()
 {
-    return CompileShaderFromFile(L"Shaders.hlsl", "VSMain", "vs_5_1", &m_pd3dVertexShaderBlob);
+    return CompileShaderFromFile(L"Shaders.hlsl", "VSLighting", "vs_5_1", &m_pd3dVertexShaderBlob);
 }
 
-D3D12_SHADER_BYTECODE CObjectShader::CreatePixelShader()
+D3D12_SHADER_BYTECODE CIlluminatedShader::CreatePixelShader()
 {
-    return CompileShaderFromFile(L"Shaders.hlsl", "PSMain", "ps_5_1", &m_pd3dPixelShaderBlob);
+    return CompileShaderFromFile(L"Shaders.hlsl", "PSLighting", "ps_5_1", &m_pd3dPixelShaderBlob);
 }
 
-void CObjectShader::CreateShader(ID3D12Device* pd3dDevice,
-                                 ID3D12GraphicsCommandList* pd3dCommandList,
-                                 ID3D12RootSignature* pd3dRootSignature)
+void CIlluminatedShader::CreateShader(ID3D12Device* pd3dDevice,
+                                       ID3D12GraphicsCommandList* pd3dCommandList,
+                                       ID3D12RootSignature* pd3dRootSignature)
+{
+    m_nPipelineStates        = 1;
+    m_ppd3dPipelineStates    = new ID3D12PipelineState*[m_nPipelineStates];
+    m_ppd3dPipelineStates[0] = NULL;
+
+    CShader::CreateShader(pd3dDevice, pd3dCommandList, pd3dRootSignature);
+
+    if (m_pd3dVertexShaderBlob) { m_pd3dVertexShaderBlob->Release(); m_pd3dVertexShaderBlob = NULL; }
+    if (m_pd3dPixelShaderBlob)  { m_pd3dPixelShaderBlob->Release();  m_pd3dPixelShaderBlob  = NULL; }
+    if (m_pd3dInputElements)    { delete[] m_pd3dInputElements;      m_pd3dInputElements    = NULL; }
+}
+
+// ============================================================
+// CTerrainShader (lit terrain + route-line overlay)
+// ============================================================
+D3D12_SHADER_BYTECODE CTerrainShader::CreatePixelShader()
+{
+    return CompileShaderFromFile(L"Shaders.hlsl", "PSTerrainLine", "ps_5_1", &m_pd3dPixelShaderBlob);
+}
+
+// ============================================================
+// CColorShader (unlit, position + color)
+// ============================================================
+CColorShader::CColorShader() {}
+CColorShader::~CColorShader()
+{
+    if (m_pd3dInputElements) { delete[] m_pd3dInputElements; m_pd3dInputElements = NULL; }
+}
+
+D3D12_INPUT_LAYOUT_DESC CColorShader::CreateInputLayout()
+{
+    m_nInputElements    = 2;
+    m_pd3dInputElements = new D3D12_INPUT_ELEMENT_DESC[m_nInputElements];
+
+    m_pd3dInputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0,  0,
+                               D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+    m_pd3dInputElements[1] = { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12,
+                               D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+    D3D12_INPUT_LAYOUT_DESC desc;
+    desc.pInputElementDescs = m_pd3dInputElements;
+    desc.NumElements        = m_nInputElements;
+    return desc;
+}
+
+D3D12_SHADER_BYTECODE CColorShader::CreateVertexShader()
+{
+    return CompileShaderFromFile(L"Shaders.hlsl", "VSColor", "vs_5_1", &m_pd3dVertexShaderBlob);
+}
+
+D3D12_SHADER_BYTECODE CColorShader::CreatePixelShader()
+{
+    return CompileShaderFromFile(L"Shaders.hlsl", "PSColor", "ps_5_1", &m_pd3dPixelShaderBlob);
+}
+
+void CColorShader::CreateShader(ID3D12Device* pd3dDevice,
+                                ID3D12GraphicsCommandList* pd3dCommandList,
+                                ID3D12RootSignature* pd3dRootSignature)
 {
     m_nPipelineStates        = 1;
     m_ppd3dPipelineStates    = new ID3D12PipelineState*[m_nPipelineStates];

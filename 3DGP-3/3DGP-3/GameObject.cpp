@@ -3,6 +3,35 @@
 #include "Shader.h"
 #include "Camera.h"
 
+CMaterialColors::CMaterialColors(MATERIALLOADINFO* p)
+{
+    m_xmf4Diffuse    = p->m_xmf4AlbedoColor;
+    m_xmf4Specular   = p->m_xmf4SpecularColor;
+    m_xmf4Specular.w = p->m_fGlossiness * 255.0f;
+    m_xmf4Emissive   = p->m_xmf4EmissiveColor;
+}
+
+CMaterial::CMaterial() {}
+CMaterial::~CMaterial()
+{
+    if (m_pShader)         m_pShader->Release();
+    if (m_pMaterialColors) m_pMaterialColors->Release();
+}
+
+void CMaterial::SetShader(CShader* pShader)
+{
+    if (m_pShader) m_pShader->Release();
+    m_pShader = pShader;
+    if (m_pShader) m_pShader->AddRef();
+}
+
+void CMaterial::SetMaterialColors(CMaterialColors* p)
+{
+    if (m_pMaterialColors) m_pMaterialColors->Release();
+    m_pMaterialColors = p;
+    if (m_pMaterialColors) m_pMaterialColors->AddRef();
+}
+
 CGameObject::CGameObject()
 {
     m_xmf4x4Transform = Matrix4x4::Identity();
@@ -13,6 +42,13 @@ CGameObject::~CGameObject()
 {
     ReleaseShaderVariables();
     if (m_pMesh) m_pMesh->Release();
+
+    if (m_ppMaterials)
+    {
+        for (int i = 0; i < m_nMaterials; i++)
+            if (m_ppMaterials[i]) m_ppMaterials[i]->Release();
+        delete[] m_ppMaterials;
+    }
 }
 
 void CGameObject::AddRef()
@@ -34,6 +70,40 @@ void CGameObject::SetMesh(CMesh* pMesh)
     if (m_pMesh) m_pMesh->Release();
     m_pMesh = pMesh;
     if (m_pMesh) m_pMesh->AddRef();
+}
+
+void CGameObject::SetShader(CShader* pShader)
+{
+    if (m_ppMaterials)
+    {
+        for (int i = 0; i < m_nMaterials; i++)
+            if (m_ppMaterials[i]) m_ppMaterials[i]->Release();
+        delete[] m_ppMaterials;
+    }
+    m_nMaterials = 1;
+    m_ppMaterials = new CMaterial*[1];
+    m_ppMaterials[0] = new CMaterial();
+    m_ppMaterials[0]->AddRef();
+    m_ppMaterials[0]->SetShader(pShader);
+
+    CMaterialColors* pColors = new CMaterialColors();
+    m_ppMaterials[0]->SetMaterialColors(pColors);
+}
+
+void CGameObject::SetShader(int nMaterial, CShader* pShader)
+{
+    if (m_ppMaterials && nMaterial < m_nMaterials && m_ppMaterials[nMaterial])
+        m_ppMaterials[nMaterial]->SetShader(pShader);
+}
+
+void CGameObject::SetMaterial(int nMaterial, CMaterial* pMaterial)
+{
+    if (m_ppMaterials && nMaterial < m_nMaterials)
+    {
+        if (m_ppMaterials[nMaterial]) m_ppMaterials[nMaterial]->Release();
+        m_ppMaterials[nMaterial] = pMaterial;
+        if (pMaterial) pMaterial->AddRef();
+    }
 }
 
 void CGameObject::SetChild(CGameObject* pChild, bool bReferenceUpdate)
@@ -77,21 +147,18 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 {
     if (m_pMesh)
     {
-        if (m_pShader) m_pShader->OnPrepareRender(pd3dCommandList);
-
+        // 월드
         if (m_pd3dcbGameObject) UpdateShaderVariables(pd3dCommandList);
-
-        // Render all sub-meshes
-        if (CMeshFromFile* pMF = dynamic_cast<CMeshFromFile*>(m_pMesh))
+        if (m_nMaterials > 0)
         {
-            // Internally handles >=0 sub-meshes (nSubSet < m_nSubMeshes draws indexed)
-            // For safety call once per submesh from outside if needed.
-            // CMeshFromFile::Render currently draws one submesh at a time, so
-            // we loop over the submeshes here:
-            // We don't know the submesh count outside; render index 0..N until exhausted.
-            // Simple approach: try index 0; if loader put everything in one submesh this
-            // suffices. Apache.bin has 1 submesh per frame for our needs.
-            m_pMesh->Render(pd3dCommandList, 0);
+            for (int i = 0; i < m_nMaterials; i++)
+            {
+                if (m_ppMaterials[i] && m_ppMaterials[i]->m_pShader)
+                    m_ppMaterials[i]->m_pShader->OnPrepareRender(pd3dCommandList);
+
+                pd3dCommandList->SetGraphicsRoot32BitConstant(ROOT_SLOT_MATIDX_32, i, 0);
+                m_pMesh->Render(pd3dCommandList, i);
+            }
         }
     }
 
@@ -119,13 +186,28 @@ void CGameObject::CreateShaderVariables(ID3D12Device* pd3dDevice,
 
 void CGameObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
+    if (!m_pcbMappedGameObject) return;
+
     XMFLOAT4X4 xmf4x4World;
     XMStoreFloat4x4(&xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4World)));
-    ::memcpy(&m_pcbMappedGameObject->m_xmf4x4World, &xmf4x4World, sizeof(XMFLOAT4X4));
-    ::memcpy(&m_pcbMappedGameObject->m_xmf4Color,   &m_xmf4Color, sizeof(XMFLOAT4));
+    m_pcbMappedGameObject->m_xmf4x4World = xmf4x4World;
 
-    D3D12_GPU_VIRTUAL_ADDRESS cbGpu = m_pd3dcbGameObject->GetGPUVirtualAddress();
-    pd3dCommandList->SetGraphicsRootConstantBufferView(1, cbGpu);
+    int nMats = (m_nMaterials < MATERIALS_IN_HIERARCHY) ? m_nMaterials : MATERIALS_IN_HIERARCHY;
+    for (int i = 0; i < nMats; i++)
+    {
+        CMaterialColors* pColors = m_ppMaterials[i] ? m_ppMaterials[i]->m_pMaterialColors : NULL;
+        if (pColors)
+        {
+            m_pcbMappedGameObject->m_Materials[i].m_xmf4Ambient  = pColors->m_xmf4Ambient;
+            m_pcbMappedGameObject->m_Materials[i].m_xmf4Diffuse  = pColors->m_xmf4Diffuse;
+            m_pcbMappedGameObject->m_Materials[i].m_xmf4Specular = pColors->m_xmf4Specular;
+            m_pcbMappedGameObject->m_Materials[i].m_xmf4Emissive = pColors->m_xmf4Emissive;
+        }
+    }
+
+    // Bind per-object CB at root[1] = b2 (cbGameObjectInfo).
+    pd3dCommandList->SetGraphicsRootConstantBufferView(
+        ROOT_SLOT_GAMEOBJECT, m_pd3dcbGameObject->GetGPUVirtualAddress());
 }
 
 void CGameObject::ReleaseShaderVariables()
@@ -176,46 +258,14 @@ void CGameObject::SetScale(float x, float y, float z)
     UpdateTransform(NULL);
 }
 
-XMFLOAT3 CGameObject::GetPosition()
-{
-    return XMFLOAT3(m_xmf4x4World._41, m_xmf4x4World._42, m_xmf4x4World._43);
-}
+XMFLOAT3 CGameObject::GetPosition() { return XMFLOAT3(m_xmf4x4World._41, m_xmf4x4World._42, m_xmf4x4World._43); }
+XMFLOAT3 CGameObject::GetLook()  { return Vector3::Normalize(XMFLOAT3(m_xmf4x4World._31, m_xmf4x4World._32, m_xmf4x4World._33)); }
+XMFLOAT3 CGameObject::GetUp()    { return Vector3::Normalize(XMFLOAT3(m_xmf4x4World._21, m_xmf4x4World._22, m_xmf4x4World._23)); }
+XMFLOAT3 CGameObject::GetRight() { return Vector3::Normalize(XMFLOAT3(m_xmf4x4World._11, m_xmf4x4World._12, m_xmf4x4World._13)); }
 
-XMFLOAT3 CGameObject::GetLook()
-{
-    return Vector3::Normalize(XMFLOAT3(m_xmf4x4World._31, m_xmf4x4World._32, m_xmf4x4World._33));
-}
-
-XMFLOAT3 CGameObject::GetUp()
-{
-    return Vector3::Normalize(XMFLOAT3(m_xmf4x4World._21, m_xmf4x4World._22, m_xmf4x4World._23));
-}
-
-XMFLOAT3 CGameObject::GetRight()
-{
-    return Vector3::Normalize(XMFLOAT3(m_xmf4x4World._11, m_xmf4x4World._12, m_xmf4x4World._13));
-}
-
-void CGameObject::MoveStrafe(float fDistance)
-{
-    XMFLOAT3 pos   = GetPosition();
-    XMFLOAT3 right = GetRight();
-    SetPosition(Vector3::Add(pos, right, fDistance));
-}
-
-void CGameObject::MoveUp(float fDistance)
-{
-    XMFLOAT3 pos = GetPosition();
-    XMFLOAT3 up  = GetUp();
-    SetPosition(Vector3::Add(pos, up, fDistance));
-}
-
-void CGameObject::MoveForward(float fDistance)
-{
-    XMFLOAT3 pos  = GetPosition();
-    XMFLOAT3 look = GetLook();
-    SetPosition(Vector3::Add(pos, look, fDistance));
-}
+void CGameObject::MoveStrafe(float fDistance)  { SetPosition(Vector3::Add(GetPosition(), GetRight(), fDistance)); }
+void CGameObject::MoveUp(float fDistance)      { SetPosition(Vector3::Add(GetPosition(), GetUp(),    fDistance)); }
+void CGameObject::MoveForward(float fDistance) { SetPosition(Vector3::Add(GetPosition(), GetLook(),  fDistance)); }
 
 void CGameObject::Rotate(float fPitch, float fYaw, float fRoll)
 {
@@ -233,7 +283,7 @@ void CGameObject::Rotate(XMFLOAT3* pxmf3Axis, float fAngle)
 }
 
 // ============================================================
-// File loading
+// File loading helpers
 // ============================================================
 static int ReadIntegerFromFile(FILE* pInFile)
 {
@@ -261,7 +311,6 @@ static BYTE ReadStringFromFile(FILE* pInFile, char* pstrToken)
 CMeshLoadInfo* CGameObject::LoadMeshInfoFromFile(FILE* pInFile)
 {
     char pstrToken[64] = { '\0' };
-
     CMeshLoadInfo* pMeshInfo = new CMeshLoadInfo;
 
     pMeshInfo->m_nVertices = ReadIntegerFromFile(pInFile);
@@ -278,41 +327,41 @@ CMeshLoadInfo* CGameObject::LoadMeshInfoFromFile(FILE* pInFile)
         }
         else if (!strcmp(pstrToken, "<Positions>:"))
         {
-            int nPositions = ReadIntegerFromFile(pInFile);
-            if (nPositions > 0)
+            int n = ReadIntegerFromFile(pInFile);
+            if (n > 0)
             {
                 pMeshInfo->m_nType |= VERTEXT_POSITION;
-                pMeshInfo->m_pxmf3Positions = new XMFLOAT3[nPositions];
-                ::fread(pMeshInfo->m_pxmf3Positions, sizeof(XMFLOAT3), nPositions, pInFile);
+                pMeshInfo->m_pxmf3Positions = new XMFLOAT3[n];
+                ::fread(pMeshInfo->m_pxmf3Positions, sizeof(XMFLOAT3), n, pInFile);
             }
         }
         else if (!strcmp(pstrToken, "<Colors>:"))
         {
-            int nColors = ReadIntegerFromFile(pInFile);
-            if (nColors > 0)
+            int n = ReadIntegerFromFile(pInFile);
+            if (n > 0)
             {
                 pMeshInfo->m_nType |= VERTEXT_COLOR;
-                pMeshInfo->m_pxmf4Colors = new XMFLOAT4[nColors];
-                ::fread(pMeshInfo->m_pxmf4Colors, sizeof(XMFLOAT4), nColors, pInFile);
+                pMeshInfo->m_pxmf4Colors = new XMFLOAT4[n];
+                ::fread(pMeshInfo->m_pxmf4Colors, sizeof(XMFLOAT4), n, pInFile);
             }
         }
         else if (!strcmp(pstrToken, "<Normals>:"))
         {
-            int nNormals = ReadIntegerFromFile(pInFile);
-            if (nNormals > 0)
+            int n = ReadIntegerFromFile(pInFile);
+            if (n > 0)
             {
                 pMeshInfo->m_nType |= VERTEXT_NORMAL;
-                pMeshInfo->m_pxmf3Normals = new XMFLOAT3[nNormals];
-                ::fread(pMeshInfo->m_pxmf3Normals, sizeof(XMFLOAT3), nNormals, pInFile);
+                pMeshInfo->m_pxmf3Normals = new XMFLOAT3[n];
+                ::fread(pMeshInfo->m_pxmf3Normals, sizeof(XMFLOAT3), n, pInFile);
             }
         }
         else if (!strcmp(pstrToken, "<Indices>:"))
         {
-            int nIndices = ReadIntegerFromFile(pInFile);
-            if (nIndices > 0)
+            int n = ReadIntegerFromFile(pInFile);
+            if (n > 0)
             {
-                pMeshInfo->m_pnIndices = new UINT[nIndices];
-                ::fread(pMeshInfo->m_pnIndices, sizeof(int), nIndices, pInFile);
+                pMeshInfo->m_pnIndices = new UINT[n];
+                ::fread(pMeshInfo->m_pnIndices, sizeof(int), n, pInFile);
             }
         }
         else if (!strcmp(pstrToken, "<SubMeshes>:"))
@@ -328,7 +377,7 @@ CMeshLoadInfo* CGameObject::LoadMeshInfoFromFile(FILE* pInFile)
                     ReadStringFromFile(pInFile, pstrToken);
                     if (!strcmp(pstrToken, "<SubMesh>:"))
                     {
-                        ReadIntegerFromFile(pInFile); // sub-mesh index (ignored)
+                        ReadIntegerFromFile(pInFile);
                         pMeshInfo->m_pnSubSetIndices[i] = ReadIntegerFromFile(pInFile);
                         if (pMeshInfo->m_pnSubSetIndices[i] > 0)
                         {
@@ -348,42 +397,61 @@ CMeshLoadInfo* CGameObject::LoadMeshInfoFromFile(FILE* pInFile)
     return pMeshInfo;
 }
 
-// Skip "<Materials>:" block since this build has no lighting/materials —
-// we just want to advance the file pointer past it.
-static void SkipMaterialsBlock(FILE* pInFile)
+MATERIALSLOADINFO* CGameObject::LoadMaterialsInfoFromFile(FILE* pInFile)
 {
     char pstrToken[64] = { '\0' };
-    int nMaterials = ReadIntegerFromFile(pInFile);
-    (void)nMaterials;
+    MATERIALSLOADINFO* pInfo = new MATERIALSLOADINFO;
 
+    pInfo->m_nMaterials = ReadIntegerFromFile(pInFile);
+    pInfo->m_pMaterials = new MATERIALLOADINFO[pInfo->m_nMaterials];
+
+    int nMaterial = 0;
     for (;;)
     {
         ReadStringFromFile(pInFile, pstrToken);
+
         if (!strcmp(pstrToken, "<Material>:"))
         {
-            ReadIntegerFromFile(pInFile);
+            nMaterial = ReadIntegerFromFile(pInFile);
         }
-        else if (!strcmp(pstrToken, "<AlbedoColor>:")  ||
-                 !strcmp(pstrToken, "<EmissiveColor>:") ||
-                 !strcmp(pstrToken, "<SpecularColor>:"))
+        else if (!strcmp(pstrToken, "<AlbedoColor>:"))
         {
-            float dummy[4];
-            ::fread(dummy, sizeof(float), 4, pInFile);
+            ::fread(&pInfo->m_pMaterials[nMaterial].m_xmf4AlbedoColor, sizeof(float), 4, pInFile);
         }
-        else if (!strcmp(pstrToken, "<Glossiness>:")         ||
-                 !strcmp(pstrToken, "<Smoothness>:")         ||
-                 !strcmp(pstrToken, "<Metallic>:")           ||
-                 !strcmp(pstrToken, "<SpecularHighlight>:")  ||
-                 !strcmp(pstrToken, "<GlossyReflection>:"))
+        else if (!strcmp(pstrToken, "<EmissiveColor>:"))
         {
-            float dummy;
-            ::fread(&dummy, sizeof(float), 1, pInFile);
+            ::fread(&pInfo->m_pMaterials[nMaterial].m_xmf4EmissiveColor, sizeof(float), 4, pInFile);
+        }
+        else if (!strcmp(pstrToken, "<SpecularColor>:"))
+        {
+            ::fread(&pInfo->m_pMaterials[nMaterial].m_xmf4SpecularColor, sizeof(float), 4, pInFile);
+        }
+        else if (!strcmp(pstrToken, "<Glossiness>:"))
+        {
+            ::fread(&pInfo->m_pMaterials[nMaterial].m_fGlossiness, sizeof(float), 1, pInFile);
+        }
+        else if (!strcmp(pstrToken, "<Smoothness>:"))
+        {
+            ::fread(&pInfo->m_pMaterials[nMaterial].m_fSmoothness, sizeof(float), 1, pInFile);
+        }
+        else if (!strcmp(pstrToken, "<Metallic>:"))
+        {
+            ::fread(&pInfo->m_pMaterials[nMaterial].m_fSpecularHighlight, sizeof(float), 1, pInFile);
+        }
+        else if (!strcmp(pstrToken, "<SpecularHighlight>:"))
+        {
+            ::fread(&pInfo->m_pMaterials[nMaterial].m_fMetallic, sizeof(float), 1, pInFile);
+        }
+        else if (!strcmp(pstrToken, "<GlossyReflection>:"))
+        {
+            ::fread(&pInfo->m_pMaterials[nMaterial].m_fGlossyReflection, sizeof(float), 1, pInFile);
         }
         else if (!strcmp(pstrToken, "</Materials>"))
         {
             break;
         }
     }
+    return pInfo;
 }
 
 CGameObject* CGameObject::LoadFrameHierarchyFromFile(
@@ -391,18 +459,17 @@ CGameObject* CGameObject::LoadFrameHierarchyFromFile(
     FILE* pInFile, CShader* pShader)
 {
     char pstrToken[64] = { '\0' };
-
     CGameObject* pGameObject = NULL;
 
     for (;;)
     {
         ReadStringFromFile(pInFile, pstrToken);
+
         if (!strcmp(pstrToken, "<Frame>:"))
         {
             pGameObject = new CGameObject();
-            ReadIntegerFromFile(pInFile); // frame index (ignored)
+            ReadIntegerFromFile(pInFile);
             ReadStringFromFile(pInFile, pGameObject->m_pstrFrameName);
-            pGameObject->SetShader(pShader);
         }
         else if (!strcmp(pstrToken, "<Transform>:"))
         {
@@ -422,14 +489,32 @@ CGameObject* CGameObject::LoadFrameHierarchyFromFile(
             CMeshLoadInfo* pMeshInfo = CGameObject::LoadMeshInfoFromFile(pInFile);
             if (pMeshInfo)
             {
-                CMesh* pMesh = new CMeshFromFile(pd3dDevice, pd3dCommandList, pMeshInfo);
-                pGameObject->SetMesh(pMesh);
+                if (pMeshInfo->m_nType & VERTEXT_NORMAL)
+                {
+                    CMesh* pMesh = new CMeshIlluminatedFromFile(pd3dDevice, pd3dCommandList, pMeshInfo);
+                    pGameObject->SetMesh(pMesh);
+                }
                 delete pMeshInfo;
             }
         }
         else if (!strcmp(pstrToken, "<Materials>:"))
         {
-            SkipMaterialsBlock(pInFile);
+            MATERIALSLOADINFO* pMatInfo = CGameObject::LoadMaterialsInfoFromFile(pInFile);
+            if (pMatInfo && pMatInfo->m_nMaterials > 0)
+            {
+                pGameObject->m_nMaterials = pMatInfo->m_nMaterials;
+                pGameObject->m_ppMaterials = new CMaterial*[pMatInfo->m_nMaterials];
+                for (int i = 0; i < pMatInfo->m_nMaterials; i++)
+                {
+                    CMaterial* pMat = new CMaterial();
+                    pMat->AddRef();
+                    CMaterialColors* pColors = new CMaterialColors(&pMatInfo->m_pMaterials[i]);
+                    pMat->SetMaterialColors(pColors);
+                    pMat->SetShader(pShader);
+                    pGameObject->m_ppMaterials[i] = pMat;
+                }
+            }
+            if (pMatInfo) delete pMatInfo;
         }
         else if (!strcmp(pstrToken, "<Children>:"))
         {
@@ -446,6 +531,10 @@ CGameObject* CGameObject::LoadFrameHierarchyFromFile(
             break;
         }
     }
+
+    if (pGameObject && pGameObject->m_pMesh && pGameObject->m_nMaterials == 0 && pShader)
+        pGameObject->SetShader(pShader);
+
     return pGameObject;
 }
 

@@ -100,10 +100,22 @@ int CPlayer::Update(float fTimeElapsed)
     {
         pOrbit->OrbitInput((float)pInput->GetMouseDX() * 0.2f,
                            (float)pInput->GetMouseDY() * 0.2f);
+
+        // The chopper's heading slowly turns to follow the camera's orbit yaw
+        // (mouse left/right). Larger kYawTau = lazier turn. Shortest-path lerp.
+        float fTargetYaw = pOrbit->GetOrbitYaw();
+        float fDiff = fTargetYaw - m_fYaw;
+        while (fDiff >  180.0f) fDiff -= 360.0f;
+        while (fDiff < -180.0f) fDiff += 360.0f;
+
+        const float kYawTau = 0.45f;
+        float fYawT = fTimeElapsed / kYawTau;
+        if (fYawT > 1.0f) fYawT = 1.0f;
+        m_fYaw += fDiff * fYawT;
     }
 
-    // 2) Read movement input. WASD operates in the chopper's LOCAL frame --
-    //    the chopper's heading is fixed; mouse only orbits the camera.
+    // 2) Read movement input. WASD operates in the chopper's LOCAL frame, which
+    //    now turns to follow the mouse (see yaw-follow above).
     float fForwardIn = 0.0f;   // +1 W, -1 S
     float fStrafeIn  = 0.0f;   // +1 D, -1 A
     if (pInput->Key_Pressing('W')) fForwardIn += 1.0f;
@@ -111,7 +123,7 @@ int CPlayer::Update(float fTimeElapsed)
     if (pInput->Key_Pressing('D')) fStrafeIn  += 1.0f;
     if (pInput->Key_Pressing('A')) fStrafeIn  -= 1.0f;
 
-    // Chopper's local axes from its (unchanged) yaw.
+    // Chopper's local axes from its (smoothly-following) yaw.
     float yawR = DegreeToRadian(m_fYaw);
     XMFLOAT3 helFwd = XMFLOAT3(sinf(yawR), 0.0f,  cosf(yawR));
     XMFLOAT3 helRgt = XMFLOAT3(cosf(yawR), 0.0f, -sinf(yawR));
@@ -192,7 +204,7 @@ CCamera* CPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
     pNew->SetMode(nNewCameraMode);
     pNew->SetTimeLag(0.0f);
     pNew->SetOffset(XMFLOAT3(0.0f, 8.0f, -25.0f));
-    pNew->GenerateProjectionMatrix(0.1f, 5000.0f, ASPECT_RATIO, 60.0f);
+    pNew->GenerateProjectionMatrix(1.0f, 50000.0f, ASPECT_RATIO, 60.0f);
     pNew->SetViewport(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f);
     pNew->SetScissorRect(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
     pNew->SetPosition(Vector3::Add(m_xmf3Position, pNew->GetOffset()));
