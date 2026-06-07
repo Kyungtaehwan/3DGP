@@ -2,35 +2,41 @@
 #include "3DGP-3.h"
 #include "MainApp.h"
 
-HWND     g_hWnd = NULL;
+HWND g_hWnd = NULL;
 CMainApp gMainApp;
 
-ATOM             MyRegisterClass(HINSTANCE hInstance);
-BOOL             InitInstance(HINSTANCE hInstance, int nCmdShow);
+ATOM MyRegisterClass(HINSTANCE hInstance);
+BOOL InitInstance(HINSTANCE hInstance, int nCmdShow);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                       _In_opt_ HINSTANCE hPrevInstance,
-                      _In_     LPWSTR    lpCmdLine,
-                      _In_     int       nCmdShow)
+                      _In_ LPWSTR lpCmdLine,
+                      _In_ int nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     MyRegisterClass(hInstance);
-    if (!InitInstance(hInstance, nCmdShow)) return FALSE;
+    if(!InitInstance(hInstance, nCmdShow))
+        return FALSE;
 
     MSG msg = {};
     bool bQuit = false;
-    while (!bQuit)
+    while(!bQuit)
     {
-        while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        while(::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
-            if (msg.message == WM_QUIT) { bQuit = true; break; }
+            if(msg.message == WM_QUIT)
+            {
+                bQuit = true;
+                break;
+            }
             ::TranslateMessage(&msg);
             ::DispatchMessage(&msg);
         }
-        if (bQuit) break;
+        if(bQuit)
+            break;
 
         gMainApp.m_GameTimer.Tick(144.0f);
         float dt = gMainApp.m_GameTimer.GetTimeElapsed();
@@ -46,15 +52,15 @@ int APIENTRY wWinMain(_In_     HINSTANCE hInstance,
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
     WNDCLASSEXW wcex = {};
-    wcex.cbSize        = sizeof(WNDCLASSEXW);
-    wcex.style         = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc   = WndProc;
-    wcex.hInstance     = hInstance;
-    wcex.hIcon         = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MY3DGP3));
-    wcex.hCursor       = LoadCursor(NULL, IDC_ARROW);
+    wcex.cbSize = sizeof(WNDCLASSEXW);
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MY3DGP3));
+    wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszClassName = L"3DGP3WindowClass";
-    wcex.hIconSm       = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    wcex.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_SMALL));
     return ::RegisterClassExW(&wcex);
 }
 
@@ -72,7 +78,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
         rcWnd.bottom - rcWnd.top,
         NULL, NULL, hInstance, NULL);
 
-    if (!g_hWnd) return FALSE;
+    if(!g_hWnd)
+        return FALSE;
     gMainApp.Initialize(hInstance, g_hWnd);
 
     ::ShowWindow(g_hWnd, nCmdShow);
@@ -82,7 +89,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    switch (message)
+    switch(message)
     {
     case WM_SIZE:
     case WM_LBUTTONDOWN:

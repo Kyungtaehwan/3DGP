@@ -139,7 +139,8 @@
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="Input_Manager.h" />
     <ClInclude Include="Level.h" />
-    <ClInclude Include="Level_GamePlay.h" />
+    <ClInclude Include="Level_Stage1.h" />
+    <ClInclude Include="Bullet.h" />
     <ClInclude Include="Level_LOGO.h" />
     <ClInclude Include="Level_Menu.h" />
     <ClInclude Include="Humvee.h" />
@@ -150,7 +151,8 @@
     <ClInclude Include="MainApp.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Object_Manager.h" />
-    <ClInclude Include="TextManager.h" />
+    <ClInclude Include="Text_Manager.h" />
+    <ClInclude Include="UI_Manager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Resource.h" />
@@ -165,7 +167,8 @@
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="Input_Manager.cpp" />
-    <ClCompile Include="Level_GamePlay.cpp" />
+    <ClCompile Include="Level_Stage1.cpp" />
+    <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="Level_LOGO.cpp" />
     <ClCompile Include="Level_Menu.cpp" />
     <ClCompile Include="Humvee.cpp" />
@@ -176,7 +179,8 @@
     <ClCompile Include="MainApp.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Object_Manager.cpp" />
-    <ClCompile Include="TextManager.cpp" />
+    <ClCompile Include="Text_Manager.cpp" />
+    <ClCompile Include="UI_Manager.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Terrain.cpp" />
@@ -192,6 +196,10 @@
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>VSLighting</EntryPointName>
       <ShaderModel>5.1</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Light.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

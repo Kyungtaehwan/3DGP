@@ -13,34 +13,41 @@ public:
                       ID3D12GraphicsCommandList* pd3dCommandList,
                       ID3D12RootSignature* pd3dRootSignature);
 
-    // Defer a level change to be applied between frames (mid-frame change is
-    // unsafe because Initialize records GPU upload commands).
-    void Request_Level_Change(LEVEL_ID eID) { m_bHasPending = true; m_ePendingLevel = eID; }
+    void Request_Level_Change(LEVEL_ID eID)
+    {
+        m_bHasPending = true;
+        m_ePendingLevel = eID;
+    }
     bool HasPendingChange() const { return m_bHasPending; }
     void Apply_Pending_Change(ID3D12Device* pd3dDevice,
                               ID3D12GraphicsCommandList* pd3dCommandList,
                               ID3D12RootSignature* pd3dRootSignature);
 
-    int  Update(float dt);
+    int Update(float dt);
     void Render(ID3D12GraphicsCommandList* pd3dCommandList);
     void Release();
     void ReleaseUploadBuffers();
 
     static CLevel_Manager* Get_Instance()
     {
-        if (!m_pInstance) m_pInstance = new CLevel_Manager;
+        if(!m_pInstance)
+            m_pInstance = new CLevel_Manager;
         return m_pInstance;
     }
     static void Destroy_Instance()
     {
-        if (m_pInstance) { delete m_pInstance; m_pInstance = nullptr; }
+        if(m_pInstance)
+        {
+            delete m_pInstance;
+            m_pInstance = nullptr;
+        }
     }
 
 private:
     static CLevel_Manager* m_pInstance;
-    CLevel*  m_pLevel    = nullptr;
+    CLevel* m_pLevel = nullptr;
     LEVEL_ID m_eCurLevel = LEVEL_LOGO;
 
-    bool     m_bHasPending   = false;
+    bool m_bHasPending = false;
     LEVEL_ID m_ePendingLevel = LEVEL_LOGO;
 };

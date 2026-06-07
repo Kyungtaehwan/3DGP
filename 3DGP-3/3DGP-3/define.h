@@ -2,47 +2,45 @@
 
 extern HWND g_hWnd;
 
-#define WINCX  1280
-#define WINCY   720
+#define WINCX 1280
+#define WINCY 720
 
-#define FRAME_BUFFER_WIDTH  WINCX
+#define FRAME_BUFFER_WIDTH WINCX
 #define FRAME_BUFFER_HEIGHT WINCY
 
 #define ASPECT_RATIO ((float)FRAME_BUFFER_WIDTH / (float)FRAME_BUFFER_HEIGHT)
 
-#define OBJ_NOEVENT  0
-#define OBJ_DEAD     1
+#define OBJ_NOEVENT 0
+#define OBJ_DEAD 1
 
-#define DIR_FORWARD   0x01
-#define DIR_BACKWARD  0x02
-#define DIR_LEFT      0x04
-#define DIR_RIGHT     0x08
-#define DIR_UP        0x10
-#define DIR_DOWN      0x20
+#define DIR_FORWARD 0x01
+#define DIR_BACKWARD 0x02
+#define DIR_LEFT 0x04
+#define DIR_RIGHT 0x08
+#define DIR_UP 0x10
+#define DIR_DOWN 0x20
 
 #define DegreeToRadian(x) ((x) * (XM_PI / 180.0f))
 #define EPSILON 1.0e-6f
 
-// Root signature slot layout — must match CreateRootSignature() in MainApp.cpp
-// and the cbuffer registers in Shaders.hlsl / Light.hlsli.
-//   ROOT_SLOT_CAMERA      → register(b1)
-//   ROOT_SLOT_GAMEOBJECT  → register(b2)  // world matrix + Materials[8]
-//   ROOT_SLOT_LIGHTS      → register(b4)
-//   ROOT_SLOT_MATIDX_32   → register(b3)  // 32-bit root constant: current material index
-#define ROOT_SLOT_CAMERA      0
-#define ROOT_SLOT_GAMEOBJECT  1
-#define ROOT_SLOT_LIGHTS      2
-#define ROOT_SLOT_MATIDX_32   3
-#define ROOT_SLOT_TERRAINLINE 4   // CBV b5: start/end line painted on the terrain
+//   ROOT_SLOT_CAMERA(b1)
+//   ROOT_SLOT_GAMEOBJECT(b2) 
+//   ROOT_SLOT_LIGHTS(b4)
+//   ROOT_SLOT_MATIDX_32(b3) 
+#define ROOT_SLOT_CAMERA 0
+#define ROOT_SLOT_GAMEOBJECT 1
+#define ROOT_SLOT_LIGHTS 2
+#define ROOT_SLOT_MATIDX_32 3
+#define ROOT_SLOT_TERRAINLINE 4
 
-inline bool IsZero(float f)  { return (fabsf(f) < EPSILON); }
+inline bool IsZero(float f) { return (fabsf(f) < EPSILON); }
 inline bool IsEqual(float a, float b) { return IsZero(a - b); }
 
 enum LEVEL_ID
 {
     LEVEL_LOGO = 0,
     LEVEL_MENU,
-    LEVEL_GAMEPLAY,
+    LEVEL_STAGE1,
     LEVEL_END
 };
 
@@ -52,6 +50,8 @@ enum OBJ_ID
     OBJ_HUMVEE,
     OBJ_TREE,
     OBJ_TANK,
+    OBJ_PLAYER_BULLET,
+    OBJ_ENEMY_BULLET,
     OBJ_EFFECT,
     OBJ_END
 };
@@ -59,14 +59,20 @@ enum OBJ_ID
 template <typename T>
 inline void Safe_Delete(T*& p)
 {
-    if (p) { delete p; p = nullptr; }
+    if(p)
+    {
+        delete p;
+        p = nullptr;
+    }
 }
 
 namespace Vector3
 {
     inline XMFLOAT3 XMVectorToFloat3(XMVECTOR v)
     {
-        XMFLOAT3 f; XMStoreFloat3(&f, v); return f;
+        XMFLOAT3 f;
+        XMStoreFloat3(&f, v);
+        return f;
     }
 
     inline XMFLOAT3 ScalarProduct(XMFLOAT3 v, float s)
@@ -82,7 +88,7 @@ namespace Vector3
     inline XMFLOAT3 Add(XMFLOAT3 a, XMFLOAT3 b, float s)
     {
         return XMVectorToFloat3(XMVectorAdd(XMLoadFloat3(&a),
-                                 XMVectorScale(XMLoadFloat3(&b), s)));
+                                            XMVectorScale(XMLoadFloat3(&b), s)));
     }
 
     inline XMFLOAT3 Subtract(XMFLOAT3 a, XMFLOAT3 b)
@@ -171,7 +177,7 @@ namespace Matrix4x4
     {
         XMFLOAT4X4 m;
         XMStoreFloat4x4(&m,
-            XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&at), XMLoadFloat3(&up)));
+                        XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&at), XMLoadFloat3(&up)));
         return m;
     }
 
@@ -179,7 +185,7 @@ namespace Matrix4x4
     {
         XMFLOAT4X4 m;
         XMStoreFloat4x4(&m,
-            XMMatrixLookToLH(XMLoadFloat3(&eye), XMLoadFloat3(&look), XMLoadFloat3(&up)));
+                        XMMatrixLookToLH(XMLoadFloat3(&eye), XMLoadFloat3(&look), XMLoadFloat3(&up)));
         return m;
     }
 }

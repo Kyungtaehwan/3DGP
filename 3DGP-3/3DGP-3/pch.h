@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include <cstdlib>
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
@@ -46,5 +47,4 @@ extern ID3D12Resource* CreateBufferResource(
     UINT nBytes,
     D3D12_HEAP_TYPE d3dHeapType = D3D12_HEAP_TYPE_UPLOAD,
     D3D12_RESOURCE_STATES d3dResourceStates = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-    ID3D12Resource** ppd3dUploadBuffer = NULL
-);
+    ID3D12Resource** ppd3dUploadBuffer = NULL);

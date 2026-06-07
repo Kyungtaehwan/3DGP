@@ -3,6 +3,10 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Input_Manager.h"
+#include "Bullet.h"
+#include "Object_Manager.h"
+#include "ExplosionEffect.h"
+#include "Terrain.h"
 
 CPlayer::CPlayer()
 {
@@ -12,8 +16,16 @@ CPlayer::CPlayer()
 CPlayer::~CPlayer()
 {
     ReleaseShaderVariables();
-    if (m_pCamera) { delete m_pCamera; m_pCamera = NULL; }
-    if (m_pModel)  { m_pModel->Release(); m_pModel = NULL; }
+    if(m_pCamera)
+    {
+        delete m_pCamera;
+        m_pCamera = NULL;
+    }
+    if(m_pModel)
+    {
+        m_pModel->Release();
+        m_pModel = NULL;
+    }
 }
 
 bool CPlayer::LoadModel(ID3D12Device* pd3dDevice,
@@ -22,12 +34,12 @@ bool CPlayer::LoadModel(ID3D12Device* pd3dDevice,
                         const char* pstrFileName)
 {
     m_pModel = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList,
-                                                  pstrFileName, pShader);
-    if (!m_pModel) return false;
+                                                 pstrFileName, pShader);
+    if(!m_pModel)
+        return false;
     m_pModel->AddRef();
     m_pModel->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 
-    // Apache rotor frames (matches CApacheObject::OnInitialize in Sample).
     m_pMainRotorFrame = m_pModel->FindFrame((char*)"rotor");
     m_pTailRotorFrame = m_pModel->FindFrame((char*)"black_m_7");
     return true;
@@ -40,52 +52,69 @@ void CPlayer::SetPosition(const XMFLOAT3& pos)
 
 void CPlayer::Move(DWORD dwDirection, float fDistance)
 {
-    if (dwDirection == 0) return;
+    if(dwDirection == 0)
+        return;
 
     XMFLOAT3 shift = { 0.0f, 0.0f, 0.0f };
-    if (dwDirection & DIR_FORWARD)  shift = Vector3::Add(shift, m_xmf3Look,    fDistance);
-    if (dwDirection & DIR_BACKWARD) shift = Vector3::Add(shift, m_xmf3Look,   -fDistance);
-    if (dwDirection & DIR_RIGHT)    shift = Vector3::Add(shift, m_xmf3Right,   fDistance);
-    if (dwDirection & DIR_LEFT)     shift = Vector3::Add(shift, m_xmf3Right,  -fDistance);
-    if (dwDirection & DIR_UP)       shift = Vector3::Add(shift, m_xmf3Up,      fDistance);
-    if (dwDirection & DIR_DOWN)     shift = Vector3::Add(shift, m_xmf3Up,     -fDistance);
+    if(dwDirection & DIR_FORWARD)
+        shift = Vector3::Add(shift, m_xmf3Look, fDistance);
+    if(dwDirection & DIR_BACKWARD)
+        shift = Vector3::Add(shift, m_xmf3Look, -fDistance);
+    if(dwDirection & DIR_RIGHT)
+        shift = Vector3::Add(shift, m_xmf3Right, fDistance);
+    if(dwDirection & DIR_LEFT)
+        shift = Vector3::Add(shift, m_xmf3Right, -fDistance);
+    if(dwDirection & DIR_UP)
+        shift = Vector3::Add(shift, m_xmf3Up, fDistance);
+    if(dwDirection & DIR_DOWN)
+        shift = Vector3::Add(shift, m_xmf3Up, -fDistance);
     Move(shift);
 }
 
 void CPlayer::Move(const XMFLOAT3& xmf3Shift)
 {
     m_xmf3Position = Vector3::Add(m_xmf3Position, xmf3Shift);
-    if (m_pCamera) m_pCamera->Move(const_cast<XMFLOAT3&>(xmf3Shift));
+    if(m_pCamera)
+        m_pCamera->Move(const_cast<XMFLOAT3&>(xmf3Shift));
 }
 
 void CPlayer::Rotate(float fPitch, float fYaw, float fRoll)
 {
-    if (!IsZero(fYaw))
+    if(!IsZero(fYaw))
     {
         m_fYaw += fYaw;
         XMMATRIX mtxRot = XMMatrixRotationAxis(XMLoadFloat3(&m_xmf3Up), DegreeToRadian(fYaw));
-        m_xmf3Look  = Vector3::TransformNormal(m_xmf3Look,  mtxRot);
+        m_xmf3Look = Vector3::TransformNormal(m_xmf3Look, mtxRot);
         m_xmf3Right = Vector3::TransformNormal(m_xmf3Right, mtxRot);
     }
-    if (!IsZero(fPitch))
+    if(!IsZero(fPitch))
     {
         m_fPitch += fPitch;
-        if (m_fPitch >  60.0f) { fPitch -= (m_fPitch -  60.0f); m_fPitch =  60.0f; }
-        if (m_fPitch < -60.0f) { fPitch -= (m_fPitch + 60.0f);  m_fPitch = -60.0f; }
+        if(m_fPitch > 60.0f)
+        {
+            fPitch -= (m_fPitch - 60.0f);
+            m_fPitch = 60.0f;
+        }
+        if(m_fPitch < -60.0f)
+        {
+            fPitch -= (m_fPitch + 60.0f);
+            m_fPitch = -60.0f;
+        }
         XMMATRIX mtxRot = XMMatrixRotationAxis(XMLoadFloat3(&m_xmf3Right), DegreeToRadian(fPitch));
         m_xmf3Look = Vector3::TransformNormal(m_xmf3Look, mtxRot);
-        m_xmf3Up   = Vector3::TransformNormal(m_xmf3Up,   mtxRot);
+        m_xmf3Up = Vector3::TransformNormal(m_xmf3Up, mtxRot);
     }
     RebuildLocalAxis();
 
-    if (m_pCamera) m_pCamera->Rotate(fPitch, fYaw, fRoll);
+    if(m_pCamera)
+        m_pCamera->Rotate(fPitch, fYaw, fRoll);
 }
 
 void CPlayer::RebuildLocalAxis()
 {
-    m_xmf3Look  = Vector3::Normalize(m_xmf3Look);
+    m_xmf3Look = Vector3::Normalize(m_xmf3Look);
     m_xmf3Right = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Up, m_xmf3Look));
-    m_xmf3Up    = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Look, m_xmf3Right));
+    m_xmf3Up = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Look, m_xmf3Right));
 }
 
 int CPlayer::Update(float fTimeElapsed)
@@ -94,91 +123,127 @@ int CPlayer::Update(float fTimeElapsed)
     pInput->Update_Mouse(g_hWnd);
 
     // 1) Mouse rotates the orbit camera around the player.
-    CThirdPersonCamera* pOrbit = (m_pCamera && m_pCamera->GetMode() == THIRD_PERSON_CAMERA)
-                                  ? static_cast<CThirdPersonCamera*>(m_pCamera) : nullptr;
-    if (pOrbit)
+    CThirdPersonCamera* pOrbit;
+    if(m_pCamera && m_pCamera->GetMode() == THIRD_PERSON_CAMERA)
+        pOrbit = static_cast<CThirdPersonCamera*>(m_pCamera);
+    else
+        pOrbit = nullptr;
+    if(pOrbit)
     {
         pOrbit->OrbitInput((float)pInput->GetMouseDX() * 0.2f,
                            (float)pInput->GetMouseDY() * 0.2f);
 
-        // The chopper's heading slowly turns to follow the camera's orbit yaw
-        // (mouse left/right). Larger kYawTau = lazier turn. Shortest-path lerp.
         float fTargetYaw = pOrbit->GetOrbitYaw();
         float fDiff = fTargetYaw - m_fYaw;
-        while (fDiff >  180.0f) fDiff -= 360.0f;
-        while (fDiff < -180.0f) fDiff += 360.0f;
+        while(fDiff > 180.0f) fDiff -= 360.0f;
+        while(fDiff < -180.0f) fDiff += 360.0f;
 
         const float kYawTau = 0.45f;
         float fYawT = fTimeElapsed / kYawTau;
-        if (fYawT > 1.0f) fYawT = 1.0f;
+        if(fYawT > 1.0f)
+            fYawT = 1.0f;
         m_fYaw += fDiff * fYawT;
     }
 
-    // 2) Read movement input. WASD operates in the chopper's LOCAL frame, which
-    //    now turns to follow the mouse (see yaw-follow above).
-    float fForwardIn = 0.0f;   // +1 W, -1 S
-    float fStrafeIn  = 0.0f;   // +1 D, -1 A
-    if (pInput->Key_Pressing('W')) fForwardIn += 1.0f;
-    if (pInput->Key_Pressing('S')) fForwardIn -= 1.0f;
-    if (pInput->Key_Pressing('D')) fStrafeIn  += 1.0f;
-    if (pInput->Key_Pressing('A')) fStrafeIn  -= 1.0f;
+    float fForwardIn = 0.0f;
+    float fStrafeIn = 0.0f; 
+    if(pInput->Key_Pressing('W'))
+        fForwardIn += 1.0f;
+    if(pInput->Key_Pressing('S'))
+        fForwardIn -= 1.0f;
+    if(pInput->Key_Pressing('D'))
+        fStrafeIn += 1.0f;
+    if(pInput->Key_Pressing('A'))
+        fStrafeIn -= 1.0f;
 
-    // Chopper's local axes from its (smoothly-following) yaw.
     float yawR = DegreeToRadian(m_fYaw);
-    XMFLOAT3 helFwd = XMFLOAT3(sinf(yawR), 0.0f,  cosf(yawR));
+    XMFLOAT3 helFwd = XMFLOAT3(sinf(yawR), 0.0f, cosf(yawR));
     XMFLOAT3 helRgt = XMFLOAT3(cosf(yawR), 0.0f, -sinf(yawR));
 
     float step = m_fMoveSpeed * fTimeElapsed;
     XMFLOAT3 shift = { 0.0f, 0.0f, 0.0f };
     shift = Vector3::Add(shift, helFwd, fForwardIn * step);
-    shift = Vector3::Add(shift, helRgt, fStrafeIn  * step);
-    if (pInput->Key_Pressing(VK_SPACE))    shift.y += step;
-    if (pInput->Key_Pressing(VK_CONTROL))  shift.y -= step;
-    if (!IsZero(shift.x) || !IsZero(shift.y) || !IsZero(shift.z))
+    shift = Vector3::Add(shift, helRgt, fStrafeIn * step);
+    if(pInput->Key_Pressing(VK_SPACE))
+        shift.y += step;
+    if(pInput->Key_Pressing(VK_CONTROL))
+        shift.y -= step;
+    if(!IsZero(shift.x) || !IsZero(shift.y) || !IsZero(shift.z))
         m_xmf3Position = Vector3::Add(m_xmf3Position, shift);
 
-    // 3) Bank straight from input (input is already in the chopper's local frame).
+    if(m_pTerrain && m_nHP > 0)
+    {
+        float groundHeight = m_pTerrain->GetHeight(m_xmf3Position.x, m_xmf3Position.z);
+        if(m_xmf3Position.y <= groundHeight + 3.0f)
+            m_nHP = 0;
+    }
+
     const float kMaxBankPitch = 20.0f;
-    const float kMaxBankRoll  = 25.0f;
-    const float kBankTau      = 0.15f;
-    float fTargetBankPitch =  fForwardIn * kMaxBankPitch;
-    float fTargetBankRoll  = -fStrafeIn  * kMaxBankRoll;   // D -> right wing dips down
+    const float kMaxBankRoll = 25.0f;
+    const float kBankTau = 0.15f;
+    float fTargetBankPitch = fForwardIn * kMaxBankPitch;
+    float fTargetBankRoll = -fStrafeIn * kMaxBankRoll;
     float fBankT = fTimeElapsed / kBankTau;
-    if (fBankT > 1.0f) fBankT = 1.0f;
+
+    if(fBankT > 1.0f)
+        fBankT = 1.0f;
     m_fBankPitch += (fTargetBankPitch - m_fBankPitch) * fBankT;
-    m_fBankRoll  += (fTargetBankRoll  - m_fBankRoll)  * fBankT;
+    m_fBankRoll += (fTargetBankRoll - m_fBankRoll) * fBankT;
 
-    // 4) Cache local axes (yaw is unchanged here).
-    m_xmf3Look  = helFwd;
+    m_xmf3Look = helFwd;
     m_xmf3Right = helRgt;
-    m_xmf3Up    = XMFLOAT3(0.0f, 1.0f, 0.0f);
+    m_xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 
-    // 6) Camera updates after player position/heading are set.
-    if (m_pCamera) m_pCamera->Update(m_xmf3LookAt, fTimeElapsed);
+    if(m_pCamera)
+        m_pCamera->Update(m_xmf3LookAt, fTimeElapsed);
 
-    // Spin the rotors (CApacheObject::Animate behavior).
-    if (m_pMainRotorFrame)
+    if(m_fFireTimer > 0.0f)
+        m_fFireTimer -= fTimeElapsed;
+    if(pInput->Key_Down(VK_LBUTTON) && m_fFireTimer <= 0.0f &&
+       m_pd3dDevice && m_pBulletMesh && m_pColorShader)
     {
-        XMMATRIX r = XMMatrixRotationY(XMConvertToRadians(360.0f * 2.0f) * fTimeElapsed);
+        XMFLOAT3 muzzle = Vector3::Add(m_xmf3Position, m_xmf3Look, 6.0f);
+        muzzle.y -= 2.0f;
+
+        XMFLOAT3 dir;
+        if(m_pCamera)
+        {
+            XMFLOAT3 aimPoint = Vector3::Add(m_pCamera->GetPosition(),
+                                             m_pCamera->GetLookVector(), 3000.0f);
+            dir = Vector3::Normalize(Vector3::Subtract(aimPoint, muzzle));
+        }
+        else
+        {
+            dir = m_xmf3Look;
+        }
+
+        CBullet* pBullet = new CBullet();
+        pBullet->Initialize(m_pd3dDevice, m_pBulletMesh, m_pColorShader,
+                            muzzle, dir, 600.0f /*speed*/, 3.0f /*life*/, 2.0f /*half extent*/);
+        pBullet->SetTerrain(m_pTerrain);
+        CObject_Manager::Get_Instance()->Add_Object(OBJ_PLAYER_BULLET, pBullet);
+        m_fFireTimer = 0.15f;
+    }
+
+    if(m_pMainRotorFrame)
+    {
+        XMMATRIX rotation = XMMatrixRotationY(XMConvertToRadians(360.0f * 2.0f) * fTimeElapsed);
         m_pMainRotorFrame->m_xmf4x4Transform =
-            Matrix4x4::Multiply(r, m_pMainRotorFrame->m_xmf4x4Transform);
+            Matrix4x4::Multiply(rotation, m_pMainRotorFrame->m_xmf4x4Transform);
     }
-    if (m_pTailRotorFrame)
+    if(m_pTailRotorFrame)
     {
-        XMMATRIX r = XMMatrixRotationY(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
+        XMMATRIX rotation = XMMatrixRotationY(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
         m_pTailRotorFrame->m_xmf4x4Transform =
-            Matrix4x4::Multiply(r, m_pTailRotorFrame->m_xmf4x4Transform);
+            Matrix4x4::Multiply(rotation, m_pTailRotorFrame->m_xmf4x4Transform);
     }
 
-    // 7) Build model transform: scale -> bank(roll Z, pitch X) -> yaw Y -> translate.
-    //    Bank is applied in the chopper's local frame BEFORE yaw so the lean
-    //    direction follows where the chopper is currently pointing.
-    if (m_pModel)
+    if(m_pModel)
     {
         XMMATRIX mScale = XMMatrixScaling(m_fModelScale, m_fModelScale, m_fModelScale);
-        XMMATRIX mRoll  = XMMatrixRotationZ(DegreeToRadian(m_fBankRoll));
+        XMMATRIX mRoll = XMMatrixRotationZ(DegreeToRadian(m_fBankRoll));
         XMMATRIX mPitch = XMMatrixRotationX(DegreeToRadian(m_fBankPitch));
-        XMMATRIX mYaw   = XMMatrixRotationY(yawR);
+        XMMATRIX mYaw = XMMatrixRotationY(yawR);
         XMMATRIX mTrans = XMMatrixTranslation(m_xmf3Position.x, m_xmf3Position.y, m_xmf3Position.z);
         XMMATRIX mWorld = mScale * mRoll * mPitch * mYaw * mTrans;
         XMStoreFloat4x4(&m_pModel->m_xmf4x4Transform, mWorld);
@@ -187,6 +252,18 @@ int CPlayer::Update(float fTimeElapsed)
 
     m_xmf3LookAt = Vector3::Add(m_xmf3Position, m_xmf3Look, 10.0f);
 
+    m_xmOOBB.Center = m_xmf3Position;
+    m_xmOOBB.Extents = XMFLOAT3(8.0f, 5.0f, 8.0f);
+    m_xmOOBB.Orientation = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+
+    if(m_nHP <= 0 && !m_bDeathFxShown && m_pd3dDevice && m_pColorShader)
+    {
+        m_bDeathFxShown = true;
+        CExplosionEffect* pFx = new CExplosionEffect();
+        pFx->Initialize(m_pd3dDevice, m_pColorShader, m_xmf3Position, 200.0f);
+        CObject_Manager::Get_Instance()->Add_Object(OBJ_EFFECT, pFx);
+    }
+
     return OBJ_NOEVENT;
 }
 
@@ -194,10 +271,10 @@ CCamera* CPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 {
     CCamera* pOld = m_pCamera;
     CCamera* pNew = NULL;
-    switch (nNewCameraMode)
+    switch(nNewCameraMode)
     {
     case THIRD_PERSON_CAMERA: pNew = new CThirdPersonCamera(pOld); break;
-    default:                  pNew = new CThirdPersonCamera(pOld); break;
+    default: pNew = new CThirdPersonCamera(pOld); break;
     }
 
     pNew->SetPlayer(this);
@@ -209,10 +286,11 @@ CCamera* CPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
     pNew->SetScissorRect(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
     pNew->SetPosition(Vector3::Add(m_xmf3Position, pNew->GetOffset()));
 
-    if (pOld) delete pOld;
+    if(pOld)
+        delete pOld;
     m_pCamera = pNew;
 
-    if (m_pd3dDevice)
+    if(m_pd3dDevice)
         m_pCamera->CreateShaderVariables(m_pd3dDevice, nullptr);
 
     m_pCamera->Update(m_xmf3LookAt, fTimeElapsed);
@@ -224,23 +302,31 @@ CCamera* CPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 
 void CPlayer::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
-    if (m_pModel) m_pModel->Render(pd3dCommandList, pCamera);
+
+    if(m_nHP <= 0)
+        return;
+    if(m_pModel)
+        m_pModel->Render(pd3dCommandList, pCamera);
 }
 
 void CPlayer::CreateShaderVariables(ID3D12Device* pd3dDevice,
                                     ID3D12GraphicsCommandList* pd3dCommandList)
 {
     m_pd3dDevice = pd3dDevice;
-    if (m_pCamera) m_pCamera->CreateShaderVariables(pd3dDevice, pd3dCommandList);
+    if(m_pCamera)
+        m_pCamera->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
 void CPlayer::ReleaseShaderVariables()
 {
-    if (m_pCamera) m_pCamera->ReleaseShaderVariables();
-    if (m_pModel)  m_pModel->ReleaseShaderVariables();
+    if(m_pCamera)
+        m_pCamera->ReleaseShaderVariables();
+    if(m_pModel)
+        m_pModel->ReleaseShaderVariables();
 }
 
 void CPlayer::ReleaseUploadBuffers()
 {
-    if (m_pModel) m_pModel->ReleaseUploadBuffers();
+    if(m_pModel)
+        m_pModel->ReleaseUploadBuffers();
 }

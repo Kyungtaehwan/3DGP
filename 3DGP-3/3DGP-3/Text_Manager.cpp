@@ -1,43 +1,38 @@
 ﻿#include "pch.h"
-#include "TextManager.h"
+#include "Text_Manager.h"
 
 using namespace DirectX;
 
-// ============================================================
-// 비트맵 글리프 데이터 (구 BitmapFont 를 통합). 전부 이 파일 내부에서만 사용한다.
-//   - ASCII : 7 x 5  (대문자 + 숫자 + '-' + 공백)
-//   - 타이틀: 16 x 16 (한글/숫자, 직접 손본 비트맵)
-// 글리프 1개는 rows x cols 의 0/1 격자이며, 1인 칸이 큐브 하나가 된다.
-// ============================================================
 struct Glyph
 {
-    int                  rows;
-    int                  cols;
-    const unsigned char* bits;   // rows*cols, 행 우선, 1 = 채움
+    int rows;
+    int cols;
+    const unsigned char* bits;
 };
 
 namespace
 {
-    // 16x16 글리프 id (한글 + 타이틀용 숫자/영문).
+    // 16x16 글리프
     enum KoreanGlyphId
     {
-        KOR_GE = 0,   // 게
-        KOR_IM,       // 임
-        KOR_PEU,      // 프
-        KOR_RO,       // 로
-        KOR_GEU,      // 그
-        KOR_RAE,      // 래
-        KOR_MING,     // 밍
-        KOR_GYEONG,   // 경
-        KOR_TAE,      // 태
-        KOR_HWAN,     // 환
-        KOR_3,        // 3
-        KOR_D,        // D
-        KOR_1,        // 1
+        KOR_GE = 0, // 게
+        KOR_IM, // 임
+        KOR_PEU, // 프
+        KOR_RO, // 로
+        KOR_GEU, // 그
+        KOR_RAE, // 래
+        KOR_MING, // 밍
+        KOR_GYEONG, // 경
+        KOR_TAE, // 태
+        KOR_HWAN, // 환
+        KOR_3, // 3
+        KOR_D, // D
+        KOR_1, // 1
         KOR_COUNT
     };
 
-    #define G5x7 static const unsigned char
+#define G5x7 static const unsigned char
+
 
     G5x7 A_bits[] = {
         0,1,1,1,0,
@@ -182,6 +177,15 @@ namespace
         0,0,0,0,0,
         0,0,0,0,0,
         0,0,0,0,0,
+    };
+    G5x7 W_bits[] = {
+        1,0,0,0,1,
+        1,0,0,0,1,
+        1,0,0,0,1,
+        1,0,1,0,1,
+        1,0,1,0,1,
+        1,1,0,1,1,
+        1,0,0,0,1,
     };
     G5x7 SPACE_bits[] = {
         0,0,0,0,0,
@@ -377,7 +381,7 @@ namespace
         0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,
         0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,
     };
-    // Latin/digit glyphs re-authored at 16x16 so the title shares one cell size.
+
     G5x7 N3_bits[] = {  // 3
         0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,
         0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,
@@ -453,44 +457,113 @@ namespace
 
     const Glyph* AsciiGlyph(char c)
     {
-        if (c >= 'a' && c <= 'z') c = (char)(c - 'a' + 'A');
-        switch (c)
+        if(c >= 'a' && c <= 'z')
+            c = (char)(c - 'a' + 'A');
+        switch(c)
         {
-        case 'A': { static const Glyph g = { 7, 5, A_bits }; return &g; }
-        case 'D': { static const Glyph g = { 7, 5, D_bits }; return &g; }
-        case 'E': { static const Glyph g = { 7, 5, E_bits }; return &g; }
-        case 'I': { static const Glyph g = { 7, 5, I_bits }; return &g; }
-        case 'L': { static const Glyph g = { 7, 5, L_bits }; return &g; }
-        case 'N': { static const Glyph g = { 7, 5, N_bits }; return &g; }
-        case 'O': { static const Glyph g = { 7, 5, O_bits }; return &g; }
-        case 'R': { static const Glyph g = { 7, 5, R_bits }; return &g; }
-        case 'S': { static const Glyph g = { 7, 5, S_bits }; return &g; }
-        case 'T': { static const Glyph g = { 7, 5, T_bits }; return &g; }
-        case 'U': { static const Glyph g = { 7, 5, U_bits }; return &g; }
-        case 'V': { static const Glyph g = { 7, 5, V_bits }; return &g; }
-        case '1': { static const Glyph g = { 7, 5, D1_bits }; return &g; }
-        case '2': { static const Glyph g = { 7, 5, D2_bits }; return &g; }
-        case '3': { static const Glyph g = { 7, 5, D3_bits }; return &g; }
-        case '-': { static const Glyph g = { 7, 5, HYPHEN_bits }; return &g; }
-        default:  return &kSpace;
+        case 'A':
+        {
+            static const Glyph g = { 7, 5, A_bits };
+            return &g;
+        }
+        case 'D':
+        {
+            static const Glyph g = { 7, 5, D_bits };
+            return &g;
+        }
+        case 'E':
+        {
+            static const Glyph g = { 7, 5, E_bits };
+            return &g;
+        }
+        case 'I':
+        {
+            static const Glyph g = { 7, 5, I_bits };
+            return &g;
+        }
+        case 'L':
+        {
+            static const Glyph g = { 7, 5, L_bits };
+            return &g;
+        }
+        case 'N':
+        {
+            static const Glyph g = { 7, 5, N_bits };
+            return &g;
+        }
+        case 'O':
+        {
+            static const Glyph g = { 7, 5, O_bits };
+            return &g;
+        }
+        case 'R':
+        {
+            static const Glyph g = { 7, 5, R_bits };
+            return &g;
+        }
+        case 'S':
+        {
+            static const Glyph g = { 7, 5, S_bits };
+            return &g;
+        }
+        case 'T':
+        {
+            static const Glyph g = { 7, 5, T_bits };
+            return &g;
+        }
+        case 'U':
+        {
+            static const Glyph g = { 7, 5, U_bits };
+            return &g;
+        }
+        case 'V':
+        {
+            static const Glyph g = { 7, 5, V_bits };
+            return &g;
+        }
+        case 'W':
+        {
+            static const Glyph g = { 7, 5, W_bits };
+            return &g;
+        }
+        case '1':
+        {
+            static const Glyph g = { 7, 5, D1_bits };
+            return &g;
+        }
+        case '2':
+        {
+            static const Glyph g = { 7, 5, D2_bits };
+            return &g;
+        }
+        case '3':
+        {
+            static const Glyph g = { 7, 5, D3_bits };
+            return &g;
+        }
+        case '-':
+        {
+            static const Glyph g = { 7, 5, HYPHEN_bits };
+            return &g;
+        }
+        default: return &kSpace;
         }
     }
 
     const Glyph* KoreanGlyph(int id)
     {
-        if (id < 0 || id >= KOR_COUNT) return &kSpace;
+        if(id < 0 || id >= KOR_COUNT)
+            return &kSpace;
         return &kKorean[id];
     }
 
-    // 글리프 1개를 (penXLeft 왼쪽 가장자리, centerY 세로 중앙) 기준으로 풀어
-    // 채워진 칸들의 중심을 outCells에 넣는다. 반환값은 다음 글자로의 진행 폭.
     float LayoutGlyph(const Glyph& g, float penXLeft, float centerY,
                       float cell, float spacing, std::vector<XMFLOAT3>& outCells)
     {
         float top = centerY + (g.rows * cell) * 0.5f;
-        for (int row = 0; row < g.rows; ++row)
-            for (int col = 0; col < g.cols; ++col)
-                if (g.bits[row * g.cols + col])
+        for(int row = 0; row < g.rows; ++row)
+            for(int col = 0; col < g.cols; ++col)
+                if(g.bits[row * g.cols + col])
                 {
                     float x = penXLeft + (col + 0.5f) * cell;
                     float y = top - (row + 0.5f) * cell;
@@ -499,29 +572,27 @@ namespace
         return g.cols * cell + spacing;
     }
 
-    // ASCII 문자열 / 16x16 id 배열로부터 단어를 이루는 글리프 시퀀스를 만든다.
-    std::vector<const Glyph*> MakeAsciiWord(const char* text)
+    std::vector<const Glyph*> MakeWord(const char* text)
     {
         std::vector<const Glyph*> v;
-        for (const char* p = text; *p; ++p) v.push_back(AsciiGlyph(*p));
+        for(const char* p = text; *p; ++p) v.push_back(AsciiGlyph(*p));
         return v;
     }
     std::vector<const Glyph*> MakeGlyphWord(const int* ids, int count)
     {
         std::vector<const Glyph*> v;
-        for (int i = 0; i < count; ++i) v.push_back(KoreanGlyph(ids[i]));
+        for(int i = 0; i < count; ++i) v.push_back(KoreanGlyph(ids[i]));
         return v;
     }
 }
 
-// ============================================================
-// CWord — 한 단어 단위
-// ============================================================
+
 float CWord::Measure(float cell, float spacing) const
 {
     float w = 0.0f;
-    for (const Glyph* g : m_Glyphs) w += g->cols * cell + spacing;
-    if (w > 0.0f) w -= spacing;   // 마지막 글자 뒤 간격은 빼준다
+    for(const Glyph* g : m_Glyphs) w += g->cols * cell + spacing;
+    if(w > 0.0f)
+        w -= spacing;
     return w;
 }
 
@@ -529,43 +600,43 @@ void CWord::Layout(float centerX, float centerY, float cell, float spacing,
                    std::vector<XMFLOAT3>& outCells) const
 {
     float penX = centerX - Measure(cell, spacing) * 0.5f;
-    for (const Glyph* g : m_Glyphs)
+    for(const Glyph* g : m_Glyphs)
         penX += LayoutGlyph(*g, penX, centerY, cell, spacing, outCells);
 }
 
-// ============================================================
-// CText_Manager — enum 단위로 단어들을 보유
-// ============================================================
 CText_Manager* CText_Manager::m_pInstance = nullptr;
 
 CText_Manager::CText_Manager()
 {
-    // 제목 두 줄: 직접 손본 16x16 글리프를 그대로 가리킨다.
     static const int kTitle[] = { KOR_3, KOR_D, KOR_GE, KOR_IM, KOR_PEU,
                                   KOR_RO, KOR_GEU, KOR_RAE, KOR_MING, KOR_1 };
-    static const int kName[]  = { KOR_GYEONG, KOR_TAE, KOR_HWAN };
+    static const int kName[] = { KOR_GYEONG, KOR_TAE, KOR_HWAN };
 
-    m_Words[TEXT_TITLE].Init(MakeGlyphWord(kTitle, _countof(kTitle)));
-    m_Words[TEXT_NAME ].Init(MakeGlyphWord(kName,  _countof(kName)));
+    m_Words[TEXT_TITLE].Initialize(MakeGlyphWord(kTitle, _countof(kTitle)));
+    m_Words[TEXT_NAME].Initialize(MakeGlyphWord(kName, _countof(kName)));
 
-    // 메뉴 / 버튼 ASCII 라벨.
-    m_Words[TEXT_START   ].Init(MakeAsciiWord("START"));
-    m_Words[TEXT_TUTORIAL].Init(MakeAsciiWord("TUTORIAL"));
-    m_Words[TEXT_LEVEL1  ].Init(MakeAsciiWord("LEVEL-1"));
-    m_Words[TEXT_LEVEL2  ].Init(MakeAsciiWord("LEVEL-2"));
-    m_Words[TEXT_LEVEL3  ].Init(MakeAsciiWord("LEVEL-3"));
-    m_Words[TEXT_END     ].Init(MakeAsciiWord("END"));
+    m_Words[TEXT_START].Initialize(MakeWord("START"));
+    m_Words[TEXT_TUTORIAL].Initialize(MakeWord("TUTORIAL"));
+    m_Words[TEXT_LEVEL1].Initialize(MakeWord("LEVEL-1"));
+    m_Words[TEXT_LEVEL2].Initialize(MakeWord("LEVEL-2"));
+    m_Words[TEXT_LEVEL3].Initialize(MakeWord("LEVEL-3"));
+    m_Words[TEXT_END].Initialize(MakeWord("END"));
+    m_Words[TEXT_WIN].Initialize(MakeWord("WIN"));
+    m_Words[TEXT_LOSE].Initialize(MakeWord("LOSE"));
 }
 
 float CText_Manager::MeasureText(int id, float cell, float spacing) const
 {
     const CWord* w = GetWord(id);
-    return w ? w->Measure(cell, spacing) : 0.0f;
+    if(w)
+        return w->Measure(cell, spacing);
+    else
+        return 0.0f;
 }
 
 void CText_Manager::LayoutText(int id, float centerX, float centerY, float cell, float spacing,
                                std::vector<XMFLOAT3>& outCells) const
 {
-    if (const CWord* w = GetWord(id))
+    if(const CWord* w = GetWord(id))
         w->Layout(centerX, centerY, cell, spacing, outCells);
 }

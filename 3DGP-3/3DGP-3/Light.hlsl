@@ -1,4 +1,4 @@
-//--------------------------------------------------------------------------------------
+
 #define MAX_LIGHTS			16 
 #define MAX_MATERIALS		512 
 
@@ -8,7 +8,7 @@
 
 #define _WITH_LOCAL_VIEWER_HIGHLIGHTING
 #define _WITH_THETA_PHI_CONES
-//#define _WITH_REFLECT
+
 
 struct LIGHT
 {

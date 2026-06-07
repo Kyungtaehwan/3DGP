@@ -5,59 +5,243 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="00.MainApp">
+      <UniqueIdentifier>{7c8656f9-62ae-4c39-b61f-0e26c7c31dc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="99.Default">
+      <UniqueIdentifier>{0156d240-77e7-4ac8-8fe8-838ef9a96f9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Level_Manager">
+      <UniqueIdentifier>{5467c999-6b2e-4ae0-8f56-35987aa5ccc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Level_Manager\Levels">
+      <UniqueIdentifier>{6624a2e8-6a89-4bcd-b824-ac54013ad997}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Level_Manager\Levels\01_01,Level_Logo">
+      <UniqueIdentifier>{7fa5d506-e5f3-4d44-834e-0b0454216344}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Level_Manager\Levels\01_02.Level_Menu">
+      <UniqueIdentifier>{6090d891-7cb0-4c76-9da0-e1aa3b77ac82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Level_Manager\Levels\01_03.Level_Stage1">
+      <UniqueIdentifier>{52dd9874-ed8f-489e-ae3c-7395bb3ff3cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager">
+      <UniqueIdentifier>{54da790a-2c4a-4703-a013-0a154ee9976d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager\GameObjects">
+      <UniqueIdentifier>{b2e2fc46-a44a-4335-99f5-1a0c8ff35b6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager\GameObjects\02_03.Humvee">
+      <UniqueIdentifier>{feb359a9-f52d-45e9-bf77-4d1e6588b44e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager\GameObjects\02_02.Tank">
+      <UniqueIdentifier>{6725fe9f-3dfd-4352-8a24-6c028aa3af40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager\GameObjects\02_01.Player">
+      <UniqueIdentifier>{dfbb0e66-f0af-42df-9c5b-6330d18cdabc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager\GameObjects\02_04.Bullet">
+      <UniqueIdentifier>{a3e61078-116a-43af-be0b-fa3a2f287028}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager\GameObjects\02_05.ExplosionEffect">
+      <UniqueIdentifier>{1e24c43a-f9c0-438e-87e7-45b38b3edbdd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.Object_Manager\GameObjects\02_06.Tree">
+      <UniqueIdentifier>{32fb53d6-57d2-4102-8fff-0575588b3c35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.Input_Manager">
+      <UniqueIdentifier>{c2f72d77-be88-467c-806c-78765fbb0a4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.Light&amp;Shader">
+      <UniqueIdentifier>{50ce71ce-f8d6-49c2-8c5b-011c83ca7f4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04.Light&amp;Shader\04_01.Shaders">
+      <UniqueIdentifier>{b5422930-87e2-4903-9781-d6161ee20aee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="05.Camera">
+      <UniqueIdentifier>{7b3f0aae-bbac-42c8-b3ba-865dc09d8806}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="06.Timer">
+      <UniqueIdentifier>{cb954dbf-a6df-4bb7-84f2-760d3be8f4d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="98.Utils">
+      <UniqueIdentifier>{c59d18c9-e038-4fae-ba43-c1ad879074af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="07.Terrain">
+      <UniqueIdentifier>{7c25e030-6709-43b6-b311-a939e05fc23a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="08.Mesh">
+      <UniqueIdentifier>{78040592-29d1-427b-9ec2-23fd1572f513}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="09.Text_Manager">
+      <UniqueIdentifier>{602c3bf4-205d-43e9-9c7e-1b0abe8e9dc5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="10.UI_Manager">
+      <UniqueIdentifier>{3cac39ec-affb-4156-b7b0-0137d01428ad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="3DGP-3.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="define.h" />
-    <ClInclude Include="GameObject.h" />
-    <ClInclude Include="GameTimer.h" />
-    <ClInclude Include="Input_Manager.h" />
-    <ClInclude Include="Level.h" />
-    <ClInclude Include="Level_GamePlay.h" />
-    <ClInclude Include="Level_Manager.h" />
-    <ClInclude Include="MainApp.h" />
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Object_Manager.h" />
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="targetver.h" />
-    <ClInclude Include="Terrain.h" />
-    <ClInclude Include="Level_LOGO.h" />
-    <ClInclude Include="Level_Menu.h" />
-    <ClInclude Include="Humvee.h" />
-    <ClInclude Include="Tree.h" />
-    <ClInclude Include="Tank.h" />
-    <ClInclude Include="TextManager.h" />
-    <ClInclude Include="ExplosionEffect.h" />
+    <ClInclude Include="3DGP-3.h">
+      <Filter>99.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>99.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="MainApp.h">
+      <Filter>00.MainApp</Filter>
+    </ClInclude>
+    <ClInclude Include="Level_Manager.h">
+      <Filter>01.Level_Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Level.h">
+      <Filter>01.Level_Manager\Levels</Filter>
+    </ClInclude>
+    <ClInclude Include="Level_LOGO.h">
+      <Filter>01.Level_Manager\Levels\01_01,Level_Logo</Filter>
+    </ClInclude>
+    <ClInclude Include="Level_Menu.h">
+      <Filter>01.Level_Manager\Levels\01_02.Level_Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="Level_Stage1.h">
+      <Filter>01.Level_Manager\Levels\01_03.Level_Stage1</Filter>
+    </ClInclude>
+    <ClInclude Include="Object_Manager.h">
+      <Filter>02.Object_Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>02.Object_Manager\GameObjects\02_01.Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Tank.h">
+      <Filter>02.Object_Manager\GameObjects\02_02.Tank</Filter>
+    </ClInclude>
+    <ClInclude Include="Humvee.h">
+      <Filter>02.Object_Manager\GameObjects\02_03.Humvee</Filter>
+    </ClInclude>
+    <ClInclude Include="Bullet.h">
+      <Filter>02.Object_Manager\GameObjects\02_04.Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>02.Object_Manager\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="ExplosionEffect.h">
+      <Filter>02.Object_Manager\GameObjects\02_05.ExplosionEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Tree.h">
+      <Filter>02.Object_Manager\GameObjects\02_06.Tree</Filter>
+    </ClInclude>
+    <ClInclude Include="Input_Manager.h">
+      <Filter>03.Input_Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="LightManager.h">
+      <Filter>04.Light&amp;Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>04.Light&amp;Shader\04_01.Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>05.Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="GameTimer.h">
+      <Filter>06.Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>98.Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="define.h">
+      <Filter>98.Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>99.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="Terrain.h">
+      <Filter>07.Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>08.Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Text_Manager.h">
+      <Filter>09.Text_Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="UI_Manager.h">
+      <Filter>10.UI_Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp" />
-    <ClCompile Include="3DGP-3.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="GameTimer.cpp" />
-    <ClCompile Include="Input_Manager.cpp" />
-    <ClCompile Include="Level_GamePlay.cpp" />
-    <ClCompile Include="Level_Manager.cpp" />
-    <ClCompile Include="MainApp.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Object_Manager.cpp" />
-    <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="Terrain.cpp" />
-    <ClCompile Include="Level_LOGO.cpp" />
-    <ClCompile Include="Level_Menu.cpp" />
-    <ClCompile Include="Humvee.cpp" />
-    <ClCompile Include="Tree.cpp" />
-    <ClCompile Include="Tank.cpp" />
-    <ClCompile Include="TextManager.cpp" />
-    <ClCompile Include="ExplosionEffect.cpp" />
+    <ClCompile Include="3DGP-3.cpp">
+      <Filter>99.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="MainApp.cpp">
+      <Filter>00.MainApp</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_Manager.cpp">
+      <Filter>01.Level_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_LOGO.cpp">
+      <Filter>01.Level_Manager\Levels\01_01,Level_Logo</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_Menu.cpp">
+      <Filter>01.Level_Manager\Levels\01_02.Level_Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_Stage1.cpp">
+      <Filter>01.Level_Manager\Levels\01_03.Level_Stage1</Filter>
+    </ClCompile>
+    <ClCompile Include="Object_Manager.cpp">
+      <Filter>02.Object_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>02.Object_Manager\GameObjects\02_01.Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Tank.cpp">
+      <Filter>02.Object_Manager\GameObjects\02_02.Tank</Filter>
+    </ClCompile>
+    <ClCompile Include="Humvee.cpp">
+      <Filter>02.Object_Manager\GameObjects\02_03.Humvee</Filter>
+    </ClCompile>
+    <ClCompile Include="Bullet.cpp">
+      <Filter>02.Object_Manager\GameObjects\02_04.Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>02.Object_Manager\GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="ExplosionEffect.cpp">
+      <Filter>02.Object_Manager\GameObjects\02_05.ExplosionEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Tree.cpp">
+      <Filter>02.Object_Manager\GameObjects\02_06.Tree</Filter>
+    </ClCompile>
+    <ClCompile Include="Input_Manager.cpp">
+      <Filter>03.Input_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="LightManager.cpp">
+      <Filter>04.Light&amp;Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>04.Light&amp;Shader\04_01.Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>05.Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="GameTimer.cpp">
+      <Filter>06.Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>98.Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>07.Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>08.Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Text_Manager.cpp">
+      <Filter>09.Text_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="UI_Manager.cpp">
+      <Filter>10.UI_Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders.hlsl" />
     <None Include="Model\Apache.bin">
       <Filter>리소스 파일</Filter>
     </None>
@@ -86,5 +270,13 @@
     <Image Include="3DGP-3.ico">
       <Filter>리소스 파일</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Light.hlsl">
+      <Filter>04.Light&amp;Shader\04_01.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders.hlsl">
+      <Filter>04.Light&amp;Shader\04_01.Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

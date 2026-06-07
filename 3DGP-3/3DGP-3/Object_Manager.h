@@ -13,13 +13,14 @@ private:
 public:
     void Add_Object(OBJ_ID eID, CGameObject* pGameObject);
     void Update(float dt);
+    void CheckCollisions();
     void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
     void Release();
     void ReleaseUploadBuffers();
 
     CGameObject* Get_Player()
     {
-        if (!m_ObjectList[OBJ_PLAYER].empty())
+        if(!m_ObjectList[OBJ_PLAYER].empty())
             return m_ObjectList[OBJ_PLAYER].front();
         return nullptr;
     }
@@ -28,13 +29,18 @@ public:
 
     static CObject_Manager* Get_Instance()
     {
-        if (!m_pInstance) m_pInstance = new CObject_Manager;
+        if(!m_pInstance)
+            m_pInstance = new CObject_Manager;
         return m_pInstance;
     }
 
     static void Destroy_Instance()
     {
-        if (m_pInstance) { delete m_pInstance; m_pInstance = nullptr; }
+        if(m_pInstance)
+        {
+            delete m_pInstance;
+            m_pInstance = nullptr;
+        }
     }
 
 private:

@@ -2,51 +2,52 @@
 #include "MainApp.h"
 #include "Input_Manager.h"
 #include "Level_Manager.h"
-#include "TextManager.h"
+#include "Text_Manager.h"
 #include "ExplosionEffect.h"
+#include "UI_Manager.h"
 
 ID3D12Resource* CreateBufferResource(
-    ID3D12Device*              pd3dDevice,
+    ID3D12Device* pd3dDevice,
     ID3D12GraphicsCommandList* pd3dCommandList,
-    void*                      pData,
-    UINT                       nBytes,
-    D3D12_HEAP_TYPE            d3dHeapType,
-    D3D12_RESOURCE_STATES      d3dResourceStates,
-    ID3D12Resource**           ppd3dUploadBuffer)
+    void* pData,
+    UINT nBytes,
+    D3D12_HEAP_TYPE d3dHeapType,
+    D3D12_RESOURCE_STATES d3dResourceStates,
+    ID3D12Resource** ppd3dUploadBuffer)
 {
     ID3D12Resource* pd3dBuffer = NULL;
 
     D3D12_HEAP_PROPERTIES heapProps = {};
-    heapProps.Type                 = d3dHeapType;
-    heapProps.CPUPageProperty      = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+    heapProps.Type = d3dHeapType;
+    heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
     heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-    heapProps.CreationNodeMask     = 1;
-    heapProps.VisibleNodeMask      = 1;
+    heapProps.CreationNodeMask = 1;
+    heapProps.VisibleNodeMask = 1;
 
     D3D12_RESOURCE_DESC resDesc = {};
-    resDesc.Dimension          = D3D12_RESOURCE_DIMENSION_BUFFER;
-    resDesc.Width              = nBytes;
-    resDesc.Height             = 1;
-    resDesc.DepthOrArraySize   = 1;
-    resDesc.MipLevels          = 1;
-    resDesc.Format             = DXGI_FORMAT_UNKNOWN;
-    resDesc.SampleDesc.Count   = 1;
-    resDesc.Layout             = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    resDesc.Flags              = D3D12_RESOURCE_FLAG_NONE;
+    resDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+    resDesc.Width = nBytes;
+    resDesc.Height = 1;
+    resDesc.DepthOrArraySize = 1;
+    resDesc.MipLevels = 1;
+    resDesc.Format = DXGI_FORMAT_UNKNOWN;
+    resDesc.SampleDesc.Count = 1;
+    resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+    resDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
     D3D12_RESOURCE_STATES initState = D3D12_RESOURCE_STATE_COMMON;
-    if (d3dHeapType == D3D12_HEAP_TYPE_UPLOAD)
+    if(d3dHeapType == D3D12_HEAP_TYPE_UPLOAD)
         initState = D3D12_RESOURCE_STATE_GENERIC_READ;
-    else if (d3dHeapType == D3D12_HEAP_TYPE_READBACK)
+    else if(d3dHeapType == D3D12_HEAP_TYPE_READBACK)
         initState = D3D12_RESOURCE_STATE_COPY_DEST;
 
     pd3dDevice->CreateCommittedResource(
         &heapProps, D3D12_HEAP_FLAG_NONE, &resDesc, initState, NULL,
         __uuidof(ID3D12Resource), (void**)&pd3dBuffer);
 
-    if (pData)
+    if(pData)
     {
-        if (d3dHeapType == D3D12_HEAP_TYPE_DEFAULT && ppd3dUploadBuffer)
+        if(d3dHeapType == D3D12_HEAP_TYPE_DEFAULT && ppd3dUploadBuffer)
         {
             heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
             pd3dDevice->CreateCommittedResource(
@@ -60,17 +61,17 @@ ID3D12Resource* CreateBufferResource(
             (*ppd3dUploadBuffer)->Unmap(0, NULL);
 
             D3D12_RESOURCE_BARRIER barrier = {};
-            barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-            barrier.Transition.pResource   = pd3dBuffer;
+            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+            barrier.Transition.pResource = pd3dBuffer;
             barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-            barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_COPY_DEST;
+            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
             barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
             pd3dCommandList->ResourceBarrier(1, &barrier);
 
             pd3dCommandList->CopyBufferRegion(pd3dBuffer, 0, *ppd3dUploadBuffer, 0, nBytes);
 
             barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-            barrier.Transition.StateAfter  = d3dResourceStates;
+            barrier.Transition.StateAfter = d3dResourceStates;
             pd3dCommandList->ResourceBarrier(1, &barrier);
         }
         else
@@ -96,7 +97,7 @@ CMainApp::~CMainApp() {}
 bool CMainApp::Initialize(HINSTANCE hInstance, HWND hWnd)
 {
     m_hInstance = hInstance;
-    m_hWnd      = hWnd;
+    m_hWnd = hWnd;
     m_GameTimer.Reset();
 
     CreateDirect3DDevice();
@@ -117,7 +118,7 @@ void CMainApp::CreateDirect3DDevice()
 #ifdef _DEBUG
     ID3D12Debug* pd3dDebugController = NULL;
     D3D12GetDebugInterface(__uuidof(ID3D12Debug), (void**)&pd3dDebugController);
-    if (pd3dDebugController)
+    if(pd3dDebugController)
     {
         pd3dDebugController->EnableDebugLayer();
         pd3dDebugController->Release();
@@ -128,25 +129,29 @@ void CMainApp::CreateDirect3DDevice()
     ::CreateDXGIFactory2(nDXGIFactoryFlags, __uuidof(IDXGIFactory4), (void**)&m_pdxgiFactory);
 
     IDXGIAdapter1* pd3dAdapter = NULL;
-    for (UINT i = 0; DXGI_ERROR_NOT_FOUND != m_pdxgiFactory->EnumAdapters1(i, &pd3dAdapter); i++)
+    for(UINT i = 0; DXGI_ERROR_NOT_FOUND != m_pdxgiFactory->EnumAdapters1(i, &pd3dAdapter); i++)
     {
         DXGI_ADAPTER_DESC1 dxgiAdapterDesc;
         pd3dAdapter->GetDesc1(&dxgiAdapterDesc);
-        if (dxgiAdapterDesc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) continue;
-        if (SUCCEEDED(D3D12CreateDevice(pd3dAdapter, D3D_FEATURE_LEVEL_12_0,
-            _uuidof(ID3D12Device), (void**)&m_pd3dDevice))) break;
+        if(dxgiAdapterDesc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+            continue;
+        if(SUCCEEDED(D3D12CreateDevice(pd3dAdapter, D3D_FEATURE_LEVEL_12_0,
+                                       _uuidof(ID3D12Device), (void**)&m_pd3dDevice)))
+            break;
     }
 
-    if (!m_pd3dDevice)
+    if(!m_pd3dDevice)
     {
         IDXGIAdapter* pWarp = NULL;
         m_pdxgiFactory->EnumWarpAdapter(__uuidof(IDXGIAdapter), (void**)&pWarp);
         ::D3D12CreateDevice(pWarp, D3D_FEATURE_LEVEL_11_0,
                             __uuidof(ID3D12Device), (void**)&m_pd3dDevice);
-        if (pWarp) pWarp->Release();
+        if(pWarp)
+            pWarp->Release();
     }
 
-    if (pd3dAdapter) pd3dAdapter->Release();
+    if(pd3dAdapter)
+        pd3dAdapter->Release();
 
     m_pd3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), (void**)&m_pd3dFence);
     m_hFenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -160,18 +165,18 @@ void CMainApp::CreateDirect3DDevice()
 void CMainApp::CreateCommandQueueAndList()
 {
     D3D12_COMMAND_QUEUE_DESC d3dCommandQueueDesc = {};
-    d3dCommandQueueDesc.Type  = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    d3dCommandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     d3dCommandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     m_pd3dDevice->CreateCommandQueue(&d3dCommandQueueDesc,
-        _uuidof(ID3D12CommandQueue), (void**)&m_pd3dCommandQueue);
+                                     _uuidof(ID3D12CommandQueue), (void**)&m_pd3dCommandQueue);
 
     m_pd3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-        __uuidof(ID3D12CommandAllocator), (void**)&m_pd3dCommandAllocator);
+                                         __uuidof(ID3D12CommandAllocator), (void**)&m_pd3dCommandAllocator);
 
     m_pd3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                     m_pd3dCommandAllocator, NULL,
-                                     __uuidof(ID3D12GraphicsCommandList),
-                                     (void**)&m_pd3dCommandList);
+                                    m_pd3dCommandAllocator, NULL,
+                                    __uuidof(ID3D12GraphicsCommandList),
+                                    (void**)&m_pd3dCommandList);
     m_pd3dCommandList->Close();
 }
 
@@ -179,23 +184,23 @@ void CMainApp::CreateSwapChain()
 {
     RECT rcClient;
     ::GetClientRect(m_hWnd, &rcClient);
-    m_nWndClientWidth  = rcClient.right - rcClient.left;
+    m_nWndClientWidth = rcClient.right - rcClient.left;
     m_nWndClientHeight = rcClient.bottom - rcClient.top;
 
     DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc = {};
-    dxgiSwapChainDesc.BufferCount                        = m_nSwapChainBuffers;
-    dxgiSwapChainDesc.BufferDesc.Width                   = m_nWndClientWidth;
-    dxgiSwapChainDesc.BufferDesc.Height                  = m_nWndClientHeight;
-    dxgiSwapChainDesc.BufferDesc.Format                  = DXGI_FORMAT_R8G8B8A8_UNORM;
-    dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator   = 60;
+    dxgiSwapChainDesc.BufferCount = m_nSwapChainBuffers;
+    dxgiSwapChainDesc.BufferDesc.Width = m_nWndClientWidth;
+    dxgiSwapChainDesc.BufferDesc.Height = m_nWndClientHeight;
+    dxgiSwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
     dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-    dxgiSwapChainDesc.BufferUsage                        = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    dxgiSwapChainDesc.SwapEffect                         = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-    dxgiSwapChainDesc.OutputWindow                       = m_hWnd;
-    dxgiSwapChainDesc.SampleDesc.Count                   = 1;
-    dxgiSwapChainDesc.SampleDesc.Quality                 = 0;
-    dxgiSwapChainDesc.Windowed                           = TRUE;
-    dxgiSwapChainDesc.Flags                              = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+    dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    dxgiSwapChainDesc.OutputWindow = m_hWnd;
+    dxgiSwapChainDesc.SampleDesc.Count = 1;
+    dxgiSwapChainDesc.SampleDesc.Quality = 0;
+    dxgiSwapChainDesc.Windowed = TRUE;
+    dxgiSwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
     IDXGISwapChain* pSwap = NULL;
     m_pdxgiFactory->CreateSwapChain(m_pd3dCommandQueue, &dxgiSwapChainDesc, &pSwap);
@@ -210,15 +215,15 @@ void CMainApp::CreateRtvAndDsvDescriptorHeaps()
 {
     D3D12_DESCRIPTOR_HEAP_DESC d3dDescriptorHeapDesc = {};
     d3dDescriptorHeapDesc.NumDescriptors = m_nSwapChainBuffers;
-    d3dDescriptorHeapDesc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-    d3dDescriptorHeapDesc.Flags          = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    d3dDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    d3dDescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     m_pd3dDevice->CreateDescriptorHeap(&d3dDescriptorHeapDesc,
-        __uuidof(ID3D12DescriptorHeap), (void**)&m_pd3dRtvDescriptorHeap);
+                                       __uuidof(ID3D12DescriptorHeap), (void**)&m_pd3dRtvDescriptorHeap);
 
     d3dDescriptorHeapDesc.NumDescriptors = 1;
-    d3dDescriptorHeapDesc.Type           = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+    d3dDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
     m_pd3dDevice->CreateDescriptorHeap(&d3dDescriptorHeapDesc,
-        __uuidof(ID3D12DescriptorHeap), (void**)&m_pd3dDsvDescriptorHeap);
+                                       __uuidof(ID3D12DescriptorHeap), (void**)&m_pd3dDsvDescriptorHeap);
 }
 
 void CMainApp::CreateRenderTargetViews()
@@ -226,7 +231,7 @@ void CMainApp::CreateRenderTargetViews()
     D3D12_CPU_DESCRIPTOR_HANDLE handle =
         m_pd3dRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-    for (UINT i = 0; i < m_nSwapChainBuffers; i++)
+    for(UINT i = 0; i < m_nSwapChainBuffers; i++)
     {
         m_pdxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource),
                                     (void**)&m_ppd3dSwapChainBackBuffers[i]);
@@ -238,23 +243,23 @@ void CMainApp::CreateRenderTargetViews()
 void CMainApp::CreateDepthStencilView()
 {
     D3D12_RESOURCE_DESC d3dResourceDesc = {};
-    d3dResourceDesc.Dimension          = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    d3dResourceDesc.Width              = m_nWndClientWidth;
-    d3dResourceDesc.Height             = m_nWndClientHeight;
-    d3dResourceDesc.DepthOrArraySize   = 1;
-    d3dResourceDesc.MipLevels          = 1;
-    d3dResourceDesc.Format             = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    d3dResourceDesc.SampleDesc.Count   = 1;
+    d3dResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    d3dResourceDesc.Width = m_nWndClientWidth;
+    d3dResourceDesc.Height = m_nWndClientHeight;
+    d3dResourceDesc.DepthOrArraySize = 1;
+    d3dResourceDesc.MipLevels = 1;
+    d3dResourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    d3dResourceDesc.SampleDesc.Count = 1;
     d3dResourceDesc.SampleDesc.Quality = 0;
-    d3dResourceDesc.Layout             = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    d3dResourceDesc.Flags              = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+    d3dResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    d3dResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
     D3D12_HEAP_PROPERTIES heap = {};
     heap.Type = D3D12_HEAP_TYPE_DEFAULT;
 
     D3D12_CLEAR_VALUE clearValue = {};
-    clearValue.Format               = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    clearValue.DepthStencil.Depth   = 1.0f;
+    clearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    clearValue.DepthStencil.Depth = 1.0f;
     clearValue.DepthStencil.Stencil = 0;
 
     m_pd3dDevice->CreateCommittedResource(
@@ -269,50 +274,48 @@ void CMainApp::CreateDepthStencilView()
 
 void CMainApp::CreateRootSignature()
 {
-    // Slot mapping (must match ROOT_SLOT_* macros in define.h and registers in Shaders.hlsl):
-    //   [ROOT_SLOT_CAMERA=0]     CBV  → register(b1)  cbCameraInfo
-    //   [ROOT_SLOT_GAMEOBJECT=1] CBV  → register(b2)  cbGameObjectInfo (world + Materials[8])
-    //   [ROOT_SLOT_LIGHTS=2]     CBV  → register(b4)  cbLights
-    //   [ROOT_SLOT_MATIDX_32=3]  CONST→ register(b3)  cbFrameworkConstantInfo (gnMaterial)
-    //   [ROOT_SLOT_TERRAINLINE=4]CBV  → register(b5)  cbTerrainLine (start/end overlay)
     D3D12_ROOT_PARAMETER params[5] = {};
 
-    params[ROOT_SLOT_CAMERA].ParameterType             = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    params[ROOT_SLOT_CAMERA].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     params[ROOT_SLOT_CAMERA].Descriptor.ShaderRegister = 1;
-    params[ROOT_SLOT_CAMERA].Descriptor.RegisterSpace  = 0;
-    params[ROOT_SLOT_CAMERA].ShaderVisibility          = D3D12_SHADER_VISIBILITY_ALL;
+    params[ROOT_SLOT_CAMERA].Descriptor.RegisterSpace = 0;
+    params[ROOT_SLOT_CAMERA].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    params[ROOT_SLOT_GAMEOBJECT].ParameterType             = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    params[ROOT_SLOT_GAMEOBJECT].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     params[ROOT_SLOT_GAMEOBJECT].Descriptor.ShaderRegister = 2;
-    params[ROOT_SLOT_GAMEOBJECT].Descriptor.RegisterSpace  = 0;
-    params[ROOT_SLOT_GAMEOBJECT].ShaderVisibility          = D3D12_SHADER_VISIBILITY_ALL;
+    params[ROOT_SLOT_GAMEOBJECT].Descriptor.RegisterSpace = 0;
+    params[ROOT_SLOT_GAMEOBJECT].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    params[ROOT_SLOT_LIGHTS].ParameterType             = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    params[ROOT_SLOT_LIGHTS].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     params[ROOT_SLOT_LIGHTS].Descriptor.ShaderRegister = 4;
-    params[ROOT_SLOT_LIGHTS].Descriptor.RegisterSpace  = 0;
-    params[ROOT_SLOT_LIGHTS].ShaderVisibility          = D3D12_SHADER_VISIBILITY_ALL;
+    params[ROOT_SLOT_LIGHTS].Descriptor.RegisterSpace = 0;
+    params[ROOT_SLOT_LIGHTS].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    params[ROOT_SLOT_MATIDX_32].ParameterType            = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+    params[ROOT_SLOT_MATIDX_32].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
     params[ROOT_SLOT_MATIDX_32].Constants.Num32BitValues = 1;
     params[ROOT_SLOT_MATIDX_32].Constants.ShaderRegister = 3;
-    params[ROOT_SLOT_MATIDX_32].Constants.RegisterSpace  = 0;
-    params[ROOT_SLOT_MATIDX_32].ShaderVisibility         = D3D12_SHADER_VISIBILITY_ALL;
+    params[ROOT_SLOT_MATIDX_32].Constants.RegisterSpace = 0;
+    params[ROOT_SLOT_MATIDX_32].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-    params[ROOT_SLOT_TERRAINLINE].ParameterType             = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    params[ROOT_SLOT_TERRAINLINE].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     params[ROOT_SLOT_TERRAINLINE].Descriptor.ShaderRegister = 5;
-    params[ROOT_SLOT_TERRAINLINE].Descriptor.RegisterSpace  = 0;
-    params[ROOT_SLOT_TERRAINLINE].ShaderVisibility          = D3D12_SHADER_VISIBILITY_ALL;
+    params[ROOT_SLOT_TERRAINLINE].Descriptor.RegisterSpace = 0;
+    params[ROOT_SLOT_TERRAINLINE].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
     D3D12_ROOT_SIGNATURE_DESC sigDesc = {};
     sigDesc.NumParameters = 5;
-    sigDesc.pParameters   = params;
-    sigDesc.Flags         = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+    sigDesc.pParameters = params;
+    sigDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
     ID3DBlob* pSigBlob = NULL;
     ID3DBlob* pErrBlob = NULL;
     ::D3D12SerializeRootSignature(&sigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-                                   &pSigBlob, &pErrBlob);
-    if (pErrBlob) { OutputDebugStringA((char*)pErrBlob->GetBufferPointer()); pErrBlob->Release(); }
+                                  &pSigBlob, &pErrBlob);
+    if(pErrBlob)
+    {
+        OutputDebugStringA((char*)pErrBlob->GetBufferPointer());
+        pErrBlob->Release();
+    }
 
     m_pd3dDevice->CreateRootSignature(
         0, pSigBlob->GetBufferPointer(), pSigBlob->GetBufferSize(),
@@ -343,7 +346,7 @@ void CMainApp::WaitForGpuComplete()
 {
     const UINT64 nFence = ++m_nFenceValues[0];
     m_pd3dCommandQueue->Signal(m_pd3dFence, nFence);
-    if (m_pd3dFence->GetCompletedValue() < nFence)
+    if(m_pd3dFence->GetCompletedValue() < nFence)
     {
         m_pd3dFence->SetEventOnCompletion(nFence, m_hFenceEvent);
         ::WaitForSingleObject(m_hFenceEvent, INFINITE);
@@ -356,7 +359,7 @@ void CMainApp::MoveToNextFrame()
 
     const UINT64 nFence = ++m_nFenceValues[0];
     m_pd3dCommandQueue->Signal(m_pd3dFence, nFence);
-    if (m_pd3dFence->GetCompletedValue() < nFence)
+    if(m_pd3dFence->GetCompletedValue() < nFence)
     {
         m_pd3dFence->SetEventOnCompletion(nFence, m_hFenceEvent);
         ::WaitForSingleObject(m_hFenceEvent, INFINITE);
@@ -374,7 +377,7 @@ void CMainApp::Render()
     CLevel_Manager::Get_Instance()->Render(m_pd3dCommandList);
     EndRender();
 
-    if (CLevel_Manager::Get_Instance()->HasPendingChange())
+    if(CLevel_Manager::Get_Instance()->HasPendingChange())
         ProcessPendingLevelChange();
 }
 
@@ -401,10 +404,10 @@ void CMainApp::BeginRender()
     m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
 
     D3D12_RESOURCE_BARRIER barrier = {};
-    barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrier.Transition.pResource   = m_ppd3dSwapChainBackBuffers[m_nSwapChainBufferIndex];
+    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    barrier.Transition.pResource = m_ppd3dSwapChainBackBuffers[m_nSwapChainBufferIndex];
     barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-    barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_RENDER_TARGET;
+    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     m_pd3dCommandList->ResourceBarrier(1, &barrier);
 
@@ -415,11 +418,11 @@ void CMainApp::BeginRender()
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle =
         m_pd3dDsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-    float clearColor[4] = { 0.45f, 0.65f, 0.85f, 1.0f };
+    float clearColor[4] = { 0.15f, 0.15f, 0.15f, 1.0f };
     m_pd3dCommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, NULL);
     m_pd3dCommandList->ClearDepthStencilView(dsvHandle,
-        D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
-        1.0f, 0, 0, NULL);
+                                             D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
+                                             1.0f, 0, 0, NULL);
 
     m_pd3dCommandList->OMSetRenderTargets(1, &rtvHandle, TRUE, &dsvHandle);
 
@@ -437,10 +440,10 @@ void CMainApp::BeginRender()
 void CMainApp::EndRender()
 {
     D3D12_RESOURCE_BARRIER barrier = {};
-    barrier.Type                   = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrier.Transition.pResource   = m_ppd3dSwapChainBackBuffers[m_nSwapChainBufferIndex];
+    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+    barrier.Transition.pResource = m_ppd3dSwapChainBackBuffers[m_nSwapChainBufferIndex];
     barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-    barrier.Transition.StateAfter  = D3D12_RESOURCE_STATE_PRESENT;
+    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     m_pd3dCommandList->ResourceBarrier(1, &barrier);
 
@@ -459,42 +462,61 @@ void CMainApp::Release()
     CLevel_Manager::Destroy_Instance();
     CInput_Manager::Destroy_Instance();
     CText_Manager::Destroy_Instance();
+    CUI_Manager::Destroy_Instance();
 
-    // Shared explosion debris mesh lives for the whole app (reused across levels);
-    // free it once here, after the levels/objects are gone.
     CExplosionEffect::ReleaseShared();
 
-    if (m_pd3dRootSignature) { m_pd3dRootSignature->Release(); m_pd3dRootSignature = NULL; }
+    if(m_pd3dRootSignature)
+    {
+        m_pd3dRootSignature->Release();
+        m_pd3dRootSignature = NULL;
+    }
 
     ::CloseHandle(m_hFenceEvent);
-    if (m_pd3dFence) m_pd3dFence->Release();
+    if(m_pd3dFence)
+        m_pd3dFence->Release();
 
-    for (int i = 0; i < (int)m_nSwapChainBuffers; i++)
-        if (m_ppd3dSwapChainBackBuffers[i]) m_ppd3dSwapChainBackBuffers[i]->Release();
+    for(int i = 0; i < (int)m_nSwapChainBuffers; i++)
+        if(m_ppd3dSwapChainBackBuffers[i])
+            m_ppd3dSwapChainBackBuffers[i]->Release();
 
-    if (m_pd3dRtvDescriptorHeap)  m_pd3dRtvDescriptorHeap->Release();
-    if (m_pd3dDepthStencilBuffer) m_pd3dDepthStencilBuffer->Release();
-    if (m_pd3dDsvDescriptorHeap)  m_pd3dDsvDescriptorHeap->Release();
-    if (m_pd3dCommandList)        m_pd3dCommandList->Release();
-    if (m_pd3dCommandAllocator)   m_pd3dCommandAllocator->Release();
-    if (m_pd3dCommandQueue)       m_pd3dCommandQueue->Release();
+    if(m_pd3dRtvDescriptorHeap)
+        m_pd3dRtvDescriptorHeap->Release();
+    if(m_pd3dDepthStencilBuffer)
+        m_pd3dDepthStencilBuffer->Release();
+    if(m_pd3dDsvDescriptorHeap)
+        m_pd3dDsvDescriptorHeap->Release();
+    if(m_pd3dCommandList)
+        m_pd3dCommandList->Release();
+    if(m_pd3dCommandAllocator)
+        m_pd3dCommandAllocator->Release();
+    if(m_pd3dCommandQueue)
+        m_pd3dCommandQueue->Release();
 
-    if (m_pdxgiSwapChain) { m_pdxgiSwapChain->SetFullscreenState(FALSE, NULL); m_pdxgiSwapChain->Release(); }
-    if (m_pd3dDevice)     m_pd3dDevice->Release();
-    if (m_pdxgiFactory)   m_pdxgiFactory->Release();
+    if(m_pdxgiSwapChain)
+    {
+        m_pdxgiSwapChain->SetFullscreenState(FALSE, NULL);
+        m_pdxgiSwapChain->Release();
+    }
+    if(m_pd3dDevice)
+        m_pd3dDevice->Release();
+    if(m_pdxgiFactory)
+        m_pdxgiFactory->Release();
 }
 
 void CMainApp::OnProcessingKeyboardMessage(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
 {
-    if (wParam == VK_ESCAPE) ::PostQuitMessage(0);
+
+    if(wParam == VK_ESCAPE)
+        CLevel_Manager::Get_Instance()->Request_Level_Change(LEVEL_MENU);
 }
 
 LRESULT CMainApp::OnProcessingWindowMessage(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
 {
-    switch (nMsg)
+    switch(nMsg)
     {
     case WM_SIZE:
-        m_nWndClientWidth  = LOWORD(lParam);
+        m_nWndClientWidth = LOWORD(lParam);
         m_nWndClientHeight = HIWORD(lParam);
         break;
     case WM_KEYUP:

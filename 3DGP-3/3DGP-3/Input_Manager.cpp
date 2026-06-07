@@ -23,7 +23,7 @@ void CInput_Manager::Update_Mouse(HWND hWnd)
     POINT ptCurrent;
     GetCursorPos(&ptCurrent);
 
-    if (m_bMouseLock)
+    if(m_bMouseLock)
     {
         m_iMouseDX = ptCurrent.x - ptCenterScreen.x;
         m_iMouseDY = ptCurrent.y - ptCenterScreen.y;
@@ -43,9 +43,9 @@ bool CInput_Manager::Key_Pressing(int _iKey)
 
 bool CInput_Manager::Key_Down(int _iKey)
 {
-    if (GetAsyncKeyState(_iKey) & 0x8000)
+    if(GetAsyncKeyState(_iKey) & 0x8000)
     {
-        if (!m_bKeyState[_iKey])
+        if(!m_bKeyState[_iKey])
         {
             m_bKeyState[_iKey] = true;
             return true;
@@ -60,9 +60,9 @@ bool CInput_Manager::Key_Down(int _iKey)
 
 bool CInput_Manager::Key_Up(int _iKey)
 {
-    if (!(GetAsyncKeyState(_iKey) & 0x8000))
+    if(!(GetAsyncKeyState(_iKey) & 0x8000))
     {
-        if (m_bKeyState[_iKey])
+        if(m_bKeyState[_iKey])
         {
             m_bKeyState[_iKey] = false;
             return true;

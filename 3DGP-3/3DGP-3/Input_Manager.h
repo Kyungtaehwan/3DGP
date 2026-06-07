@@ -5,12 +5,17 @@ class CInput_Manager
 public:
     static CInput_Manager* Get_Instance()
     {
-        if (!m_pInstance) m_pInstance = new CInput_Manager();
+        if(!m_pInstance)
+            m_pInstance = new CInput_Manager();
         return m_pInstance;
     }
     static void Destroy_Instance()
     {
-        if (m_pInstance) { delete m_pInstance; m_pInstance = nullptr; }
+        if(m_pInstance)
+        {
+            delete m_pInstance;
+            m_pInstance = nullptr;
+        }
     }
 
     void Update();
@@ -20,16 +25,16 @@ public:
     bool Key_Down(int _iKey);
     bool Key_Up(int _iKey);
 
-    int  GetMouseDX() const { return m_iMouseDX; }
-    int  GetMouseDY() const { return m_iMouseDY; }
+    int GetMouseDX() const { return m_iMouseDX; }
+    int GetMouseDY() const { return m_iMouseDY; }
 
     void SetMouseLock(bool bLock)
     {
         m_bMouseLock = bLock;
-        if (bLock)
-            while (ShowCursor(FALSE) >= 0);
+        if(bLock)
+            while(ShowCursor(FALSE) >= 0);
         else
-            while (ShowCursor(TRUE) < 0);
+            while(ShowCursor(TRUE) < 0);
     }
     bool GetMouseLock() const { return m_bMouseLock; }
 
@@ -40,7 +45,7 @@ private:
     static CInput_Manager* m_pInstance;
 
     bool m_bKeyState[256] = {};
-    int  m_iMouseDX = 0;
-    int  m_iMouseDY = 0;
+    int m_iMouseDX = 0;
+    int m_iMouseDY = 0;
     bool m_bMouseLock = false;
 };

@@ -2,6 +2,8 @@
 #include "GameObject.h"
 #include "Camera.h"
 
+class CHeightMapTerrain;
+
 class CPlayer : public CGameObject
 {
 public:
@@ -13,13 +15,30 @@ public:
                    CShader* pShader,
                    const char* pstrFileName);
 
-    XMFLOAT3 GetPosition()    { return m_xmf3Position; }
-    XMFLOAT3 GetLookVector()  { return m_xmf3Look; }
-    XMFLOAT3 GetUpVector()    { return m_xmf3Up; }
+    XMFLOAT3 GetPosition() { return m_xmf3Position; }
+    XMFLOAT3 GetLookVector() { return m_xmf3Look; }
+    XMFLOAT3 GetUpVector() { return m_xmf3Up; }
     XMFLOAT3 GetRightVector() { return m_xmf3Right; }
 
-    CCamera* GetCamera()                   { return m_pCamera; }
-    void     SetCamera(CCamera* pCamera)   { m_pCamera = pCamera; }
+    CCamera* GetCamera() { return m_pCamera; }
+    void SetCamera(CCamera* pCamera) { m_pCamera = pCamera; }
+
+    void SetCombatResources(CMesh* pBulletMesh, CShader* pColorShader)
+    {
+        m_pBulletMesh = pBulletMesh;
+        m_pColorShader = pColorShader;
+    }
+
+    void SetTerrain(CHeightMapTerrain* pTerrain) { m_pTerrain = pTerrain; }
+
+    void OnHit(int nDamage)
+    {
+        if((m_nHP -= nDamage) < 0)
+            m_nHP = 0;
+    }
+    bool IsDestroyed() const { return m_nHP <= 0; }
+    int GetHP() const { return m_nHP; }
+    int GetMaxHP() const { return m_nMaxHP; }
 
     void SetPosition(const XMFLOAT3& pos);
 
@@ -42,17 +61,16 @@ protected:
     void RebuildLocalAxis();
 
     XMFLOAT3 m_xmf3Position = { 0.0f, 0.0f, 0.0f };
-    XMFLOAT3 m_xmf3Right    = { 1.0f, 0.0f, 0.0f };
-    XMFLOAT3 m_xmf3Up       = { 0.0f, 1.0f, 0.0f };
-    XMFLOAT3 m_xmf3Look     = { 0.0f, 0.0f, 1.0f };
+    XMFLOAT3 m_xmf3Right = { 1.0f, 0.0f, 0.0f };
+    XMFLOAT3 m_xmf3Up = { 0.0f, 1.0f, 0.0f };
+    XMFLOAT3 m_xmf3Look = { 0.0f, 0.0f, 1.0f };
 
     float m_fPitch = 0.0f;
-    float m_fYaw   = 0.0f;
-    float m_fRoll  = 0.0f;
+    float m_fYaw = 0.0f;
+    float m_fRoll = 0.0f;
 
-    // Smoothed banking angles (degrees) for natural helicopter tilt.
-    float m_fBankPitch = 0.0f;   // nose up/down when moving fwd/back
-    float m_fBankRoll  = 0.0f;   // wing dip when strafing left/right
+    float m_fBankPitch = 0.0f; 
+    float m_fBankRoll = 0.0f;
 
     XMFLOAT3 m_xmf3LookAt = { 0.0f, 0.0f, 10.0f };
 
@@ -61,10 +79,17 @@ protected:
 
     CCamera* m_pCamera = NULL;
 
-    // Apache hierarchy root, owned by us
     CGameObject* m_pModel = NULL;
-    // Rotor frames inside m_pModel; not owned (just cached pointers).
     CGameObject* m_pMainRotorFrame = NULL;
     CGameObject* m_pTailRotorFrame = NULL;
     ID3D12Device* m_pd3dDevice = NULL;
+
+    CMesh* m_pBulletMesh = NULL;
+    CShader* m_pColorShader = NULL;
+    CHeightMapTerrain* m_pTerrain = NULL;
+    float m_fFireTimer = 0.0f;
+
+    int m_nMaxHP = 10;
+    int m_nHP = 10;
+    bool m_bDeathFxShown = false;
 };

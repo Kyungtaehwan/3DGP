@@ -1,10 +1,8 @@
-// Shaders.hlsl — per-pixel lighting (matches Sample LabProject07-9-1-3).
-
 struct MATERIAL
 {
     float4 m_cAmbient;
     float4 m_cDiffuse;
-    float4 m_cSpecular; // a = power
+    float4 m_cSpecular;
     float4 m_cEmissive;
 };
 
@@ -59,18 +57,12 @@ float4 PSLighting(VS_LIGHTING_OUTPUT input) : SV_TARGET
     return color;
 }
 
-// ------------------------------------------------------------
-// Terrain pixel shader: lit terrain + a route line painted onto the
-// surface. The line is the segment (gLineP0P1.xy) -> (gLineP0P1.zw) in
-// world XZ; pixels within gLineHalfWidth of it are tinted gLineColor.
-// Only the terrain uses this PS, so the humvee/trees driving over the
-// line are NOT tinted.
-// ------------------------------------------------------------
+
 cbuffer cbTerrainLine : register(b5)
 {
-    float4 gLineP0P1;       // xy = start(x,z), zw = end(x,z)
-    float4 gLineColor;      // rgb = color, a = opacity
-    float  gLineHalfWidth;  // world units
+    float4 gLineP0P1; 
+    float4 gLineColor; 
+    float  gLineHalfWidth; 
     float3 gLinePad;
 };
 
@@ -86,17 +78,12 @@ float4 PSTerrainLine(VS_LIGHTING_OUTPUT input) : SV_TARGET
     float  t  = saturate(dot(p - a, ab) / max(dot(ab, ab), 1e-5f));
     float  d  = distance(p, a + t * ab);
 
-    // 1 inside the band, smoothly fading to 0 at the edge.
     float k = 1.0f - smoothstep(gLineHalfWidth * 0.6f, gLineHalfWidth, d);
     color.rgb = lerp(color.rgb, gLineColor.rgb, k * gLineColor.a);
     return color;
 }
 
-// ------------------------------------------------------------
-// Unlit vertex-color shader (for bitmap cube text on the
-// LOGO / MENU screens). Reuses cbCameraInfo (b1) + the world
-// matrix in cbGameObjectInfo (b2); ignores materials and lights.
-// ------------------------------------------------------------
+
 struct VS_COLOR_INPUT
 {
     float3 position : POSITION;
@@ -119,6 +106,32 @@ VS_COLOR_OUTPUT VSColor(VS_COLOR_INPUT input)
 }
 
 float4 PSColor(VS_COLOR_OUTPUT input) : SV_TARGET
+{
+    return input.color;
+}
+
+
+struct VS_UI_INPUT
+{
+    float2 position : POSITION;
+    float4 color    : COLOR;
+};
+
+struct VS_UI_OUTPUT
+{
+    float4 position : SV_POSITION;
+    float4 color    : COLOR;
+};
+
+VS_UI_OUTPUT VSUIMain(VS_UI_INPUT input)
+{
+    VS_UI_OUTPUT output;
+    output.position = float4(input.position, 0.0f, 1.0f);
+    output.color    = input.color;
+    return output;
+}
+
+float4 PSUIMain(VS_UI_OUTPUT input) : SV_TARGET
 {
     return input.color;
 }
